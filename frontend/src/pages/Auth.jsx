@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import '../css/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
+import LoginUser from '../components/Auth/LoginUser';
+import SignupUser from '../components/Auth/SignupUser';
+import LoginTailor from '../components/Auth/LoginTailor';
+import SignupTailor from '../components/Auth/SignupTailor';
 
 const Auth = () => {
     const navigate = useNavigate();
@@ -61,23 +64,23 @@ const Auth = () => {
     };
 
     return (
-        <div className="auth-wrapper">
-            <div className="glow-orb orb-1"></div>
-            <div className="glow-orb orb-2"></div>
+        <div className="min-h-screen flex items-center justify-center p-6 relative">
+            <div className="absolute -top-16 -left-10 w-48 h-48 rounded-full bg-yellow-400 opacity-10 blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-20 -right-10 w-56 h-56 rounded-full bg-teal-400 opacity-8 blur-3xl pointer-events-none"></div>
 
-            <div className="auth-card">
-                <div className="auth-header">
-                    <Link to="/" className="back-link">← Back to Home</Link>
-                    <h2 className="brand-title">E-Tailoring</h2>
-                    <div className="identity-switch">
+            <div className="relative w-full max-w-md bg-black/60 backdrop-blur-lg border border-white/10 rounded-2xl p-8 shadow-xl">
+                <div className="text-center">
+                    <Link to="/" className="text-sm text-gray-400 hover:text-yellow-400 inline-block mb-2">← Back to Home</Link>
+                    <h2 className="text-2xl font-serif text-white uppercase tracking-wider">E-Tailoring</h2>
+                    <div className="mt-4 flex rounded-full bg-white/5 p-1 border border-white/10">
                         <button
-                            className={`identity-btn ${identity === 'customer' ? 'active' : ''}`}
+                            className={`flex-1 text-sm font-semibold py-2 rounded-full ${identity === 'customer' ? 'bg-yellow-400 text-black shadow' : 'text-gray-300'}`}
                             onClick={() => handleIdentitySwitch('customer')}
                         >
                             Customer
                         </button>
                         <button
-                            className={`identity-btn ${identity === 'tailor' ? 'active' : ''}`}
+                            className={`flex-1 text-sm font-semibold py-2 rounded-full ${identity === 'tailor' ? 'bg-teal-400 text-black shadow' : 'text-gray-300'}`}
                             onClick={() => handleIdentitySwitch('tailor')}
                         >
                             Tailor
@@ -85,136 +88,25 @@ const Auth = () => {
                     </div>
                 </div>
 
-                <div className="forms-container">
-                    {/* CUSTOMER FORMS */}
+                <div className="mt-6">
                     {identity === 'customer' && (
-                        <div id="customer-forms" className="user-section active">
-                            {/* Customer Login */}
-                            {activeForm === 'login' && (
-                                <form id="customer-login" className="auth-form active" onSubmit={handleFormSubmit}>
-                                    <h3>Customer Login</h3>
-                                    <p className="subtitle">Welcome back! Please login to your account.</p>
-
-                                    <div className="input-group">
-                                        <label htmlFor="c-login-id">Email or Name</label>
-                                        <input type="text" id="c-login-id" placeholder="Enter your email or name" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="c-login-pass">Password</label>
-                                        <input type="password" id="c-login-pass" placeholder="Enter your password" required />
-                                    </div>
-
-                                    <button type="submit" className="btn-primary">Login</button>
-
-                                    <div className="form-footer">
-                                        <p>Don't have an account? <span className="toggle-mode" onClick={() => setActiveForm('signup')}>Sign Up</span></p>
-                                    </div>
-                                </form>
+                        <>
+                            {activeForm === 'login' ? (
+                                <LoginUser onSubmit={handleFormSubmit} onSwitch={setActiveForm} identity={identity} />
+                            ) : (
+                                <SignupUser onSubmit={handleFormSubmit} onSwitch={setActiveForm} identity={identity} />
                             )}
-
-                            {/* Customer Signup */}
-                            {activeForm === 'signup' && (
-                                <form id="customer-signup" className="auth-form active" onSubmit={handleFormSubmit}>
-                                    <h3>Customer Sign Up</h3>
-                                    <p className="subtitle">Create an account to order custom designs.</p>
-
-                                    <div className="input-group">
-                                        <label htmlFor="c-signup-name">Full Name</label>
-                                        <input type="text" id="c-signup-name" placeholder="Enter your full name" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="c-signup-email">Email Address</label>
-                                        <input type="email" id="c-signup-email" placeholder="Enter your email" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="c-signup-pass">Password</label>
-                                        <input type="password" id="c-signup-pass" placeholder="Create a password" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="c-signup-confirm">Confirm Password</label>
-                                        <input type="password" id="c-signup-confirm" placeholder="Confirm your password" required />
-                                    </div>
-
-                                    <button type="submit" className="btn-primary">Sign Up</button>
-
-                                    <div className="form-footer">
-                                        <p>Already have an account? <span className="toggle-mode" onClick={() => setActiveForm('login')}>Login</span></p>
-                                    </div>
-                                </form>
-                            )}
-                        </div>
+                        </>
                     )}
 
-                    {/* TAILOR FORMS */}
                     {identity === 'tailor' && (
-                        <div id="tailor-forms" className="user-section active">
-                            {/* Tailor Login */}
-                            {activeForm === 'login' && (
-                                <form id="tailor-login" className="auth-form active" onSubmit={handleFormSubmit}>
-                                    <h3>Tailor Login</h3>
-                                    <p className="subtitle">Access your dashboard and manage orders.</p>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-login-id">Email or Name</label>
-                                        <input type="text" id="t-login-id" placeholder="Enter your email or name" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-login-pass">Password</label>
-                                        <input type="password" id="t-login-pass" placeholder="Enter your password" required />
-                                    </div>
-
-                                    <button type="submit" className="btn-primary">Login</button>
-
-                                    <div className="form-footer">
-                                        <p>New to E-Tailoring? <span className="toggle-mode" onClick={() => setActiveForm('signup')}>Join as Tailor</span></p>
-                                    </div>
-                                </form>
+                        <>
+                            {activeForm === 'login' ? (
+                                <LoginTailor onSubmit={handleFormSubmit} onSwitch={setActiveForm} identity={identity} />
+                            ) : (
+                                <SignupTailor onSubmit={handleFormSubmit} onSwitch={setActiveForm} identity={identity} />
                             )}
-
-                            {/* Tailor Signup */}
-                            {activeForm === 'signup' && (
-                                <form id="tailor-signup" className="auth-form active" onSubmit={handleFormSubmit}>
-                                    <h3>Tailor Registration</h3>
-                                    <p className="subtitle">Join our network of master tailors.</p>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-signup-name">Full Name</label>
-                                        <input type="text" id="t-signup-name" placeholder="Enter your full name" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-signup-email">Email Address</label>
-                                        <input type="email" id="t-signup-email" placeholder="Enter your email" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-signup-mobile">Mobile Number</label>
-                                        <input type="tel" id="t-signup-mobile" placeholder="Enter your mobile number" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-signup-pass">Password</label>
-                                        <input type="password" id="t-signup-pass" placeholder="Create a password" required />
-                                    </div>
-
-                                    <div className="input-group">
-                                        <label htmlFor="t-signup-confirm">Confirm Password</label>
-                                        <input type="password" id="t-signup-confirm" placeholder="Confirm your password" required />
-                                    </div>
-
-                                    <button type="submit" className="btn-primary">Register Now</button>
-
-                                    <div className="form-footer">
-                                        <p>Already registered? <span className="toggle-mode" onClick={() => setActiveForm('login')}>Login</span></p>
-                                    </div>
-                                </form>
-                            )}
-                        </div>
+                        </>
                     )}
                 </div>
             </div>
