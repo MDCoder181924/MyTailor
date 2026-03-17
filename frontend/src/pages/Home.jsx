@@ -9,20 +9,21 @@ import Section5 from '../components/Home.jsx/Section5';
 import Footer from '../components/Home.jsx/Footer';
 
 const Home = () => {
-  
+
 
   return (
     <>
-
-      <Header />
-      <main className="main-content">
-        <Section1 />
-        <Section2 />
-        <Section3 />
-        <Section4/>
-        <Section5/>
-      </main>
-      <Footer />
+      <div className="bg-black overflow-x-hidden overflow-y-hidden" id='homePage'>
+        <Header />
+        <main className="main-content">
+          <Section1 />
+          <Section2 />
+          <Section3 />
+          <Section4 />
+          <Section5 />
+        </main>
+        <Footer />
+      </div>
     </>
   );
 };
