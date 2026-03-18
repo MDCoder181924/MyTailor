@@ -6,61 +6,20 @@ import LoginTailor from '../components/Auth/LoginTailor';
 import SignupTailor from '../components/Auth/SignupTailor';
 
 const Auth = () => {
-    const navigate = useNavigate();
-    const [identity, setIdentity] = useState('customer'); // customer | tailor
-    const [activeForm, setActiveForm] = useState('login'); // login | signup
 
-    useEffect(() => {
-        document.body.setAttribute('data-theme', identity);
-        return () => {
-            document.body.removeAttribute('data-theme');
-        }
-    }, [identity]);
+
+     const navigate = useNavigate();
+    const [identity, setIdentity] = useState('customer');
+    const [activeForm, setActiveForm] = useState('login');
 
     const handleIdentitySwitch = (type) => {
         setIdentity(type);
-        setActiveForm('login'); // Reset to login when switching identity
+        setActiveForm('login');
     };
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        const form = e.target;
-
-        // Basic Password Match Validation
-        const passInput = form.querySelector('input[type="password"]:not([id$="-confirm"])');
-        const confirmInput = form.querySelector('input[id$="-confirm"]');
-
-        if (confirmInput && passInput) {
-            if (passInput.value !== confirmInput.value) {
-                alert("Passwords do not match!");
-                return;
-            }
-        }
-
-        // Demo Success Logic
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
-
-        btn.innerText = 'Processing...';
-        btn.style.opacity = '0.7';
-
-        setTimeout(() => {
-            btn.innerText = 'Success!';
-            btn.style.background = '#4CAF50';
-            btn.style.color = '#fff';
-
-            setTimeout(() => {
-                alert(`Successfully submitted!`);
-                btn.innerText = originalText;
-                btn.style.background = ''; // reset to CSS default
-                btn.style.opacity = '1';
-
-                // If login, redirect to home
-                if (activeForm === 'login') {
-                    navigate('/');
-                }
-            }, 1000);
-        }, 1000);
+        
     };
 
     return (
@@ -74,12 +33,14 @@ const Auth = () => {
                     <h2 className="text-2xl font-serif text-white uppercase tracking-wider">E-Tailoring</h2>
                     <div className="mt-4 flex rounded-full bg-white/5 p-1 border border-white/10">
                         <button
+                            type="button"
                             className={`flex-1 text-sm font-semibold py-2 rounded-full ${identity === 'customer' ? 'bg-yellow-400 text-black shadow' : 'text-gray-300'}`}
                             onClick={() => handleIdentitySwitch('customer')}
                         >
                             Customer
                         </button>
                         <button
+                            type="button"
                             className={`flex-1 text-sm font-semibold py-2 rounded-full ${identity === 'tailor' ? 'bg-teal-400 text-black shadow' : 'text-gray-300'}`}
                             onClick={() => handleIdentitySwitch('tailor')}
                         >

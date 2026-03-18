@@ -1,15 +1,34 @@
-const express = require("express");
-const path = require("path");
+import express from "express";
+import userRoutes from "./routes/Auth/userRoutes.js";
+import tailorRoutes from "./routes/Auth/tailorRoutes.js";
 
 const app = express();
 
-// frontend serve
-app.use(express.static(path.join(__dirname, "../../frontend")));
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
 
-app.get("/", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../frontend/index.html")
-  );
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.has(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
 });
 
-module.exports = app;
+app.use(express.json());
+
+app.use("/api/user", userRoutes);
+app.use("/api/tailor", tailorRoutes);
+
+export default app;
