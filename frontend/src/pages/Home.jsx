@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Home.jsx/Header';
-import Section1 from '../components/Home.jsx/Section1';
-import Section2 from '../components/Home.jsx/Section2';
-import Section3 from '../components/Home.jsx/Section3';
-import Section4 from '../components/Home.jsx/Section4';
-import Section5 from '../components/Home.jsx/Section5';
-import Footer from '../components/Home.jsx/Footer';
+import Header from '../components/Home/Header';
+import Section1 from '../components/Home/Section1';
+import Section2 from '../components/Home/Section2';
+import Section3 from '../components/Home/Section3';
+import Section4 from '../components/Home/Section4';
+import Section5 from '../components/Home/Section5';
+import Footer from '../components/Home/Footer';
 
 const Home = () => {
 

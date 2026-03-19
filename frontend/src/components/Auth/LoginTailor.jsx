@@ -35,7 +35,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
 
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
 
-        navigate("/");
+        navigate("/deshboard");
       } else {
         alert(data.message);
       }

@@ -30,11 +30,11 @@ const LoginUser = ({  onSwitch, identity }) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Login Success ");
+        // alert("Login Success ");
 
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        navigate("/");
+        navigate("/deshboard");
       } else {
         alert(data.message);
       }
