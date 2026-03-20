@@ -5,31 +5,19 @@ import TrendingStyles from '../components/Dashboard/TrendingStyles'
 import PopularTailors from '../components/Dashboard/PopularTailors'
 import Features from '../components/Dashboard/Features'
 import Footer from '../components/Dashboard/FooterDashbord'
-import CategoryNames from '../components/Dashboard/Explore/CategoryNames'
-import CategoryItems from '../components/Dashboard/Explore/CategoryItems'
+import PhoneFooter from '../components/Dashboard/PhoneFotter'
 
 const Dashboard = () => {
-    const [explorclick, setExplorclick] = useState(false);
-    const [category, setCategory] = useState("All");
 
     return (
         <div className='bg-black h-full w-full'>
-            <Header setExplorclick={setExplorclick} setCategory={setCategory} />
+            <Header/>
             <SearchBar />
-            {explorclick ? (
-                <>
-                < CategoryNames setCategory={setCategory} />
-            <CategoryItems category={category} />
-            </>
-            ) : (
-                <>
-                    <TrendingStyles />
-                    <PopularTailors />
-                    <Features />
-                    <Footer />
-                </>
-            )
-            }
+            <TrendingStyles />
+            <PopularTailors />
+            <Features />
+            <Footer />
+            <PhoneFooter />
         </div>
     )
 }

@@ -25,6 +25,62 @@ const data = [
     tag: "TAILOR'S CHOICE",
     image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80",
   },
+  {
+    id: 4,
+    title: "Classic White Shirt",
+    category: "Shirts",
+    price: "$220",
+    tag: "",
+    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80",
+  },
+  {
+    id: 5,
+    title: "Slim Fit Trousers",
+    category: "Pants",
+    price: "$300",
+    tag: "BESTSELLER",
+    image: "https://images.unsplash.com/photo-1593032465171-8d35d5b4a0b5?w=400&q=80",
+  },
+  {
+    id: 6,
+    title: "Luxury Black Suit",
+    category: "Suits",
+    price: "$1400",
+    tag: "",
+    image: "https://images.unsplash.com/photo-1520975922284-9e0ce8273f1c?w=400&q=80",
+  },
+  {
+    id: 7,
+    title: "Casual Linen Shirt",
+    category: "Shirts",
+    price: "$180",
+    tag: "",
+    image: "https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=400&q=80",
+  },
+  {
+    id: 8,
+    title: "Formal Office Pants",
+    category: "Pants",
+    price: "$270",
+    tag: "",
+    image: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=400&q=80",
+  },
+  {
+    id: 9,
+    title: "Wedding Tuxedo Suit",
+    category: "Suits",
+    price: "$1600",
+    tag: "PREMIUM",
+    image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&q=80",
+  },
+  {
+    id: 10,
+    title: "Designer Cotton Shirt",
+    category: "Shirts",
+    price: "$210",
+    tag: "",
+    image: "https://images.unsplash.com/photo-1603251579431-8041402bdeda?w=400&q=80",
+  },
 ];
 
 const CategoryItems = ({ category }) => {
@@ -34,7 +90,7 @@ const CategoryItems = ({ category }) => {
       : data.filter((item) => item.category === category);
 
   return (
-    <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-black">
+    <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-4 grid-cols-2 md:gap-10 gap-2 md:mx-10 bg-black">
 
       {filtered.map((item) => (
         <div key={item.id} className="bg-black text-white">
@@ -44,7 +100,7 @@ const CategoryItems = ({ category }) => {
             <img
               src={item.image}
               alt={item.title}
-              className="w-full h-[320px] object-cover"
+              className="w-full md:h-[320px] h-[180px]  object-cover"
             />
 
             {/* Tag */}

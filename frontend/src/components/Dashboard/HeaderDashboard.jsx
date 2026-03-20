@@ -1,12 +1,8 @@
 import React from 'react'
 import { Bell, ShoppingBag, User } from "lucide-react";
+import { Link , useNavigate } from 'react-router-dom';
 
-const HeaderDashbord = ({setExplorclick , setCategory}) => {
-
-  const onClickExplore=(e)=>{
-    setExplorclick(true);
-    setCategory("All");
-  }
+const HeaderDashbord = () => {
 
   return (
     <div>
@@ -23,9 +19,8 @@ const HeaderDashbord = ({setExplorclick , setCategory}) => {
           <p className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Collections</p>
           <p className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Artisans</p>
           <p className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Fabrics</p>
-          <p 
-          onClick={onClickExplore}
-          className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Explore</p>
+          <Link to='/explore' className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Explore</Link>
+          
         </div>
 
         <div className="flex items-center gap-5 mr-3" >
