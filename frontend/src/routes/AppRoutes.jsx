@@ -4,6 +4,8 @@ import Dashboard from "../pages/Dashboard";
 import Explore from "../pages/Explore";
 import Auth from "../pages/Auth";
 import ExploreCategory from "../pages/ExploreCategory";
+import TailorDashboard from "../pages/Tailor/Dashboard"
+import OrdersListPage from "../pages/Tailor/OrdersList"
 
 const AppRoutes = () => {
     return (
@@ -13,6 +15,9 @@ const AppRoutes = () => {
             <Route path="/deshboard" element={<Dashboard />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/explore/:category" element={<ExploreCategory />} />
+            <Route path="/tailordahboard" element={<TailorDashboard/>} />
+            <Route path="/OrdersList" element={<OrdersListPage/>} />
+
         </Routes>
     );
 };

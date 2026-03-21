@@ -31,11 +31,11 @@ const LoginTailor = ({  onSwitch, identity }) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Tailor Login Success ");
+        // alert("Tailor Login Success ");
 
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
 
-        navigate("/deshboard");
+        navigate("/tailordahboard");
       } else {
         alert(data.message);
       }
