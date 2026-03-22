@@ -7,7 +7,7 @@ export default function Header() {
 
       {/* Left Side - Logo */}
       <h1 className="text-yellow-400 text-xl font-serif">
-        The Atelier Inventory
+        MyTailor
       </h1>
 
       {/* Center - Menu */}
@@ -15,7 +15,7 @@ export default function Header() {
         <Link to="/tailordahboard" className="hover:text-white cursor-pointer">DASHBOARD</Link>
         <Link to="/OrdersList" className="hover:text-white cursor-pointer">ORDERS</Link>
         <li className="hover:text-white cursor-pointer">INVENTORY</li>
-        <li className="hover:text-white cursor-pointer">PROFILE</li>
+        <Link to="/profile" className="hover:text-white cursor-pointer">PROFILE</Link>
       </ul>
 
       <div className="flex items-center space-x-5">
