@@ -14,7 +14,7 @@ export default function Header() {
       <ul className="hidden md:flex space-x-8 text-gray-400">
         <Link to="/tailordahboard" className="hover:text-white cursor-pointer">DASHBOARD</Link>
         <Link to="/OrdersList" className="hover:text-white cursor-pointer">ORDERS</Link>
-        <li className="hover:text-white cursor-pointer">INVENTORY</li>
+        <Link to="/inventory" className="hover:text-white cursor-pointer">INVENTORY</Link>
         <Link to="/profile" className="hover:text-white cursor-pointer">PROFILE</Link>
       </ul>
 

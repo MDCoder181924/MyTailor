@@ -7,6 +7,7 @@ import ExploreCategory from "../pages/ExploreCategory";
 import TailorDashboard from "../pages/Tailor/Dashboard"
 import OrdersListPage from "../pages/Tailor/OrdersList"
 import Profile from "../pages/Tailor/Profile"
+import Inventory from "../pages/Tailor/Inventory"
 
 const AppRoutes = () => {
     return (
@@ -19,6 +20,7 @@ const AppRoutes = () => {
             <Route path="/tailordahboard" element={<TailorDashboard/>} />
             <Route path="/OrdersList" element={<OrdersListPage/>} />
             <Route path="/profile" element={<Profile/>} />
+            <Route path="/inventory" element={<Inventory/>} />
 
         </Routes>
     );
