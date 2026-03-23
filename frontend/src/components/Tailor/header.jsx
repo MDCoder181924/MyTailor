@@ -1,5 +1,5 @@
 import { Bell, Settings } from "lucide-react";
-import {Link} from "react-router-dom"
+import { Link } from "react-router-dom"
 
 export default function Header() {
   return (
@@ -19,13 +19,14 @@ export default function Header() {
       </ul>
 
       <div className="flex items-center space-x-5">
+        <Link to="/addproduct" className="bg-yellow-400 cursor-pointer text-black px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-yellow-300 transition">+ ADD PRODUCT</Link>
 
         <Bell className="cursor-pointer" />
 
         <Settings className="cursor-pointer" />
 
         <div className="flex items-center space-x-2">
-          
+
           <span className="text-sm">Mohit</span>
 
           <img

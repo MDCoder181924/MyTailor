@@ -8,6 +8,7 @@ import TailorDashboard from "../pages/Tailor/Dashboard"
 import OrdersListPage from "../pages/Tailor/OrdersList"
 import Profile from "../pages/Tailor/Profile"
 import Inventory from "../pages/Tailor/Inventory"
+import AddProduct from "../pages/Tailor/AddProduct"
 
 const AppRoutes = () => {
     return (
@@ -21,6 +22,7 @@ const AppRoutes = () => {
             <Route path="/OrdersList" element={<OrdersListPage/>} />
             <Route path="/profile" element={<Profile/>} />
             <Route path="/inventory" element={<Inventory/>} />
+            <Route path="/addproduct" element={<AddProduct/>} />
 
         </Routes>
     );
