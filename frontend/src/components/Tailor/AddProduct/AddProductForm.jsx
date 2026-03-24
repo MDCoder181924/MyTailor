@@ -1,19 +1,21 @@
 import { useState, useRef } from "react";
 
 const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
-const SIZES = ["S", "M", "L", "XL", "2XL"];
-const CATEGORIES = ["Suits", "Shirts", "Trousers", "Jackets", "Coats", "Accessories" ,"Other"];
+const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
+const CATEGORIES = ["Suits", "Shirts", "Trousers", "Jackets", "Coats", "Accessories", "Other"];
 
 export default function UploadProduct() {
-  const [dragging, setDragging] = useState(false);
-  const [mediaPreview, setMediaPreview] = useState(null);
+  const [imgStore , setimgStore] = useState(null);
+  const [description, setDescription] = useState("");
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("Suits");
+
+  const [dragging, setDragging] = useState(false);
+  const [mediaPreview, setMediaPreview] = useState(null);
   const [basePrice, setBasePrice] = useState("");
   const [fabricStock, setFabricStock] = useState("");
   const [selectedFabrics, setSelectedFabrics] = useState(["Silk"]);
   const [selectedSizes, setSelectedSizes] = useState([]);
-  const [description, setDescription] = useState("");
   const fileInputRef = useRef(null);
 
   const handleDrop = (e) => {
@@ -25,7 +27,11 @@ export default function UploadProduct() {
 
   const handleFile = (file) => {
     if (file.type.startsWith("image/")) {
+      setimgStore(file);
       setMediaPreview(URL.createObjectURL(file));
+    }
+    else {
+      alert("Please upload a valid image file (JPG, PNG, etc.)");
     }
   };
 
@@ -42,14 +48,14 @@ export default function UploadProduct() {
   return (
     <div
       style={{
-        background: "linear-gradient(180deg, #0A0A0A 0%, #000000 100%)",
-        minHeight: "100vh",
+        // background: "linear-gradient(180deg, #0A0A0A 0%, #000000 100%)",
+        background: "#000000",
+        minHeight: "10-0vh",
         color: "#F5F5F5",
       }}
       className="px-6 py-10"
     >
 
-      {/* Header */}
       <div className="max-w-5xl mx-auto mb-10">
         <p className="text-xs tracking-widest mb-2 text-[#D4A017] uppercase">
           CURATION
@@ -64,10 +70,8 @@ export default function UploadProduct() {
 
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
-        {/* LEFT */}
         <div className="space-y-6">
 
-          {/* Upload Box */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
@@ -95,10 +99,6 @@ export default function UploadProduct() {
               <img src={mediaPreview} className="w-full h-full object-cover rounded-2xl" />
             ) : (
               <>
-                {/* <div className="bg-[#D4A017] p-3 rounded-xl mb-4">
-                  ⬆️
-                </div> */}
-
                 <p className="font-semibold text-lg mb-1 text-center">
                   Drag and drop garment imagery
                 </p>
@@ -157,6 +157,7 @@ export default function UploadProduct() {
             <div className="flex gap-3 mb-4">
               <input
                 placeholder="$0.00"
+                type="number"
                 className="w-1/2 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded"
               />
               <input
@@ -172,11 +173,10 @@ export default function UploadProduct() {
                   <button
                     key={f}
                     onClick={() => toggleFabric(f)}
-                    className={`px-3 py-1 text-xs rounded ${
-                      active
-                        ? "bg-[#D4A017] text-black"
-                        : "bg-[#111] text-gray-400"
-                    }`}
+                    className={`px-3 py-1 text-xs rounded ${active
+                      ? "bg-[#D4A017] text-black"
+                      : "bg-[#111] text-gray-400"
+                      }`}
                   >
                     {f}
                   </button>
@@ -196,11 +196,10 @@ export default function UploadProduct() {
                   <button
                     key={s}
                     onClick={() => toggleSize(s)}
-                    className={`flex-1 py-2 rounded ${
-                      active
-                        ? "bg-[#D4A017] text-black"
-                        : "bg-[#111] text-gray-400"
-                    }`}
+                    className={`flex-1 py-2 rounded ${active
+                      ? "bg-[#D4A017] text-black"
+                      : "bg-[#111] text-gray-400"
+                      }`}
                   >
                     {s}
                   </button>

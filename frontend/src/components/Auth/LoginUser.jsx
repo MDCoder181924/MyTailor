@@ -30,7 +30,7 @@ const LoginUser = ({  onSwitch, identity }) => {
       const data = await res.json();
 
       if (res.ok) {
-        // alert("Login Success ");
+        alert(data.message);
 
         localStorage.setItem("user", JSON.stringify(data.user));
 
