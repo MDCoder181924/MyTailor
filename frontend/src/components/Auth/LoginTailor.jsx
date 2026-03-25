@@ -40,6 +40,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
         
 
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
+        localStorage.setItem("token" , data.token);
 
         navigate("/tailordahboard");
       } else {

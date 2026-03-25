@@ -39,6 +39,7 @@ const LoginUser = ({  onSwitch, identity }) => {
         localStorage.removeItem("user")
 
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
 
         navigate("/deshboard");
       } else {
