@@ -1,13 +1,16 @@
-import React, { useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
+
 
 const LoginTailor = ({  onSwitch, identity }) => {
-
+  
   const [tailorEmail, setEmail] = useState("");
   const [tailorPassword, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const navigate = useNavigate();
+  const {setTailor , setUser} = useContext(AuthContext);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -31,7 +34,10 @@ const LoginTailor = ({  onSwitch, identity }) => {
       const data = await res.json();
 
       if (res.ok) {
-        // alert("Tailor Login Success ");
+        setTailor(data.tailor)
+        setUser(null)
+        localStorage.removeItem("tailor")
+        
 
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
 

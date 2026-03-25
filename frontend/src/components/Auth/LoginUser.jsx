@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
+
 
 const LoginUser = ({  onSwitch, identity }) => {
   const [userEmail, setEmail] = useState("");
   const [userPassword, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const navigate = useNavigate();
+  const {setUser ,setTailor} = useContext(AuthContext)
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -30,7 +33,10 @@ const LoginUser = ({  onSwitch, identity }) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert(data.message);
+        alert(data.message)
+        setUser(data.user)
+        setTailor(null);
+        localStorage.removeItem("user")
 
         localStorage.setItem("user", JSON.stringify(data.user));
 
