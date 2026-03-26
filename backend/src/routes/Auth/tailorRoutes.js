@@ -8,11 +8,17 @@ const router = express.Router();
 router.post("/login", tailorLogin);
 router.post("/signup", tailorSignup);
 
-// 🔥 Protected route
+// const isTailor = (req, res, next) => {
+//   if (req.user.role !== "tailor") {
+//     return res.status(403).json({ message: "Only tailor allowed" });
+//   }
+//   next();
+// };
+
 router.get("/profile", authMiddleware, isTailor, (req, res) => {
   res.json({
     message: "Tailor profile",
-    user: req.user
+    talior: req.user
   });
 });
 

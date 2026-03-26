@@ -1,4 +1,5 @@
 import React, { useState , useEffect} from 'react'
+import { authFetch } from "../utils/authFetch";
 import Header from '../components/Dashboard/HeaderDashboard'
 import SearchBar from '../components/Dashboard/SearchBarDashbord'
 import TrendingStyles from '../components/Dashboard/TrendingStyles'
@@ -10,26 +11,15 @@ import PhoneFooter from '../components/Dashboard/PhoneFotter'
 const Dashboard = () => {
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            const token = localStorage.getItem("token");
+  const getProfile = async () => {
+    const res = await authFetch("http://localhost:5000/api/user/profile");
 
-            try {
-                const res = await fetch("http://localhost:5000/api/user/profile", { 
-                    headers: {
-                        Authorization: token
-                    }
-                });
+    const data = await res.json();
+    console.log(data);
+  };
 
-                const data = await res.json();
-                console.log(data);
-
-            } catch (err) {
-                console.log("Error:", err);
-            }
-        };
-
-        fetchProfile();
-    }, []);
+  getProfile();
+}, []);
 
     return (
         <div className='bg-black h-full w-full'>

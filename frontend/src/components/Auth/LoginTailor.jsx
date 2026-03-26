@@ -22,6 +22,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
 
       const res = await fetch(`${apiBaseUrl}/api/tailor/login`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
@@ -36,11 +37,8 @@ const LoginTailor = ({  onSwitch, identity }) => {
       if (res.ok) {
         setTailor(data.tailor)
         setUser(null)
-        localStorage.removeItem("tailor")
-        
-
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
-        localStorage.setItem("token" , data.token);
+        localStorage.removeItem("user")
 
         navigate("/tailordahboard");
       } else {

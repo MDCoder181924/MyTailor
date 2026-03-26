@@ -19,17 +19,38 @@ export const tailorLogin = async (req, res) => {
         }
 
         const { tailorPassword: _, ...safeTailor } = tailor._doc;
-
-        const token = jwt.sign(
+        const accessToken = jwt.sign(
             { id: tailor._id, role: "tailor" },
             process.env.JWT_SECRET,
+            { expiresIn: "15m" }
+        );
+
+        const refreshToken = jwt.sign(
+            { id: tailor._id },
+            process.env.JWT_REFRESH_SECRET,
             { expiresIn: "7d" }
         );
 
+        tailor.refreshToken = refreshToken;
+        await tailor.save();
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 15 * 60 * 1000
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
         res.json({
             message: "Login successful",
-            tailor: safeTailor,
-            token
+            tailor: safeTailor
         });
 
     } catch (err) {

@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 
-const LoginUser = ({  onSwitch, identity }) => {
+const LoginUser = ({ onSwitch, identity }) => {
   const [userEmail, setEmail] = useState("");
   const [userPassword, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const navigate = useNavigate();
-  const {setUser ,setTailor} = useContext(AuthContext)
+  const { setUser, setTailor } = useContext(AuthContext)
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -21,6 +21,7 @@ const LoginUser = ({  onSwitch, identity }) => {
 
       const res = await fetch(`${apiBaseUrl}/api/user/login`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
@@ -36,14 +37,13 @@ const LoginUser = ({  onSwitch, identity }) => {
         alert(data.message)
         setUser(data.user)
         setTailor(null);
-        localStorage.removeItem("user")
+        localStorage.removeItem("tailor")
 
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("token", data.token);
 
         navigate("/deshboard");
       } else {
-        alert(data.message);
+        alert(data.message || "Login failed");
       }
 
     } catch (err) {
@@ -74,9 +74,9 @@ const LoginUser = ({  onSwitch, identity }) => {
           className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-yellow-400" type="password" id="c-login-pass" placeholder="Enter your password" required />
       </div>
 
-      <button 
-      disabled={isSubmitting}
-      type="submit" className={`w-full py-3 rounded-md font-bold ${identity === 'customer' ? 'bg-yellow-400 text-black' : 'bg-teal-400 text-black'}`}>{isSubmitting ? "Logging in..." : "Login"}</button>
+      <button
+        disabled={isSubmitting}
+        type="submit" className={`w-full py-3 rounded-md font-bold ${identity === 'customer' ? 'bg-yellow-400 text-black' : 'bg-teal-400 text-black'}`}>{isSubmitting ? "Logging in..." : "Login"}</button>
 
       <div className="text-center text-sm text-gray-400">
         <p>Don't have an account? <span className="text-yellow-400 font-semibold cursor-pointer" onClick={() => onSwitch('signup')}>Sign Up</span></p>
