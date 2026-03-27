@@ -58,21 +58,22 @@ export const loginUser = async (req, res) => {
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
+            sameSite: "lax",
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
             maxAge: 15 * 60 * 1000
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            sameSite: "strict",
+            sameSite: "lax",
             secure: process.env.NODE_ENV === "production",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
         res.json({
             message: "Login successful",
-            user: safeUser
+            user: safeUser,
+            accessToken
         });
     } catch (err) {
         return res.status(500).json({ mesaage: err.message })

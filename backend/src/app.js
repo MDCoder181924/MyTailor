@@ -2,6 +2,7 @@ import express from "express";
 import csrf from "csurf";
 import userRoutes from "./routes/Auth/userRoutes.js";
 import tailorRoutes from "./routes/Auth/tailorRoutes.js";
+import authRoutes from "./routes/Auth/authRoutes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -37,5 +38,6 @@ app.use(express.json());
 
 app.use("/api/user", userRoutes);
 app.use("/api/tailor", tailorRoutes);
+app.use("/api/auth", authRoutes);
 
 export default app;

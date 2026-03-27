@@ -2,6 +2,7 @@ import { tailorSignup, tailorLogin } from "../../controllers/Auth/tailorControll
 import express from "express";
 import authMiddleware from "../../middleware/authMiddleware.js";
 import isTailor from "../../middleware/isTailor.js";
+import Tailor from "../../models/Auth/Tailor.js";
 
 const router = express.Router();
 
@@ -15,11 +16,21 @@ router.post("/signup", tailorSignup);
 //   next();
 // };
 
-router.get("/profile", authMiddleware, isTailor, (req, res) => {
-  res.json({
-    message: "Tailor profile",
-    talior: req.user
-  });
+router.get("/profile", authMiddleware, isTailor, async (req, res) => {
+  try {
+    const tailor = await Tailor.findById(req.user.id).select("-tailorPassword -refreshToken");
+
+    if (!tailor) {
+      return res.status(404).json({ message: "Tailor not found" });
+    }
+
+    res.json({
+      message: "Tailor profile",
+      tailor
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 export default router;

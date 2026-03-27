@@ -38,8 +38,8 @@ const LoginUser = ({ onSwitch, identity }) => {
         setUser(data.user)
         setTailor(null);
         localStorage.removeItem("tailor")
-
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.removeItem("accessToken");
 
         navigate("/deshboard");
       } else {

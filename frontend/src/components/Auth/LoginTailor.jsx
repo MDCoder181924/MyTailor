@@ -39,6 +39,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
         setUser(null)
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
         localStorage.removeItem("user")
+        localStorage.removeItem("accessToken");
 
         navigate("/tailordahboard");
       } else {

@@ -1,5 +1,4 @@
-import React, { useState , useEffect} from 'react'
-import { authFetch } from "../utils/authFetch";
+import React from 'react'
 import Header from '../components/Dashboard/HeaderDashboard'
 import SearchBar from '../components/Dashboard/SearchBarDashbord'
 import TrendingStyles from '../components/Dashboard/TrendingStyles'
@@ -9,18 +8,6 @@ import Footer from '../components/Dashboard/FooterDashbord'
 import PhoneFooter from '../components/Dashboard/PhoneFotter'
 
 const Dashboard = () => {
-
-    useEffect(() => {
-  const getProfile = async () => {
-    const res = await authFetch("http://localhost:5000/api/user/profile");
-
-    const data = await res.json();
-    console.log(data);
-  };
-
-  getProfile();
-}, []);
-
     return (
         <div className='bg-black h-full w-full'>
             <Header />

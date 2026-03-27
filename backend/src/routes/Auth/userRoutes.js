@@ -3,17 +3,28 @@ import express from "express";
 import isUser from "../../middleware/isUser.js";
 import { refreshToken } from "../../controllers/Auth/authController.js";
 import { signupUser, loginUser } from "../../controllers/Auth/userController.js";
+import User from "../../models/Auth/User.js";
 
 const router = express.Router();
 
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 
-router.get("/profile", authMiddleware, isUser, (req, res) => {
-  res.json({
-    message: "User profile fetched",
-    user: req.user
-  });
+router.get("/profile", authMiddleware, isUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-userPassword -refreshToken");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "User profile fetched",
+      user
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 router.post("/refresh", refreshToken);
