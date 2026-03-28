@@ -1,22 +1,26 @@
-import { useState, useRef } from "react";
+import { useContext, useRef, useState } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 
 const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
 const CATEGORIES = ["Suits", "Shirts", "Trousers", "Jackets", "Coats", "Accessories", "Other"];
 
 export default function UploadProduct() {
+  const { tailor } = useContext(AuthContext);
   const [imgStore , setimgStore] = useState(null);
   const [description, setDescription] = useState("");
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("Suits");
+  const [prise, setPrise] = useState("");
+  const [stock, setStock] = useState("");
+  const [selectedFabrics, setSelectedFabrics] = useState(["Silk"]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [dragging, setDragging] = useState(false);
   const [mediaPreview, setMediaPreview] = useState(null);
-  const [basePrice, setBasePrice] = useState("");
-  const [fabricStock, setFabricStock] = useState("");
-  const [selectedFabrics, setSelectedFabrics] = useState(["Silk"]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
   const fileInputRef = useRef(null);
+  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -45,8 +49,102 @@ export default function UploadProduct() {
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
     );
 
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      if (!file) {
+        resolve("");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const resetForm = () => {
+    setimgStore(null);
+    setDescription("");
+    setProductName("");
+    setCategory("Suits");
+    setPrise("");
+    setStock("");
+    setSelectedFabrics(["Silk"]);
+    setSelectedSizes([]);
+    setMediaPreview(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!tailor?._id) {
+      alert("Please login as tailor first.");
+      return;
+    }
+
+    if (!productName.trim()) {
+      alert("Please enter product name.");
+      return;
+    }
+
+    if (prise === "" || Number(prise) < 0) {
+      alert("Please enter valid price.");
+      return;
+    }
+
+    if (stock === "" || Number(stock) < 0) {
+      alert("Please enter valid stock.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const image = await fileToBase64(imgStore);
+      const res = await fetch(`${apiBaseUrl}/api/products`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productName: productName.trim(),
+          description: description.trim(),
+          category,
+          price: Number(prise),
+          stock: Number(stock),
+          fabrics: selectedFabrics,
+          sizes: selectedSizes,
+          image,
+        }),
+      });
+
+      const rawResponse = await res.text();
+      let data = {};
+
+      try {
+        data = rawResponse ? JSON.parse(rawResponse) : {};
+      } catch {
+        data = { message: rawResponse || "Unexpected server response" };
+      }
+
+      if (!res.ok) {
+        alert(data.message || "Product save failed");
+        return;
+      }
+
+      alert("Product saved successfully");
+      resetForm();
+    } catch (err) {
+      alert("Server error while saving product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div
+    <form
+      onSubmit={handleSubmit}
       style={{
         // background: "linear-gradient(180deg, #0A0A0A 0%, #000000 100%)",
         background: "#000000",
@@ -107,6 +205,7 @@ export default function UploadProduct() {
                 </p>
 
                 <button
+                  type="button"
                   className="mt-4 px-4 py-2 rounded bg-[#1E1E1E] border border-[#2A2A2A] text-sm"
                 >
                   Browse Media
@@ -136,6 +235,7 @@ export default function UploadProduct() {
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               placeholder="Product Name"
+              required
               className="w-full mb-3 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded focus:border-[#D4A017]"
             />
 
@@ -156,12 +256,21 @@ export default function UploadProduct() {
 
             <div className="flex gap-3 mb-4">
               <input
+              value = {prise}
+              onChange={(e) => setPrise(e.target.value)}
                 placeholder="$0.00"
                 type="number"
+                min="0"
+                required
                 className="w-1/2 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded"
               />
               <input
+              value={stock}
+              onChange={(e)=>{setStock(e.target.value)}}
                 placeholder="Stock"
+                type="number"
+                min="0"
+                required
                 className="w-1/2 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded"
               />
             </div>
@@ -171,6 +280,7 @@ export default function UploadProduct() {
                 const active = selectedFabrics.includes(f);
                 return (
                   <button
+                    type="button"
                     key={f}
                     onClick={() => toggleFabric(f)}
                     className={`px-3 py-1 text-xs rounded ${active
@@ -194,6 +304,7 @@ export default function UploadProduct() {
                 const active = selectedSizes.includes(s);
                 return (
                   <button
+                    type="button"
                     key={s}
                     onClick={() => toggleSize(s)}
                     className={`flex-1 py-2 rounded ${active
@@ -209,12 +320,16 @@ export default function UploadProduct() {
           </div>
 
           {/* Button */}
-          <button className="w-full py-3 rounded-xl bg-[#D4A017] text-black font-semibold shadow-lg hover:bg-[#b89212] transition">
-            PUBLISH TO GALLERY
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3 rounded-xl bg-[#D4A017] text-black font-semibold shadow-lg hover:bg-[#b89212] transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "SAVING PRODUCT..." : "PUBLISH TO GALLERY"}
           </button>
 
         </div>
       </div>
-    </div>
+    </form>
   );
 }

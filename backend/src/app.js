@@ -3,6 +3,7 @@ import csrf from "csurf";
 import userRoutes from "./routes/Auth/userRoutes.js";
 import tailorRoutes from "./routes/Auth/tailorRoutes.js";
 import authRoutes from "./routes/Auth/authRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -33,11 +34,24 @@ app.use((req, res, next) => {
   next();
 });
 
-
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use("/api/user", userRoutes);
 app.use("/api/tailor", tailorRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+
+app.use((err, _req, res, next) => {
+  if (err?.type === "entity.too.large") {
+    return res.status(413).json({ message: "Uploaded image is too large" });
+  }
+
+  if (err) {
+    return res.status(500).json({ message: err.message || "Server error" });
+  }
+
+  next();
+});
 
 export default app;
