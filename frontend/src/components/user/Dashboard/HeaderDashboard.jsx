@@ -16,9 +16,9 @@ const HeaderDashbord = () => {
 
         <div className=" flex justify-between gap-20 ">
         <div className="hidden md:flex gap-10 text-sm font-medium">
-          <p className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Collections</p>
-          <p className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Artisans</p>
-          <p className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Fabrics</p>
+          <Link to='/deshboard' className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Collections</Link>
+          <Link to='/Artisans' className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Artisans</Link>
+          <Link to='/OrderList' className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Order</Link>
           <Link to='/explore' className="hover:text-yellow-400 text-[1.1rem] cursor-pointer">Explore</Link>
           
         </div>
