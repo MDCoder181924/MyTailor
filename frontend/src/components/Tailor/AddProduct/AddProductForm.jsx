@@ -1,5 +1,6 @@
 import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
+import { createProduct } from "../../../utils/productUtils";
 
 const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
@@ -20,7 +21,6 @@ export default function UploadProduct() {
   const [dragging, setDragging] = useState(false);
   const [mediaPreview, setMediaPreview] = useState(null);
   const fileInputRef = useRef(null);
-  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -101,42 +101,21 @@ export default function UploadProduct() {
       setIsSubmitting(true);
 
       const image = await fileToBase64(imgStore);
-      const res = await fetch(`${apiBaseUrl}/api/products`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productName: productName.trim(),
-          description: description.trim(),
-          category,
-          price: Number(prise),
-          stock: Number(stock),
-          fabrics: selectedFabrics,
-          sizes: selectedSizes,
-          image,
-        }),
+      await createProduct({
+        productName: productName.trim(),
+        description: description.trim(),
+        category,
+        price: Number(prise),
+        stock: Number(stock),
+        fabrics: selectedFabrics,
+        sizes: selectedSizes,
+        image,
       });
-
-      const rawResponse = await res.text();
-      let data = {};
-
-      try {
-        data = rawResponse ? JSON.parse(rawResponse) : {};
-      } catch {
-        data = { message: rawResponse || "Unexpected server response" };
-      }
-
-      if (!res.ok) {
-        alert(data.message || "Product save failed");
-        return;
-      }
 
       alert("Product saved successfully");
       resetForm();
     } catch (err) {
-      alert("Server error while saving product");
+      alert(err.message || "Server error while saving product");
     } finally {
       setIsSubmitting(false);
     }
