@@ -1,4 +1,4 @@
-import { tailorSignup, tailorLogin } from "../../controllers/Auth/tailorController.js";
+import { tailorSignup, tailorLogin, getAllTailors } from "../../controllers/Auth/tailorController.js";
 import express from "express";
 import authMiddleware from "../../middleware/authMiddleware.js";
 import isTailor from "../../middleware/isTailor.js";
@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post("/login", tailorLogin);
 router.post("/signup", tailorSignup);
+router.get("/", getAllTailors);
 
 // const isTailor = (req, res, next) => {
 //   if (req.user.role !== "tailor") {

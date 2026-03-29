@@ -85,3 +85,15 @@ export const tailorSignup = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+export const getAllTailors = async (_req, res) => {
+    try {
+        const tailors = await Tailor.find()
+            .select("-tailorPassword -refreshToken")
+            .sort({ createdAt: -1 });
+
+        res.json({ tailors });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
