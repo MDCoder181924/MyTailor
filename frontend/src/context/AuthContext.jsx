@@ -3,12 +3,20 @@ import { authFetch } from "../utils/authFetch";
 
 export const AuthContext = createContext();
 
+const readStoredAccount = (key) => {
+    try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : null;
+    } catch {
+        return null;
+    }
+};
 
 export const AuthProvider = ({ children }) => {
 
-    const [user, setUser] = useState(null);
-    const [tailor, setTailor] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(() => readStoredAccount("user"));
+    const [tailor, setTailor] = useState(() => readStoredAccount("tailor"));
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const checkAuth = async () => {

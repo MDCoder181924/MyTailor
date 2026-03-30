@@ -1,146 +1,156 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getProducts } from "../../../utils/productUtils";
 
-const data = [
-  {
-    id: 1,
-    title: "Bespoke Silk Shirt",
-    category: "Shirts",
-    price: "$450",
-    tag: "LIMITED EDITION",
-    image: "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=400&q=80",
-  },
-  {
-    id: 2,
-    title: "Italian Wool Pants",
-    category: "Pants",
-    price: "$380",
-    tag: "",
-    image: "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=400&q=80",
-  },
-  {
-    id: 3,
-    title: "Midnight Navy Suit",
-    category: "Suits",
-    price: "$1250",
-    tag: "TAILOR'S CHOICE",
-    image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80",
-  },
-  {
-    id: 4,
-    title: "Classic White Shirt",
-    category: "Shirts",
-    price: "$220",
-    tag: "",
-    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80",
-  },
-  {
-    id: 5,
-    title: "Slim Fit Trousers",
-    category: "Pants",
-    price: "$300",
-    tag: "BESTSELLER",
-    image: "https://images.unsplash.com/photo-1593032465171-8d35d5b4a0b5?w=400&q=80",
-  },
-  {
-    id: 6,
-    title: "Luxury Black Suit",
-    category: "Suits",
-    price: "$1400",
-    tag: "",
-    image: "https://images.unsplash.com/photo-1520975922284-9e0ce8273f1c?w=400&q=80",
-  },
-  {
-    id: 7,
-    title: "Casual Linen Shirt",
-    category: "Shirts",
-    price: "$180",
-    tag: "",
-    image: "https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=400&q=80",
-  },
-  {
-    id: 8,
-    title: "Formal Office Pants",
-    category: "Pants",
-    price: "$270",
-    tag: "",
-    image: "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=400&q=80",
-  },
-  {
-    id: 9,
-    title: "Wedding Tuxedo Suit",
-    category: "Suits",
-    price: "$1600",
-    tag: "PREMIUM",
-    image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&q=80",
-  },
-  {
-    id: 10,
-    title: "Designer Cotton Shirt",
-    category: "Shirts",
-    price: "$210",
-    tag: "",
-    image: "https://images.unsplash.com/photo-1603251579431-8041402bdeda?w=400&q=80",
-  },
-];
+const fallbackImage = "https://picsum.photos/600/800?fashion";
+
+const normalizeCategory = (value = "") =>
+  value.trim().toLowerCase().replace(/[-_]+/g, " ");
+
+const formatPrice = (price) => {
+  const numericPrice = Number(price);
+
+  if (Number.isNaN(numericPrice)) {
+    return "Price on request";
+  }
+
+  return `$${numericPrice}`;
+};
+
+const buildMetaLine = (item) => {
+  const meta = [];
+
+  if (item.fabrics?.length) {
+    meta.push(item.fabrics.slice(0, 2).join(" / "));
+  }
+
+  if (typeof item.stock === "number") {
+    meta.push(`Stock ${item.stock}`);
+  }
+
+  return meta.length ? meta.join(" / ").toUpperCase() : "TAILOR MADE";
+};
 
 const CategoryItems = ({ category }) => {
-  const filtered =
-    category === "All"
-      ? data
-      : data.filter((item) => item.category === category);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const allProducts = await getProducts();
+
+        if (isMounted) {
+          setProducts(allProducts);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Failed to load products");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const selectedCategory = normalizeCategory(category);
+  const filteredProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter(
+          (item) => normalizeCategory(item.category) === selectedCategory
+        );
+
+  if (loading) {
+    return (
+      <div className="px-6 py-12 text-center text-gray-400">
+        Loading tailor products...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-6 py-12 text-center text-red-400">
+        {error}
+      </div>
+    );
+  }
+
+  if (!filteredProducts.length) {
+    return (
+      <div className="px-6 py-12 text-center text-gray-400">
+        No tailor products found in this category.
+      </div>
+    );
+  }
 
   return (
-    <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-4 grid-cols-2 md:gap-10 gap-2 md:mx-10 bg-black">
-
-      {filtered.map((item) => (
-        <div key={item.id} className="bg-black text-white">
-
-          {/* Image */}
-          <div className="relative rounded-xl overflow-hidden">
+    <div className="grid grid-cols-2 gap-2 bg-black px-6 py-6 md:mx-10 md:grid-cols-4 md:gap-10">
+      {filteredProducts.map((item) => (
+        <div key={item._id} className="bg-black text-white">
+          <div className="relative overflow-hidden rounded-xl">
             <img
-              src={item.image}
-              alt={item.title}
-              className="w-full md:h-[320px] h-[180px]  object-cover"
+              src={item.image || fallbackImage}
+              alt={item.productName}
+              className="h-[180px] w-full object-cover md:h-[320px]"
             />
 
-            {/* Tag */}
-            {item.tag && (
-              <span className="absolute top-3 left-3 bg-yellow-400 text-black text-xs px-2 py-1 rounded">
-                {item.tag}
-              </span>
-            )}
+            <span className="absolute left-3 top-3 rounded bg-yellow-400 px-2 py-1 text-xs text-black">
+              {item.tailor?.tailorName || "Tailor Product"}
+            </span>
           </div>
 
-          {/* Details */}
           <div className="mt-4">
-
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold">{item.title}</h3>
-              <span className="text-yellow-400 font-medium">
-                {item.price}
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-semibold">{item.productName}</h3>
+              <span className="font-medium text-yellow-400">
+                {formatPrice(item.price)}
               </span>
             </div>
 
-            <p className="text-gray-400 text-xs mt-1 uppercase">
-              MULTIBERRY SILK • HAND-STITCHED
+            <p className="mt-1 text-xs uppercase text-gray-400">
+              {buildMetaLine(item)}
             </p>
 
-            {/* Buttons */}
-            <div className="flex items-center gap-2 mt-4">
-              <button className="flex-1 bg-zinc-800 text-sm py-2 rounded hover:bg-zinc-700 transition">
-                DETAILS
+            {item.description ? (
+              <p
+                className="mt-2 text-sm text-gray-300"
+                style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {item.description}
+              </p>
+            ) : null}
+
+            <div className="mt-4 flex items-center gap-2">
+              <button className="flex-1 rounded bg-zinc-800 py-2 text-sm transition hover:bg-zinc-700">
+                {item.category}
               </button>
 
-              <button className="bg-yellow-400 text-black px-3 py-2 rounded">
+              <button className="rounded bg-yellow-400 px-3 py-2 text-black">
                 +
               </button>
             </div>
-
           </div>
-
         </div>
       ))}
-
     </div>
   );
 };

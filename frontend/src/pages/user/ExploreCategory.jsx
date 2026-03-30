@@ -7,9 +7,7 @@ import SearchBar from '../../components/user/Dashboard/SearchBarDashbord'
 
 const ExploreCategory = () => {
     const { category } = useParams();
-    const selected = category
-        ? category.charAt(0).toUpperCase() + category.slice(1)
-        : "All";
+    const selected = category ? decodeURIComponent(category) : "All";
     return (
         <div className="bg-black min-h-screen text-white">
             <Header />
