@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getTailors } from "../../../utils/tailorUtils";
+import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
 
 const CATEGORIES = ["All Tailors"];
 const LOCATIONS = ["All Locations"];
@@ -45,7 +46,7 @@ function TailorCard({ tailor }) {
     >
       <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden" }}>
         <img
-          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(tailor.tailorName)}&background=111111&color=EAB800&size=400`}
+          src={defaultTailorImage}
           alt={tailor.tailorName}
           style={{
             width: "100%",

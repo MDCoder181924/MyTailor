@@ -10,9 +10,15 @@ const app = express();
 app.use(cookieParser());
 // app.use(csrf({ cookie: true }));
 
+const envOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  ...envOrigins,
 ]);
 
 

@@ -1,5 +1,6 @@
 import { Bell, Settings } from "lucide-react";
 import { Link } from "react-router-dom"
+import defaultTailorImage from "../../assets/images/by-defalt-tailor-img.avif";
 
 export default function Header() {
   return (
@@ -30,7 +31,7 @@ export default function Header() {
           <span className="text-sm">Mohit</span>
 
           <img
-            src="https://i.pravatar.cc/40"
+            src={defaultTailorImage}
             alt="profile"
             className="w-8 h-8 rounded-full"
           />

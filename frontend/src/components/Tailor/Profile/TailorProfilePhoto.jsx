@@ -1,3 +1,5 @@
+import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
+
 export default function TailorProfilePhoto() {
   return (
     <div className="bg-black text-white p-8 flex flex-col lg:flex-row items-center gap-10">
@@ -5,7 +7,7 @@ export default function TailorProfilePhoto() {
       {/* Left - Image */}
       <div className="relative">
         <img
-          src="https://i.pravatar.cc/300?img=12"
+          src={defaultTailorImage}
           alt="artisan"
           className="w-[300px] h-[400px] object-cover rounded-lg"
         />
