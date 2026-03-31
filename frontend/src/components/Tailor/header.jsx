@@ -1,8 +1,12 @@
+import { useContext } from "react";
 import { Bell, Settings } from "lucide-react";
 import { Link } from "react-router-dom"
 import defaultTailorImage from "../../assets/images/by-defalt-tailor-img.avif";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Header() {
+  const { tailor } = useContext(AuthContext);
+
   return (
     <div className="flex h-15 items-center justify-between  px-6 py-3 text-white">
 
@@ -24,14 +28,16 @@ export default function Header() {
 
         <Bell className="cursor-pointer" />
 
+        <Link to="/TailorSettings">
         <Settings className="cursor-pointer" />
+        </Link>
 
         <div className="flex items-center space-x-2">
 
-          <span className="text-sm">Mohit</span>
+          <span className="text-sm">{tailor?.tailorName || "Tailor"}</span>
 
           <img
-            src={defaultTailorImage}
+            src={tailor?.profilePhoto || defaultTailorImage}
             alt="profile"
             className="w-8 h-8 rounded-full"
           />

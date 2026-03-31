@@ -46,7 +46,7 @@ function TailorCard({ tailor }) {
     >
       <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden" }}>
         <img
-          src={defaultTailorImage}
+          src={tailor.profilePhoto || defaultTailorImage}
           alt={tailor.tailorName}
           style={{
             width: "100%",
@@ -80,10 +80,10 @@ function TailorCard({ tailor }) {
           {tailor.tailorName}
         </h3>
         <p style={{ color: "#888", fontSize: 10, letterSpacing: "0.1em", marginBottom: 12 }}>
-          {tailor.tailorEmail}
+          {tailor.professionalTitle || tailor.tailorEmail}
         </p>
         <p style={{ color: "#A0A0A0", fontSize: 11 }}>
-          {tailor.tailorMobileNumber}
+          {tailor.shopAddress || tailor.tailorMobileNumber}
         </p>
       </div>
     </div>

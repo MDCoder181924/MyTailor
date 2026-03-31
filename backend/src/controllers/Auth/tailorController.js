@@ -2,6 +2,19 @@ import Tailor from "../../models/Auth/Tailor.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt"
 
+const normalizeStringArray = (value) => {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    return [...new Set(
+        value
+            .filter((item) => typeof item === "string")
+            .map((item) => item.trim())
+            .filter(Boolean)
+    )];
+};
+
 export const tailorLogin = async (req, res) => {
     try {
         const { tailorEmail, tailorPassword } = req.body;
@@ -95,5 +108,113 @@ export const getAllTailors = async (_req, res) => {
         res.json({ tailors });
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+};
+
+export const updateTailorProfile = async (req, res) => {
+    try {
+        const tailor = await Tailor.findById(req.user.id);
+
+        if (!tailor) {
+            return res.status(404).json({ message: "Tailor not found" });
+        }
+
+        const {
+            tailorName,
+            tailorMobileNumber,
+            profilePhoto,
+            professionalTitle,
+            shopName,
+            shopAddress,
+            shopDescription,
+            yearsOfExperience,
+            specializations,
+            keySkills,
+            identityStatus,
+        } = req.body;
+
+        if (typeof tailorName === "string") {
+            const trimmedName = tailorName.trim();
+
+            if (!trimmedName) {
+                return res.status(400).json({ message: "Name is required" });
+            }
+
+            tailor.tailorName = trimmedName;
+        }
+
+        if (typeof tailorMobileNumber === "string") {
+            const trimmedMobile = tailorMobileNumber.trim();
+
+            if (!trimmedMobile) {
+                return res.status(400).json({ message: "Mobile number is required" });
+            }
+
+            const existingTailor = await Tailor.findOne({
+                tailorMobileNumber: trimmedMobile,
+                _id: { $ne: tailor._id },
+            });
+
+            if (existingTailor) {
+                return res.status(400).json({ message: "Mobile number already exists" });
+            }
+
+            tailor.tailorMobileNumber = trimmedMobile;
+        }
+
+        if (typeof profilePhoto === "string") {
+            tailor.profilePhoto = profilePhoto.trim();
+        }
+
+        if (typeof professionalTitle === "string") {
+            tailor.professionalTitle = professionalTitle.trim();
+        }
+
+        if (typeof shopName === "string") {
+            tailor.shopName = shopName.trim();
+        }
+
+        if (typeof shopAddress === "string") {
+            tailor.shopAddress = shopAddress.trim();
+        }
+
+        if (typeof shopDescription === "string") {
+            tailor.shopDescription = shopDescription.trim();
+        }
+
+        if (yearsOfExperience !== undefined) {
+            const parsedYears = Number(yearsOfExperience);
+
+            if (Number.isNaN(parsedYears) || parsedYears < 0) {
+                return res.status(400).json({ message: "Years of experience must be 0 or more" });
+            }
+
+            tailor.yearsOfExperience = parsedYears;
+        }
+
+        const normalizedSpecializations = normalizeStringArray(specializations);
+        if (normalizedSpecializations !== undefined) {
+            tailor.specializations = normalizedSpecializations;
+        }
+
+        const normalizedKeySkills = normalizeStringArray(keySkills);
+        if (normalizedKeySkills !== undefined) {
+            tailor.keySkills = normalizedKeySkills;
+        }
+
+        if (typeof identityStatus === "string") {
+            tailor.identityStatus = identityStatus.trim() || "Verified";
+        }
+
+        await tailor.save();
+
+        const safeTailor = await Tailor.findById(tailor._id).select("-tailorPassword -refreshToken");
+
+        return res.json({
+            message: "Tailor profile updated",
+            tailor: safeTailor,
+        });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
     }
 };
