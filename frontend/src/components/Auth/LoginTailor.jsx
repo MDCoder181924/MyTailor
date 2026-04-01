@@ -27,7 +27,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          tailorEmail: tailorEmail.trim(),
+          tailorEmail: tailorEmail.trim().toLowerCase(),
           tailorPassword
         })
       });
@@ -43,7 +43,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
 
         navigate("/tailordahboard");
       } else {
-        alert(data.message);
+        alert(data.message || "Tailor login failed");
       }
 
     } catch (err) {

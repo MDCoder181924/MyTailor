@@ -17,7 +17,12 @@ const normalizeStringArray = (value) => {
 
 export const tailorLogin = async (req, res) => {
     try {
-        const { tailorEmail, tailorPassword } = req.body;
+        const tailorEmail = req.body.tailorEmail?.trim().toLowerCase();
+        const { tailorPassword } = req.body;
+
+        if (!tailorEmail || !tailorPassword) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
 
         const tailor = await Tailor.findOne({ tailorEmail });
 
@@ -74,11 +79,29 @@ export const tailorLogin = async (req, res) => {
 
 export const tailorSignup = async (req, res) => {
     try {
-        const { tailorName, tailorEmail, tailorMobileNumber, tailorPassword } = req.body;
-        const isRagister = await Tailor.findOne({ tailorEmail })
+        const tailorName = req.body.tailorName?.trim();
+        const tailorEmail = req.body.tailorEmail?.trim().toLowerCase();
+        const tailorMobileNumber = req.body.tailorMobileNumber?.replace(/\D/g, "");
+        const { tailorPassword } = req.body;
+
+        if (!tailorName || !tailorEmail || !tailorMobileNumber || !tailorPassword) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        if (tailorMobileNumber.length < 10) {
+            return res.status(400).json({ message: "Enter a valid mobile number" });
+        }
+
+        const isRagister = await Tailor.findOne({ tailorEmail });
 
         if (isRagister) {
             return res.status(400).json({ message: "Email already exists" })
+        }
+
+        const existingMobile = await Tailor.findOne({ tailorMobileNumber });
+
+        if (existingMobile) {
+            return res.status(400).json({ message: "Mobile number already exists" });
         }
 
         const bcPassword = await bcrypt.hash(tailorPassword, 10);
@@ -95,6 +118,18 @@ export const tailorSignup = async (req, res) => {
         res.json({ message: "Tailor Registered" });
 
     } catch (err) {
+        if (err.code === 11000) {
+            if (err.keyPattern?.tailorEmail) {
+                return res.status(400).json({ message: "Email already exists" });
+            }
+
+            if (err.keyPattern?.tailorMobileNumber) {
+                return res.status(400).json({ message: "Mobile number already exists" });
+            }
+
+            return res.status(400).json({ message: "Tailor already exists" });
+        }
+
         res.status(500).json({ message: err.message });
     }
 };

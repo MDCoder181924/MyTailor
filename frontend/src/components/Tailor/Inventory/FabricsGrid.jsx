@@ -1,105 +1,101 @@
+import { useEffect, useState } from "react";
+import { getMyProducts } from "../../../utils/productUtils";
+
+const fallbackImage = "https://picsum.photos/800/600?tailor";
+
+const formatPrice = (price) => {
+  const numericPrice = Number(price);
+  return Number.isNaN(numericPrice) ? "Price on request" : `$${numericPrice}`;
+};
+
 export default function FabricsGrid() {
-  const fabrics = [
-    {
-      name: "Italian Merino Wool",
-      price: "$120",
-      stock: "45 meters remaining",
-      location: "Biella, Italy",
-      image: "https://images.unsplash.com/photo-1520975922284-9c1b0fbe7f16",
-    },
-    {
-      name: "Egyptian Giza Cotton",
-      price: "$65",
-      stock: "8.5 meters remaining",
-      location: "Alexandria, Egypt",
-      lowStock: true,
-      image: "https://images.unsplash.com/photo-1582582494700-86d5f6b9c3c1",
-    },
-    {
-      name: "Mulberry Silk Satin",
-      price: "$185",
-      stock: "12 meters remaining",
-      location: "Suzhou, China",
-      image: "https://images.unsplash.com/photo-1582738412127-9e7d4b6c1c47",
-    },
-    {
-      name: "Heavyweight Irish Linen",
-      price: "$90",
-      stock: "32 meters remaining",
-      location: "Belfast, Ireland",
-      image: "https://images.unsplash.com/photo-1520975916090-3105956dac38",
-    },
-    {
-      name: "Authentic Harris Tweed",
-      price: "$145",
-      stock: "4 meters remaining",
-      location: "Outer Hebrides, Scotland",
-      lowStock: true,
-      image: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb",
-    },
-    {
-      name: "Zegna Pure Cashmere",
-      price: "$295",
-      stock: "18.5 meters remaining",
-      location: "Hohhot, China",
-      image: "https://images.unsplash.com/photo-1582738412127-9e7d4b6c1c47",
-    },
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const tailorProducts = await getMyProducts();
+
+        if (isMounted) {
+          setProducts(tailorProducts);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Failed to load products");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return <div className="bg-black px-8 py-10 text-center text-gray-400">Loading your products...</div>;
+  }
+
+  if (error) {
+    return <div className="bg-black px-8 py-10 text-center text-red-400">{error}</div>;
+  }
+
+  if (!products.length) {
+    return <div className="bg-black px-8 py-10 text-center text-gray-400">No products added yet.</div>;
+  }
 
   return (
-    <div className="bg-black text-white p-8">
-
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-
-        {fabrics.map((item, index) => (
+    <div className="bg-black p-8 text-white">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+        {products.map((item) => (
           <div
-            key={index}
-            className="bg-gray-900 rounded-xl overflow-hidden shadow-lg group hover:scale-105 transition"
+            key={item._id}
+            className="group overflow-hidden rounded-xl bg-gray-900 shadow-lg transition hover:scale-105"
           >
-
-            {/* Image */}
             <div className="relative">
               <img
-                src={item.image}
-                className="w-full h-48 object-cover"
+                src={item.image || fallbackImage}
+                alt={item.productName}
+                className="h-48 w-full object-cover"
               />
 
-              {/* Location */}
-              <span className="absolute top-2 left-2 text-xs bg-black/60 px-2 py-1 rounded">
-                {item.location}
+              <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-xs">
+                {item.category || "Tailor Product"}
               </span>
 
-              {/* Low Stock Badge */}
-              {item.lowStock && (
-                <span className="absolute top-2 right-2 text-xs bg-red-600 px-2 py-1 rounded">
+              {Number(item.stock) <= 5 ? (
+                <span className="absolute right-2 top-2 rounded bg-red-600 px-2 py-1 text-xs">
                   LOW STOCK
                 </span>
-              )}
+              ) : null}
             </div>
 
-            {/* Content */}
             <div className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-sm font-semibold leading-tight">{item.productName}</h3>
 
-              <div className="flex justify-between items-start">
-                <h3 className="text-sm font-semibold leading-tight">
-                  {item.name}
-                </h3>
-
-                <span className="text-yellow-400 font-semibold">
-                  {item.price}
-                </span>
+                <span className="font-semibold text-yellow-400">{formatPrice(item.price)}</span>
               </div>
 
-              {/* Stock */}
-              <p className="text-xs text-gray-400 mt-3">
-                {item.stock}
-              </p>
+              {item.description ? (
+                <p className="mt-3 line-clamp-2 text-xs text-gray-400">{item.description}</p>
+              ) : null}
 
+              <p className="mt-3 text-xs text-gray-400">Stock: {item.stock ?? 0}</p>
             </div>
           </div>
         ))}
-
       </div>
     </div>
   );

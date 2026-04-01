@@ -11,7 +11,7 @@ export default function FabricsHeader() {
         </p>
 
         <h1 className="text-4xl md:text-5xl font-serif font-bold">
-          Premium Fabrics
+          Your Products
         </h1>
       </div>
 
@@ -21,7 +21,7 @@ export default function FabricsHeader() {
         {/* Filter Button */}
         <button className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition">
           <SlidersHorizontal size={16} />
-          FILTER BY ORIGIN
+          FILTER BY CATEGORY
         </button>
 
         {/* Sort Button */}

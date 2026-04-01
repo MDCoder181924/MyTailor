@@ -14,6 +14,8 @@ const AddProduct = lazy(() => import("../pages/Tailor/AddProduct"));
 const Artisans = lazy(() => import("../pages/user/Artisans"));
 const OrderList = lazy(() => import("../pages/user/Order"));
 const TailorProfileSettings = lazy(() => import("../pages/Tailor/TailorProfileSettings"));
+const OrderProduct = lazy(() => import("../pages/user/OrdarProduct"));
+
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-black text-sm text-gray-400">
@@ -38,6 +40,7 @@ const AppRoutes = () => {
         <Route path="/Artisans" element={<Artisans />} />
         <Route path="/OrderList" element={<OrderList />} />
         <Route path="/TailorSettings" element={<TailorProfileSettings />} />
+        <Route path="/OrdarProduct" element={<OrderProduct />} />
       </Routes>
     </Suspense>
   );

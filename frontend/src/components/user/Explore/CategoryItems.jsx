@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProducts } from "../../../utils/productUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
@@ -31,9 +32,16 @@ const buildMetaLine = (item) => {
 };
 
 const CategoryItems = ({ category }) => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handleProductSelect = (product) => {
+    navigate(`/OrdarProduct?productId=${product._id}`, {
+      state: { product },
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -98,20 +106,26 @@ const CategoryItems = ({ category }) => {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 bg-black px-6 py-6 md:mx-10 md:grid-cols-4 md:gap-10">
+      <div className="grid grid-cols-2 gap-2 bg-black px-6 py-6 md:mx-10 md:grid-cols-4 md:gap-10">
       {filteredProducts.map((item) => (
         <div key={item._id} className="bg-black text-white">
-          <div className="relative overflow-hidden rounded-xl">
-            <img
-              src={item.image || fallbackImage}
-              alt={item.productName}
-              className="h-[180px] w-full object-cover md:h-[320px]"
-            />
+          <button
+            type="button"
+            onClick={() => handleProductSelect(item)}
+            className="w-full text-left"
+          >
+            <div className="relative overflow-hidden rounded-xl">
+              <img
+                src={item.image || fallbackImage}
+                alt={item.productName}
+                className="h-[180px] w-full object-cover md:h-[320px]"
+              />
 
-            <span className="absolute left-3 top-3 rounded bg-yellow-400 px-2 py-1 text-xs text-black">
-              {item.tailor?.tailorName || "Tailor Product"}
-            </span>
-          </div>
+              <span className="absolute left-3 top-3 rounded bg-yellow-400 px-2 py-1 text-xs text-black">
+                {item.tailor?.tailorName || "Tailor Product"}
+              </span>
+            </div>
+          </button>
 
           <div className="mt-4">
             <div className="flex items-center justify-between gap-3">
@@ -140,11 +154,19 @@ const CategoryItems = ({ category }) => {
             ) : null}
 
             <div className="mt-4 flex items-center gap-2">
-              <button className="flex-1 rounded bg-zinc-800 py-2 text-sm transition hover:bg-zinc-700">
+              <button
+                type="button"
+                onClick={() => handleProductSelect(item)}
+                className="flex-1 rounded bg-zinc-800 py-2 text-sm transition hover:bg-zinc-700"
+              >
                 {item.category}
               </button>
 
-              <button className="rounded bg-yellow-400 px-3 py-2 text-black">
+              <button
+                type="button"
+                onClick={() => handleProductSelect(item)}
+                className="rounded bg-yellow-400 px-3 py-2 text-black"
+              >
                 +
               </button>
             </div>

@@ -13,6 +13,19 @@ const SignupTailor = ({  onSwitch, identity }) => {
     const onSubmitTailorSignup = async (e) => {
       e.preventDefault();
 
+      const normalizedEmail = tailorEmail.trim().toLowerCase();
+      const normalizedMobile = tailorMobileNumber.replace(/\D/g, "");
+
+      if (!tailorName.trim() || !normalizedEmail || !normalizedMobile || !tailorPassword) {
+        alert("Badha fields bharva jaruri chhe.");
+        return;
+      }
+
+      if (normalizedMobile.length < 10) {
+        alert("Valid mobile number enter karo.");
+        return;
+      }
+
       if (tailorPassword !== tailorPassword1) {
         alert("Password not match");
         return;
@@ -28,8 +41,8 @@ const SignupTailor = ({  onSwitch, identity }) => {
           },
           body: JSON.stringify({
             tailorName: tailorName.trim(),
-            tailorEmail: tailorEmail.trim(),
-            tailorMobileNumber: tailorMobileNumber.trim(),
+            tailorEmail: normalizedEmail,
+            tailorMobileNumber: normalizedMobile,
             tailorPassword
           })
         });
@@ -94,7 +107,7 @@ const SignupTailor = ({  onSwitch, identity }) => {
           id="t-signup-mobile"
           value={tailorMobileNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          placeholder="Enter your mobile number"
+          placeholder="Enter your 10 digit mobile number"
           required
         />
       </div>

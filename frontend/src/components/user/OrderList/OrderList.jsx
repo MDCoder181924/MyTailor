@@ -1,119 +1,36 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-// ── Mock Data ──────────────────────────────────────────────────
 const COMMISSIONS = {
-  active: [
-    {
-      id: 1,
-      orderNo: "#AT-N021",
-      estCompletion: "OCT 12",
-      title: "Midnight Silk Tuxedo",
-      tailor: "Arthur Savile",
-      price: "$3,450.00",
-      stage: "FIRST FITTING",
-      stageIndex: 2,
-      img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=400&fit=crop&crop=center",
-      actions: [
-        { label: "Book Appointment", primary: true },
-        { label: "View Details", primary: false },
-      ],
-      quickLinks: [
-        { icon: "💬", label: "Message Arthur" },
-        { icon: "🪡", label: "Fabric Specs" },
-      ],
-    },
-    {
-      id: 2,
-      orderNo: "#AT-ST12",
-      estCompletion: "NOV 06",
-      title: "Vicuña Blend Overcoat",
-      tailor: "Elena Rossi",
-      price: "$8,200.00",
-      stage: "PATTERN DRAFTING",
-      stageIndex: 1,
-      img: "https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=500&h=400&fit=crop&crop=center",
-      actions: [
-        { label: "Update Measurements", primary: false },
-        { label: "View Details", primary: false },
-      ],
-      quickLinks: [
-        { icon: "📋", label: "Process Log" },
-        { icon: "✉️", label: "Contact Support" },
-      ],
-    },
-  ],
-  archive: [
-    {
-      id: 3,
-      orderNo: "#AT-B004",
-      estCompletion: "MAR 01",
-      title: "Navy Chalk Stripe Suit",
-      tailor: "Marco Cellini",
-      price: "$5,100.00",
-      stage: "DELIVERED",
-      stageIndex: 4,
-      img: "https://images.unsplash.com/photo-1594938298603-c8148c4b4357?w=500&h=400&fit=crop&crop=center",
-      actions: [
-        { label: "Reorder", primary: true },
-        { label: "View Details", primary: false },
-      ],
-      quickLinks: [
-        { icon: "⭐", label: "Leave Review" },
-        { icon: "📄", label: "Invoice" },
-      ],
-    },
-    {
-      id: 4,
-      orderNo: "#AT-K007",
-      estCompletion: "JAN 20",
-      title: "Ivory Linen Wedding Suit",
-      tailor: "Kenji Tanaka",
-      price: "$4,750.00",
-      stage: "DELIVERED",
-      stageIndex: 4,
-      img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=400&fit=crop&crop=center",
-      actions: [
-        { label: "Reorder", primary: true },
-        { label: "View Details", primary: false },
-      ],
-      quickLinks: [
-        { icon: "⭐", label: "Leave Review" },
-        { icon: "📄", label: "Invoice" },
-      ],
-    },
-  ],
-  drafts: [
-    {
-      id: 5,
-      orderNo: "#DRAFT-01",
-      estCompletion: "TBD",
-      title: "Burgundy Velvet Dinner Jacket",
-      tailor: "Unassigned",
-      price: "Est. $2,800.00",
-      stage: "DRAFT",
-      stageIndex: 0,
-      img: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?w=500&h=400&fit=crop&crop=center",
-      actions: [
-        { label: "Continue Draft", primary: true },
-        { label: "Discard", primary: false },
-      ],
-      quickLinks: [
-        { icon: "✏️", label: "Edit Details" },
-        { icon: "👤", label: "Assign Tailor" },
-      ],
-    },
-  ],
+  active: [],
+  archive: [],
+  drafts: [],
 };
 
-const TABS = [
-  { key: "active",  label: "Active Pieces", count: COMMISSIONS.active.length },
-  { key: "archive", label: "Archive",        count: COMMISSIONS.archive.length },
-  { key: "drafts",  label: "Drafts",         count: COMMISSIONS.drafts.length },
-];
+const getStoredOrders = () => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  let userId = "guest";
+
+  try {
+    const rawUser = localStorage.getItem("user");
+    const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+    userId = parsedUser?._id || "guest";
+  } catch {
+    userId = "guest";
+  }
+
+  try {
+    const value = localStorage.getItem(`orders_${userId}`);
+    return value ? JSON.parse(value) : [];
+  } catch {
+    return [];
+  }
+};
 
 const STAGES = ["MEASURING", "DRAFTING", "FITTING", "FINAL STITCH", "DELIVER"];
 
-// ── Progress Bar ───────────────────────────────────────────────
 function StageProgress({ stage, stageIndex }) {
   return (
     <div style={{ marginTop: 12 }}>
@@ -155,7 +72,6 @@ function StageProgress({ stage, stageIndex }) {
   );
 }
 
-// ── Commission Card ────────────────────────────────────────────
 function CommissionCard({ item }) {
   return (
     <div
@@ -169,7 +85,6 @@ function CommissionCard({ item }) {
         marginBottom: 16,
       }}
     >
-      {/* Left: Image */}
       <div style={{ width: 180, minWidth: 180, flexShrink: 0, position: "relative" }}>
         <img
           src={item.img}
@@ -178,15 +93,14 @@ function CommissionCard({ item }) {
         />
         <div
           style={{
-            position: "absolute", inset: 0,
+            position: "absolute",
+            inset: 0,
             background: "linear-gradient(to right, transparent 60%, #161616)",
           }}
         />
       </div>
 
-      {/* Middle: Info */}
       <div style={{ flex: 1, padding: "20px 24px" }}>
-        {/* Order badge + est completion */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <span
             style={{
@@ -206,22 +120,24 @@ function CommissionCard({ item }) {
           </span>
         </div>
 
-        {/* Title */}
         <h2 style={{ color: "#F0F0F0", fontSize: 22, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>
           {item.title}
         </h2>
 
-        {/* Tailor */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
           <div
             style={{
-              width: 20, height: 20, borderRadius: "50%",
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
               backgroundColor: "#2A2A2A",
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               fontSize: 10,
             }}
           >
-            👤
+            U
           </div>
           <span style={{ color: "#888", fontSize: 12 }}>
             Master Tailor:{" "}
@@ -229,16 +145,13 @@ function CommissionCard({ item }) {
           </span>
         </div>
 
-        {/* Price */}
         <p style={{ color: "#EAB800", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
           {item.price}
         </p>
 
-        {/* Progress */}
         <StageProgress stage={item.stage} stageIndex={item.stageIndex} />
       </div>
 
-      {/* Right: Actions */}
       <div
         style={{
           width: 180,
@@ -285,7 +198,6 @@ function CommissionCard({ item }) {
           </button>
         ))}
 
-        {/* Quick Links */}
         <div
           style={{
             marginTop: 8,
@@ -325,11 +237,26 @@ function CommissionCard({ item }) {
   );
 }
 
-// ── Main Page ──────────────────────────────────────────────────
 export default function OrderList() {
   const [activeTab, setActiveTab] = useState("active");
+  const storedOrders = useMemo(() => getStoredOrders(), []);
 
-  const items = COMMISSIONS[activeTab] || [];
+  const orderSections = useMemo(
+    () => ({
+      active: [...storedOrders.filter((item) => item.category === "active"), ...COMMISSIONS.active],
+      archive: [...storedOrders.filter((item) => item.category === "archive"), ...COMMISSIONS.archive],
+      drafts: [...storedOrders.filter((item) => item.category === "drafts"), ...COMMISSIONS.drafts],
+    }),
+    [storedOrders]
+  );
+
+  const tabs = [
+    { key: "active", label: "Active Pieces", count: orderSections.active.length },
+    { key: "archive", label: "Archive", count: orderSections.archive.length },
+    { key: "drafts", label: "Drafts", count: orderSections.drafts.length },
+  ];
+
+  const items = orderSections[activeTab] || [];
 
   return (
     <div
@@ -341,7 +268,6 @@ export default function OrderList() {
         padding: "36px 32px",
       }}
     >
-      {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 36, fontWeight: 800, color: "#FFFFFF", marginBottom: 4, letterSpacing: "-0.03em" }}>
           My Commissions
@@ -351,7 +277,6 @@ export default function OrderList() {
         </p>
       </div>
 
-      {/* Tabs */}
       <div
         style={{
           display: "flex",
@@ -360,7 +285,7 @@ export default function OrderList() {
           marginBottom: 28,
         }}
       >
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = activeTab === tab.key;
           return (
             <button
@@ -402,7 +327,6 @@ export default function OrderList() {
         })}
       </div>
 
-      {/* Cards */}
       {items.length === 0 ? (
         <div style={{ textAlign: "center", color: "#444", padding: "60px 0", fontSize: 14 }}>
           No commissions in this section yet.
