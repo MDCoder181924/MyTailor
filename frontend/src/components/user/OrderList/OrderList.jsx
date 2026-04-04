@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const COMMISSIONS = {
   active: [],
@@ -239,7 +239,23 @@ function CommissionCard({ item }) {
 
 export default function OrderList() {
   const [activeTab, setActiveTab] = useState("active");
-  const storedOrders = useMemo(() => getStoredOrders(), []);
+  const [storedOrders, setStoredOrders] = useState(() => getStoredOrders());
+
+  useEffect(() => {
+    const syncOrders = () => {
+      setStoredOrders(getStoredOrders());
+    };
+
+    window.addEventListener("storage", syncOrders);
+    window.addEventListener("user-orders-updated", syncOrders);
+    window.addEventListener("tailor-orders-updated", syncOrders);
+
+    return () => {
+      window.removeEventListener("storage", syncOrders);
+      window.removeEventListener("user-orders-updated", syncOrders);
+      window.removeEventListener("tailor-orders-updated", syncOrders);
+    };
+  }, []);
 
   const orderSections = useMemo(
     () => ({

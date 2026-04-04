@@ -2,7 +2,7 @@ import authMiddleware from "../../middleware/authMiddleware.js";
 import express from "express";
 import isUser from "../../middleware/isUser.js";
 import { refreshToken } from "../../controllers/Auth/authController.js";
-import { signupUser, loginUser } from "../../controllers/Auth/userController.js";
+import { signupUser, loginUser, logoutUser, updateUserProfile } from "../../controllers/Auth/userController.js";
 import User from "../../models/Auth/User.js";
 
 const router = express.Router();
@@ -27,6 +27,8 @@ router.get("/profile", authMiddleware, isUser, async (req, res) => {
   }
 });
 
+router.patch("/profile", authMiddleware, isUser, updateUserProfile);
+router.post("/logout", authMiddleware, isUser, logoutUser);
 router.post("/refresh", refreshToken);
 
 export default router;

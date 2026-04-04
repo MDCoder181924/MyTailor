@@ -14,6 +14,30 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    userMobileNumber: {
+        type: String,
+        default: ""
+    },
+    profilePhoto: {
+        type: String,
+        default: ""
+    },
+    preferredStyle: {
+        type: String,
+        default: "CLASSIC BESPOKE CLIENT"
+    },
+    deliveryAddress: {
+        type: String,
+        default: ""
+    },
+    bodyNotes: {
+        type: String,
+        default: ""
+    },
+    stylePreferences: {
+        type: [String],
+        default: []
+    },
     refreshToken: {
         type: String
     }

@@ -102,6 +102,7 @@ export default function OrderProduct() {
 
     const nextOrder = {
       id: `local-${Date.now()}`,
+      userId,
       orderNo: `#ORD-${String(Date.now()).slice(-6)}`,
       estCompletion: "IN PROGRESS",
       title: product.productName,
@@ -124,6 +125,7 @@ export default function OrderProduct() {
 
     const tailorOrder = {
       id: nextOrder.orderNo,
+      userId,
       date: new Date().toLocaleDateString("en-US", {
         month: "short",
         day: "2-digit",

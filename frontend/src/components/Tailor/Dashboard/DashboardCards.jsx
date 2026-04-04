@@ -1,66 +1,135 @@
+import { useContext, useEffect, useMemo, useState } from "react";
+import { AuthContext } from "../../../context/AuthContext";
+import { getMyProducts } from "../../../utils/productUtils";
+
+const parseAmount = (value) => {
+  const numericValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
+  return Number.isNaN(numericValue) ? 0 : numericValue;
+};
+
+const getTailorOrders = (tailorId) => {
+  if (typeof window === "undefined" || !tailorId) {
+    return [];
+  }
+
+  try {
+    const value = localStorage.getItem(`tailor_orders_${tailorId}`);
+    return value ? JSON.parse(value) : [];
+  } catch {
+    return [];
+  }
+};
+
 export default function DashboardCards() {
+  const { tailor } = useContext(AuthContext);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState(() => getTailorOrders(tailor?._id));
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const nextProducts = await getMyProducts();
+        setProducts(nextProducts);
+      } catch {
+        setProducts([]);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  useEffect(() => {
+    const syncOrders = () => {
+      setOrders(getTailorOrders(tailor?._id));
+    };
+
+    syncOrders();
+    window.addEventListener("storage", syncOrders);
+    window.addEventListener("tailor-orders-updated", syncOrders);
+
+    return () => {
+      window.removeEventListener("storage", syncOrders);
+      window.removeEventListener("tailor-orders-updated", syncOrders);
+    };
+  }, [tailor?._id]);
+
+  const activeOrders = useMemo(
+    () => orders.filter((order) => order.status !== "SHIPPED"),
+    [orders]
+  );
+
+  const completedOrders = useMemo(
+    () => orders.filter((order) => order.status === "SHIPPED"),
+    [orders]
+  );
+
+  const totalRevenue = useMemo(
+    () => completedOrders.reduce((sum, order) => sum + parseAmount(order.total), 0),
+    [completedOrders]
+  );
+
+  const topProduct = useMemo(() => {
+    if (!products.length) {
+      return null;
+    }
+
+    const ordersByProduct = orders.reduce((acc, order) => {
+      acc[order.product] = (acc[order.product] || 0) + 1;
+      return acc;
+    }, {});
+
+    return [...products].sort((a, b) => {
+      const orderDiff = (ordersByProduct[b.productName] || 0) - (ordersByProduct[a.productName] || 0);
+      if (orderDiff !== 0) {
+        return orderDiff;
+      }
+
+      return parseAmount(b.price) - parseAmount(a.price);
+    })[0];
+  }, [orders, products]);
+
   return (
-    <div className="bg-black p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-white">
-
-      {/* Card 1 */}
-      <div className="bg-gray-900 p-6 rounded-xl shadow-lg relative">
-        <p className="text-gray-400 text-xs mb-2">TOTAL REVENUE</p>
-
-        <span className="absolute top-4 right-4 bg-green-600 text-xs px-2 py-1 rounded-full">
-          +12.5%
+    <div className="grid grid-cols-1 gap-6 bg-black p-6 text-white md:grid-cols-3">
+      <div className="relative rounded-xl bg-gray-900 p-6 shadow-lg">
+        <p className="mb-2 text-xs text-gray-400">TOTAL REVENUE</p>
+        <span className="absolute right-4 top-4 rounded-full bg-green-600 px-2 py-1 text-xs">
+          {completedOrders.length} done
         </span>
-
-        <h2 className="text-yellow-400 text-3xl font-bold mt-2">
-          $12,450.00
+        <h2 className="mt-2 text-3xl font-bold text-yellow-400">
+          ${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </h2>
-
-        <div className="h-1 bg-yellow-400 w-24 mt-4"></div>
+        <div className="mt-4 h-1 w-24 bg-yellow-400"></div>
       </div>
 
-      {/* Card 2 */}
-      <div className="bg-gray-900 p-6 rounded-xl shadow-lg">
-        <p className="text-gray-400 text-xs mb-2">ACTIVE ORDERS</p>
-
+      <div className="rounded-xl bg-gray-900 p-6 shadow-lg">
+        <p className="mb-2 text-xs text-gray-400">ACTIVE ORDERS</p>
         <h2 className="text-3xl font-bold">
-          24 <span className="text-sm text-gray-400">Pending tailoring</span>
+          {activeOrders.length} <span className="text-sm text-gray-400">Pending tailoring</span>
         </h2>
 
-        {/* Avatars */}
-        <div className="flex items-center mt-4">
-          <img src="https://i.pravatar.cc/30?img=1" className="w-7 h-7 rounded-full border-2 border-black" />
-          <img src="https://i.pravatar.cc/30?img=2" className="w-7 h-7 rounded-full border-2 border-black -ml-2" />
-          <img src="https://i.pravatar.cc/30?img=3" className="w-7 h-7 rounded-full border-2 border-black -ml-2" />
-          
-          <div className="w-7 h-7 flex items-center justify-center text-xs bg-gray-700 rounded-full -ml-2">
-            +12
+        <div className="mt-4 flex items-center">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-black bg-yellow-400 text-xs font-bold text-black">
+            {activeOrders.length}
+          </div>
+          <div className="ml-2 text-xs text-gray-400">
+            {orders.length} total orders
           </div>
         </div>
       </div>
 
-      {/* Card 3 */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 rounded-xl shadow-lg relative overflow-hidden">
-
-        <p className="text-yellow-400 text-xs mb-2">TOP PRODUCT</p>
-
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-gray-800 to-gray-700 p-6 shadow-lg">
+        <p className="mb-2 text-xs text-yellow-400">TOP PRODUCT</p>
         <h2 className="text-2xl font-serif font-bold">
-          Bespoke Suit
+          {topProduct?.productName || "No Product Yet"}
         </h2>
-
-        <p className="text-sm text-gray-300 mt-1">
-          Signature Silk Blend
+        <p className="mt-1 text-sm text-gray-300">
+          {topProduct?.category || "Add products to see performance"}
         </p>
-
-        <p className="text-yellow-400 text-sm mt-4">
-          ⭐ PREMIUM PICK
+        <p className="mt-4 text-sm text-yellow-400">
+          {topProduct ? `${orders.filter((order) => order.product === topProduct.productName).length} ORDERS` : "START SELLING"}
         </p>
-
-        {/* Background Icon */}
-        <div className="absolute right-4 bottom-2 text-gray-500 text-7xl opacity-20">
-          🧥
-        </div>
-
+        <div className="absolute bottom-2 right-4 text-7xl opacity-20">*</div>
       </div>
-
     </div>
   );
 }

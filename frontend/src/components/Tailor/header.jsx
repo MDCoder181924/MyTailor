@@ -1,11 +1,31 @@
 import { useContext } from "react";
 import { Bell, Settings } from "lucide-react";
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import defaultTailorImage from "../../assets/images/by-defalt-tailor-img.avif";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function Header() {
   const { tailor } = useContext(AuthContext);
+  const location = useLocation();
+
+  const navItems = [
+    { to: "/tailordahboard", label: "DASHBOARD" },
+    { to: "/OrdersList", label: "ORDERS" },
+    { to: "/inventory", label: "INVENTORY" },
+    { to: "/profile", label: "PROFILE" },
+  ];
+
+  const getNavLinkClassName = (isActive) =>
+    `cursor-pointer transition-all duration-300 ${
+      isActive ? "text-yellow-400" : "text-gray-400 hover:text-white"
+    }`;
+
+  const getNavLinkStyle = (isActive) =>
+    isActive
+      ? {
+          textShadow: "0 0 8px rgba(250, 204, 21, 0.95), 0 0 18px rgba(250, 204, 21, 0.7)",
+        }
+      : undefined;
 
   return (
     <div className="flex h-15 items-center justify-between  px-6 py-3 text-white">
@@ -17,10 +37,20 @@ export default function Header() {
 
       {/* Center - Menu */}
       <ul className="hidden md:flex space-x-8 text-gray-400">
-        <Link to="/tailordahboard" className="hover:text-white cursor-pointer">DASHBOARD</Link>
-        <Link to="/OrdersList" className="hover:text-white cursor-pointer">ORDERS</Link>
-        <Link to="/inventory" className="hover:text-white cursor-pointer">INVENTORY</Link>
-        <Link to="/profile" className="hover:text-white cursor-pointer">PROFILE</Link>
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.to;
+
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={getNavLinkClassName(isActive)}
+              style={getNavLinkStyle(isActive)}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </ul>
 
       <div className="flex items-center space-x-5">

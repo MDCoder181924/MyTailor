@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 const getTailorOrders = () => {
   if (typeof window === "undefined") {
@@ -22,7 +22,22 @@ const getTailorOrders = () => {
 };
 
 export default function OrdersCards() {
-  const orders = useMemo(() => getTailorOrders(), []);
+  const [orders, setOrders] = useState(() => getTailorOrders());
+
+  useEffect(() => {
+    const syncOrders = () => {
+      setOrders(getTailorOrders());
+    };
+
+    window.addEventListener("storage", syncOrders);
+    window.addEventListener("tailor-orders-updated", syncOrders);
+
+    return () => {
+      window.removeEventListener("storage", syncOrders);
+      window.removeEventListener("tailor-orders-updated", syncOrders);
+    };
+  }, []);
+
   const pendingOrders = orders.filter((order) => order.status === "PENDING").length;
   const activeOrders = orders.filter((order) => order.status !== "SHIPPED").length;
   const completedOrders = orders.filter((order) => order.status === "SHIPPED").length;
