@@ -17,15 +17,24 @@ const envOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "")
 
 const allowedOrigins = new Set([
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
   ...envOrigins,
 ]);
 
+const isAllowedDevOrigin = (origin) => {
+  if (!origin) {
+    return false;
+  }
+
+  return /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+};
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  if (origin && allowedOrigins.has(origin)) {
+  if (origin && (allowedOrigins.has(origin) || isAllowedDevOrigin(origin))) {
     res.header("Access-Control-Allow-Origin", origin);
   }
 

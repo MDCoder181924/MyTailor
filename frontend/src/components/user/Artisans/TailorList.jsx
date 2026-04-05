@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getTailors } from "../../../utils/tailorUtils";
 import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
 
@@ -114,13 +115,17 @@ function Dropdown({ options, value, onChange }) {
 }
 
 export default function TailorList() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All Tailors");
   const [location, setLocation] = useState("All Locations");
   const [ratingFilter, setRatingFilter] = useState("All Ratings");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [tailors, setTailors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const searchContainerRef = useRef(null);
 
   useEffect(() => {
     const loadTailors = async () => {
@@ -139,17 +144,101 @@ export default function TailorList() {
     loadTailors();
   }, []);
 
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!searchContainerRef.current?.contains(event.target)) {
+        setShowSuggestions(false);
+        setActiveSuggestionIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
+  useEffect(() => {
+    const nextSearch = searchParams.get("search") || "";
+    setSearch(nextSearch);
+  }, [searchParams]);
+
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const suggestions = normalizedSearch
+    ? tailors
+        .flatMap((tailor) => {
+          const values = [
+            tailor.tailorName,
+            tailor.professionalTitle,
+            tailor.shopName,
+            tailor.shopAddress,
+            tailor.tailorEmail,
+          ]
+            .filter((value) => typeof value === "string" && value.trim())
+            .map((value) => value.trim());
+
+          return [...new Set(values)].map((value) => ({
+            id: `${tailor._id}-${value.toLowerCase()}`,
+            label: value,
+            tailorName: tailor.tailorName || "Tailor",
+          }));
+        })
+        .filter((item) => item.label.toLowerCase().includes(normalizedSearch))
+        .slice(0, 6)
+    : [];
+
   const filtered = tailors.filter((t) => {
     const name = t.tailorName || "";
     const email = t.tailorEmail || "";
     const mobile = t.tailorMobileNumber || "";
+    const title = t.professionalTitle || "";
+    const shopName = t.shopName || "";
+    const address = t.shopAddress || "";
 
     return (
-      name.toLowerCase().includes(search.toLowerCase()) ||
-      email.toLowerCase().includes(search.toLowerCase()) ||
-      mobile.toLowerCase().includes(search.toLowerCase())
+      name.toLowerCase().includes(normalizedSearch) ||
+      email.toLowerCase().includes(normalizedSearch) ||
+      mobile.toLowerCase().includes(normalizedSearch) ||
+      title.toLowerCase().includes(normalizedSearch) ||
+      shopName.toLowerCase().includes(normalizedSearch) ||
+      address.toLowerCase().includes(normalizedSearch)
     );
   });
+
+  const applySuggestion = (value) => {
+    setSearch(value);
+    setSearchParams(value ? { search: value } : {});
+    setShowSuggestions(false);
+    setActiveSuggestionIndex(-1);
+  };
+
+  const handleSearchKeyDown = (event) => {
+    if (!showSuggestions || suggestions.length === 0) {
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveSuggestionIndex((prev) => (prev + 1) % suggestions.length);
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveSuggestionIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+    }
+
+    if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+      event.preventDefault();
+      applySuggestion(suggestions[activeSuggestionIndex].label);
+    }
+
+    if (event.key === "Escape") {
+      setShowSuggestions(false);
+      setActiveSuggestionIndex(-1);
+    }
+  };
 
   return (
     <div style={{ backgroundColor: "#0E0E0E", minHeight: "100vh", color: "#E8E8E8", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
@@ -191,11 +280,23 @@ export default function TailorList() {
         <Dropdown options={LOCATIONS} value={location} onChange={setLocation} />
         <Dropdown options={RATINGS} value={ratingFilter} onChange={setRatingFilter} />
 
-        <div style={{ marginLeft: "auto", position: "relative" }}>
+        <div ref={searchContainerRef} style={{ marginLeft: "auto", position: "relative" }}>
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
+              setSearchParams(value ? { search: value } : {});
+              setShowSuggestions(true);
+              setActiveSuggestionIndex(-1);
+            }}
+            onFocus={() => {
+              if (suggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
+            onKeyDown={handleSearchKeyDown}
             placeholder="Search tailors..."
             style={{
               backgroundColor: "#181818",
@@ -208,6 +309,48 @@ export default function TailorList() {
               width: 220,
             }}
           />
+          {showSuggestions && suggestions.length > 0 ? (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                width: 280,
+                backgroundColor: "#151515",
+                border: "1px solid #2C2C2C",
+                borderRadius: 12,
+                overflow: "hidden",
+                boxShadow: "0 18px 50px rgba(0,0,0,0.45)",
+                zIndex: 20,
+              }}
+            >
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.id}
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => applySuggestion(suggestion.label)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 2,
+                    padding: "10px 14px",
+                    border: "none",
+                    borderBottom: index === suggestions.length - 1 ? "none" : "1px solid #242424",
+                    backgroundColor: activeSuggestionIndex === index ? "#202020" : "transparent",
+                    color: "#E8E8E8",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{suggestion.label}</span>
+                  <span style={{ fontSize: 11, color: "#8B8B8B" }}>{suggestion.tailorName}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
 

@@ -9,7 +9,7 @@ import PhoneFooter from '../../components/user/Dashboard/PhoneFotter'
 
 const Dashboard = () => {
     return (
-        <div className='bg-black h-full w-full'>
+        <div className='bg-black h-full w-full pb-24'>
             <Header />
             <SearchBar />
             <TrendingStyles />

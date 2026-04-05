@@ -1,42 +1,36 @@
-import React from "react";
-import { Home, Compass, ShoppingBag, User, Plus } from "lucide-react";
+import { Compass, Home, ShoppingBag, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+
+const navItems = [
+  { to: "/deshboard", label: "Home", icon: Home, match: (pathname) => pathname === "/deshboard" },
+  { to: "/Artisans", label: "Artisans", icon: Users, match: (pathname) => pathname === "/Artisans" },
+  { to: "/OrderList", label: "Orders", icon: ShoppingBag, match: (pathname) => pathname === "/OrderList" || pathname === "/OrdarProduct" },
+  { to: "/explore", label: "Explore", icon: Compass, match: (pathname) => pathname === "/explore" || pathname.startsWith("/explore/") },
+];
 
 const PhoneFooter = () => {
+  const location = useLocation();
+
   return (
-    <div className="felx md:hidden">
-      <div className="fixed bottom-0 left-0 w-full bg-zinc-900 text-white py-2 px-6 flex justify-between items-center">
+    <div className="md:hidden">
+      <div className="fixed bottom-0 left-0 z-40 flex w-full items-center justify-around border-t border-white/10 bg-zinc-950/95 px-4 py-3 backdrop-blur">
+        {navItems.map((item) => {
+          const isActive = item.match(location.pathname);
+          const Icon = item.icon;
 
-        {/* Home */}
-        <div className="flex flex-col items-center text-yellow-400 text-xs">
-          <Home size={20} />
-          <span>Home</span>
-        </div>
-
-        {/* Explore */}
-        <div className="flex flex-col items-center text-gray-400 text-xs">
-          <Compass size={20} />
-          <span>Explore</span>
-        </div>
-
-        {/* Center Button */}
-        <div className="relative -top-6">
-          <button className="bg-yellow-400 p-4 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.7)]">
-            <Plus className="text-black" size={24} />
-          </button>
-        </div>
-
-        {/* Orders */}
-        <div className="flex flex-col items-center text-gray-400 text-xs">
-          <ShoppingBag size={20} />
-          <span>Orders</span>
-        </div>
-
-        {/* Profile */}
-        <div className="flex flex-col items-center text-gray-400 text-xs">
-          <User size={20} />
-          <span>Profile</span>
-        </div>
-
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`flex min-w-[64px] flex-col items-center gap-1 text-[11px] transition ${
+                isActive ? "text-yellow-400" : "text-gray-400 hover:text-yellow-300"
+              }`}
+            >
+              <Icon size={19} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Apple, CreditCard, Wallet } from "lucide-react";
+import { Apple, ArrowLeft, CreditCard, Wallet } from "lucide-react";
 import { getProducts } from "../../../utils/productUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
@@ -66,6 +66,15 @@ export default function OrderProduct() {
     const numericPrice = Number(product?.price);
     return Number.isNaN(numericPrice) ? null : numericPrice;
   }, [product]);
+
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/deshboard");
+  };
 
   const handleCompletePayment = () => {
     const rawUser = localStorage.getItem("user");
@@ -154,8 +163,16 @@ export default function OrderProduct() {
 
   if (!product) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0b0f17] p-6 text-center text-gray-300">
-        No product selected. Please go back and choose a tailor product first.
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0b0f17] p-6 text-center text-gray-300">
+        <button
+          type="button"
+          onClick={handleGoBack}
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:border-yellow-400 hover:text-yellow-300"
+        >
+          <ArrowLeft size={16} />
+          Back
+        </button>
+        <div>No product selected. Please go back and choose a tailor product first.</div>
       </div>
     );
   }
@@ -164,6 +181,15 @@ export default function OrderProduct() {
     <div className="flex min-h-screen items-center justify-center bg-[#0b0f17] p-6 text-white">
       <div className="grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-6">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:border-yellow-400 hover:text-yellow-300"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
           <div className="rounded-xl border border-white/10 bg-white/5 p-5">
             <h2 className="mb-3 text-lg font-semibold">Shipping Sanctuary</h2>
 
