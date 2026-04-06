@@ -84,3 +84,14 @@ export const getMyProducts = async () => {
 
   return data.products || [];
 };
+
+export const getProductsByTailorId = async (tailorId) => {
+  const res = await authFetch(`${apiBaseUrl}/api/products/tailor/${tailorId}`);
+  const data = await parseResponse(res);
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch tailor products");
+  }
+
+  return data.products || [];
+};

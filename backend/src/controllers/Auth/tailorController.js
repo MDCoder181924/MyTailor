@@ -146,6 +146,20 @@ export const getAllTailors = async (_req, res) => {
     }
 };
 
+export const getTailorById = async (req, res) => {
+    try {
+        const tailor = await Tailor.findById(req.params.id).select("-tailorPassword -refreshToken");
+
+        if (!tailor) {
+            return res.status(404).json({ message: "Tailor not found" });
+        }
+
+        return res.json({ tailor });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 export const updateTailorProfile = async (req, res) => {
     try {
         const tailor = await Tailor.findById(req.user.id);

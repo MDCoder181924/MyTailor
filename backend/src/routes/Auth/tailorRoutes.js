@@ -1,4 +1,4 @@
-import { tailorSignup, tailorLogin, getAllTailors, updateTailorProfile } from "../../controllers/Auth/tailorController.js";
+import { tailorSignup, tailorLogin, getAllTailors, getTailorById, updateTailorProfile } from "../../controllers/Auth/tailorController.js";
 import express from "express";
 import authMiddleware from "../../middleware/authMiddleware.js";
 import isTailor from "../../middleware/isTailor.js";
@@ -35,5 +35,6 @@ router.get("/profile", authMiddleware, isTailor, async (req, res) => {
 });
 
 router.patch("/profile", authMiddleware, isTailor, updateTailorProfile);
+router.get("/:id", getTailorById);
 
 export default router;

@@ -66,3 +66,15 @@ export const getTailorProducts = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getProductsByTailorId = async (req, res) => {
+  try {
+    const products = await Product.find({ tailor: req.params.tailorId })
+      .populate("tailor", tailorSelect)
+      .sort({ createdAt: -1 });
+
+    res.json({ products });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

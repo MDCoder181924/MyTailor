@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getTailors } from "../../../utils/tailorUtils";
 import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
 
@@ -28,11 +28,20 @@ function Stars() {
   );
 }
 
-function TailorCard({ tailor }) {
+function TailorCard({ tailor, onOpen }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(tailor)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen(tailor);
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -43,6 +52,7 @@ function TailorCard({ tailor }) {
         transition: "border-color 0.2s, transform 0.2s, box-shadow 0.2s",
         transform: hovered ? "translateY(-4px)" : "translateY(0)",
         boxShadow: hovered ? "0 12px 40px rgba(234,184,0,0.12)" : "0 2px 12px rgba(0,0,0,0.4)",
+        cursor: "pointer",
       }}
     >
       <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden" }}>
@@ -115,6 +125,7 @@ function Dropdown({ options, value, onChange }) {
 }
 
 export default function TailorList() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All Tailors");
   const [location, setLocation] = useState("All Locations");
@@ -238,6 +249,12 @@ export default function TailorList() {
       setShowSuggestions(false);
       setActiveSuggestionIndex(-1);
     }
+  };
+
+  const handleOpenTailor = (tailor) => {
+    navigate(`/tailors/${tailor._id}`, {
+      state: { tailor },
+    });
   };
 
   return (
@@ -382,7 +399,7 @@ export default function TailorList() {
             }}
           >
             {filtered.map((tailor) => (
-              <TailorCard key={tailor._id} tailor={tailor} />
+              <TailorCard key={tailor._id} tailor={tailor} onOpen={handleOpenTailor} />
             ))}
           </div>
         ) : null}

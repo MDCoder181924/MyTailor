@@ -12,6 +12,7 @@ const Profile = lazy(() => import("../pages/Tailor/Profile"));
 const Inventory = lazy(() => import("../pages/Tailor/Inventory"));
 const AddProduct = lazy(() => import("../pages/Tailor/AddProduct"));
 const Artisans = lazy(() => import("../pages/user/Artisans"));
+const TailorPublicProfile = lazy(() => import("../pages/user/TailorPublicProfile"));
 const OrderList = lazy(() => import("../pages/user/Order"));
 const TailorProfileSettings = lazy(() => import("../pages/Tailor/TailorProfileSettings"));
 const OrderProduct = lazy(() => import("../pages/user/OrdarProduct"));
@@ -38,6 +39,7 @@ const AppRoutes = () => {
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/addproduct" element={<AddProduct />} />
         <Route path="/Artisans" element={<Artisans />} />
+        <Route path="/tailors/:tailorId" element={<TailorPublicProfile />} />
         <Route path="/OrderList" element={<OrderList />} />
         <Route path="/TailorSettings" element={<TailorProfileSettings />} />
         <Route path="/OrdarProduct" element={<OrderProduct />} />

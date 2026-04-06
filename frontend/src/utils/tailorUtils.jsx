@@ -22,3 +22,14 @@ export const getTailors = async () => {
 
   return data.tailors || [];
 };
+
+export const getTailorById = async (tailorId) => {
+  const res = await authFetch(`${apiBaseUrl}/api/tailor/${tailorId}`);
+  const data = await parseResponse(res);
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch tailor");
+  }
+
+  return data.tailor || null;
+};
