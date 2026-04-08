@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { getProducts } from "../../../utils/productUtils";
+
+const fallbackImage = "https://picsum.photos/600/800?fashion";
 
 const COMMISSIONS = {
   active: [],
   archive: [],
   drafts: [],
 };
+
+const STAGES = ["MEASURING", "DRAFTING", "FITTING", "FINAL STITCH", "DELIVER"];
+
+const normalizeText = (value) => String(value || "").trim().toLowerCase();
 
 const getStoredOrders = () => {
   if (typeof window === "undefined") {
@@ -23,13 +30,34 @@ const getStoredOrders = () => {
 
   try {
     const value = localStorage.getItem(`orders_${userId}`);
-    return value ? JSON.parse(value) : [];
+    const parsed = value ? JSON.parse(value) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 };
 
-const STAGES = ["MEASURING", "DRAFTING", "FITTING", "FINAL STITCH", "DELIVER"];
+const resolveProductForOrder = (order, products) => {
+  if (!Array.isArray(products) || !products.length) {
+    return null;
+  }
+
+  const byId = products.find((product) => product._id === order.productId);
+  if (byId) {
+    return byId;
+  }
+
+  const orderTitle = normalizeText(order.title);
+  const orderTailor = normalizeText(order.tailor);
+
+  return (
+    products.find((product) => {
+      const sameTitle = normalizeText(product.productName) === orderTitle;
+      const sameTailor = normalizeText(product.tailor?.tailorName) === orderTailor;
+      return sameTitle && sameTailor;
+    }) || null
+  );
+};
 
 function StageProgress({ stage, stageIndex }) {
   return (
@@ -87,7 +115,7 @@ function CommissionCard({ item }) {
     >
       <div style={{ width: 180, minWidth: 180, flexShrink: 0, position: "relative" }}>
         <img
-          src={item.img}
+          src={item.img || fallbackImage}
           alt={item.title}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
@@ -181,18 +209,6 @@ function CommissionCard({ item }) {
               cursor: "pointer",
               transition: "all 0.15s",
             }}
-            onMouseEnter={(e) => {
-              if (!action.primary) {
-                e.currentTarget.style.borderColor = "#EAB800";
-                e.currentTarget.style.color = "#EAB800";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!action.primary) {
-                e.currentTarget.style.borderColor = "#2C2C2C";
-                e.currentTarget.style.color = "#B0B0B0";
-              }
-            }}
           >
             {action.label}
           </button>
@@ -222,8 +238,6 @@ function CommissionCard({ item }) {
                 padding: "6px 4px",
                 borderRadius: 6,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1E1E1E")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
             >
               <span style={{ fontSize: 16 }}>{link.icon}</span>
               <span style={{ fontSize: 9, color: "#606060", letterSpacing: "0.08em", textAlign: "center", lineHeight: 1.3 }}>
@@ -240,12 +254,27 @@ function CommissionCard({ item }) {
 export default function OrderList() {
   const [activeTab, setActiveTab] = useState("active");
   const [storedOrders, setStoredOrders] = useState(() => getStoredOrders());
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const nextProducts = await getProducts();
+        setProducts(Array.isArray(nextProducts) ? nextProducts : []);
+      } catch {
+        setProducts([]);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   useEffect(() => {
     const syncOrders = () => {
       setStoredOrders(getStoredOrders());
     };
 
+    syncOrders();
     window.addEventListener("storage", syncOrders);
     window.addEventListener("user-orders-updated", syncOrders);
     window.addEventListener("tailor-orders-updated", syncOrders);
@@ -257,13 +286,30 @@ export default function OrderList() {
     };
   }, []);
 
+  const hydratedOrders = useMemo(() => {
+    return [...storedOrders]
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .map((order) => {
+        const matchedProduct = resolveProductForOrder(order, products);
+
+        return {
+          ...order,
+          productId: order.productId || matchedProduct?._id,
+          title: matchedProduct?.productName || order.title,
+          tailor: matchedProduct?.tailor?.tailorName || order.tailor,
+          price: matchedProduct ? `$${Number(matchedProduct.price)}` : order.price,
+          img: matchedProduct?.image || order.img || fallbackImage,
+        };
+      });
+  }, [products, storedOrders]);
+
   const orderSections = useMemo(
     () => ({
-      active: [...storedOrders.filter((item) => item.category === "active"), ...COMMISSIONS.active],
-      archive: [...storedOrders.filter((item) => item.category === "archive"), ...COMMISSIONS.archive],
-      drafts: [...storedOrders.filter((item) => item.category === "drafts"), ...COMMISSIONS.drafts],
+      active: [...hydratedOrders.filter((item) => item.category === "active"), ...COMMISSIONS.active],
+      archive: [...hydratedOrders.filter((item) => item.category === "archive"), ...COMMISSIONS.archive],
+      drafts: [...hydratedOrders.filter((item) => item.category === "drafts"), ...COMMISSIONS.drafts],
     }),
-    [storedOrders]
+    [hydratedOrders]
   );
 
   const tabs = [

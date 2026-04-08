@@ -4,15 +4,96 @@ import { Apple, ArrowLeft, CreditCard, Wallet } from "lucide-react";
 import { getProducts } from "../../../utils/productUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
+const ORDER_STORAGE_PREFIXES = ["orders_", "tailor_orders_"];
 
 const formatPrice = (price) => {
-  const numericPrice = Number(price);
+  const numericPrice = Number(priceta);
 
   if (Number.isNaN(numericPrice)) {
     return "Price on request";
   }
 
   return `$${numericPrice}`;
+};
+
+const readStoredList = (key) => {
+  try {
+    const value = localStorage.getItem(key);
+
+    if (!value) {
+      return [];
+    }
+
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const getSafeImage = (image) => {
+  if (typeof image !== "string") {
+    return fallbackImage;
+  }
+
+  const trimmed = image.trim();
+
+  if (!trimmed) {
+    return fallbackImage;
+  }
+
+  if (trimmed.startsWith("data:")) {
+    return fallbackImage;
+  }
+
+  if (trimmed.length > 2000) {
+    return fallbackImage;
+  }
+
+  return trimmed;
+};
+
+const sanitizeOrderEntry = (entry) => {
+  if (!entry || typeof entry !== "object") {
+    return entry;
+  }
+
+  return {
+    ...entry,
+    img: getSafeImage(entry.img),
+    productImage: getSafeImage(entry.productImage),
+  };
+};
+
+const writeStoredList = (key, items) => {
+  const safeItems = items.map(sanitizeOrderEntry);
+
+  try {
+    localStorage.setItem(key, JSON.stringify(safeItems));
+    return;
+  } catch (error) {
+    if (error?.name !== "QuotaExceededError") {
+      throw error;
+    }
+  }
+
+  Object.keys(localStorage)
+    .filter((storageKey) => ORDER_STORAGE_PREFIXES.some((prefix) => storageKey.startsWith(prefix)))
+    .forEach((storageKey) => {
+      const storedItems = readStoredList(storageKey).map((item) => ({
+        ...sanitizeOrderEntry(item),
+        img: fallbackImage,
+        productImage: fallbackImage,
+      }));
+
+      localStorage.setItem(storageKey, JSON.stringify(storedItems));
+    });
+
+  localStorage.setItem(key, JSON.stringify(safeItems.map((item) => ({
+    ...item,
+    img: fallbackImage,
+    productImage: fallbackImage,
+  }))));
 };
 
 export default function OrderProduct() {
@@ -22,6 +103,8 @@ export default function OrderProduct() {
   const [payment, setPayment] = useState("card");
   const [product, setProduct] = useState(location.state?.product || null);
   const [loading, setLoading] = useState(!location.state?.product);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const productId = searchParams.get("productId");
 
@@ -77,80 +160,107 @@ export default function OrderProduct() {
   };
 
   const handleCompletePayment = () => {
-    const rawUser = localStorage.getItem("user");
-    let userId = "guest";
-    let customerName = "Customer";
-
-    try {
-      const parsedUser = rawUser ? JSON.parse(rawUser) : null;
-      userId = parsedUser?._id || "guest";
-      customerName = parsedUser?.userFullName || "Customer";
-    } catch {
-      userId = "guest";
-      customerName = "Customer";
+    if (!product) {
+      setSubmitError("No product selected. Please choose a product first.");
+      return;
     }
 
-    const storageKey = `orders_${userId}`;
-    const tailorStorageKey = `tailor_orders_${product.tailor?._id || "unknown"}`;
-    const existingOrders = (() => {
+    const tailorId =
+      product.tailor?._id ||
+      product.tailor?.id ||
+      (typeof product.tailor === "string" ? product.tailor : "") ||
+      "";
+
+    if (!tailorId) {
+      setSubmitError("This product is missing tailor details, so the order could not be created.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const rawUser = localStorage.getItem("user");
+      let userId = "guest";
+      let customerName = "Customer";
+
       try {
-        const value = localStorage.getItem(storageKey);
-        return value ? JSON.parse(value) : [];
+        const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+        userId = parsedUser?._id || "guest";
+        customerName =
+          parsedUser?.userFullName || parsedUser?.name || parsedUser?.userName || "Customer";
       } catch {
-        return [];
+        userId = "guest";
+        customerName = "Customer";
       }
-    })();
-    const existingTailorOrders = (() => {
-      try {
-        const value = localStorage.getItem(tailorStorageKey);
-        return value ? JSON.parse(value) : [];
-      } catch {
-        return [];
-      }
-    })();
 
-    const nextOrder = {
-      id: `local-${Date.now()}`,
-      userId,
-      orderNo: `#ORD-${String(Date.now()).slice(-6)}`,
-      estCompletion: "IN PROGRESS",
-      title: product.productName,
-      tailor: product.tailor?.tailorName || "Assigned Tailor",
-      price: formatPrice(product.price),
-      stage: "MEASURING",
-      stageIndex: 0,
-      img: product.image || fallbackImage,
-      actions: [
-        { label: "Track Order", primary: true },
-        { label: "View Details", primary: false },
-      ],
-      quickLinks: [
-        { icon: "MSG", label: "Message Tailor" },
-        { icon: "FAB", label: "Fabric Specs" },
-      ],
-      category: "active",
-      createdAt: new Date().toISOString(),
-    };
+      const storageKey = `orders_${userId}`;
+      const tailorStorageKey = `tailor_orders_${tailorId}`;
+      const existingOrders = readStoredList(storageKey);
+      const existingTailorOrders = readStoredList(tailorStorageKey);
+      const safeImage = getSafeImage(product.image);
 
-    const tailorOrder = {
-      id: nextOrder.orderNo,
-      userId,
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      }),
-      name: customerName,
-      product: product.productName,
-      desc: [product.category, ...(product.fabrics || [])].filter(Boolean).join(" • "),
-      status: "PENDING",
-      total: formatPrice(product.price),
-      productImage: product.image || fallbackImage,
-    };
+      const nextOrder = {
+        id: `local-${Date.now()}`,
+        userId,
+        productId: product._id,
+        orderNo: `#ORD-${String(Date.now()).slice(-6)}`,
+        estCompletion: "IN PROGRESS",
+        title: product.productName,
+        tailor:
+          product.tailor?.tailorName ||
+          product.tailor?.name ||
+          (typeof product.tailor === "string" ? product.tailor : "Assigned Tailor"),
+        price: formatPrice(product.price),
+        stage: "MEASURING",
+        stageIndex: 0,
+        img: safeImage,
+        actions: [
+          { label: "Track Order", primary: true },
+          { label: "View Details", primary: false },
+        ],
+        quickLinks: [
+          { icon: "MSG", label: "Message Tailor" },
+          { icon: "FAB", label: "Fabric Specs" },
+        ],
+        category: "active",
+        createdAt: new Date().toISOString(),
+      };
 
-    localStorage.setItem(storageKey, JSON.stringify([nextOrder, ...existingOrders]));
-    localStorage.setItem(tailorStorageKey, JSON.stringify([tailorOrder, ...existingTailorOrders]));
-    navigate("/OrderList");
+      const fabrics = Array.isArray(product.fabrics)
+        ? product.fabrics
+        : product.fabrics
+          ? [product.fabrics]
+          : [];
+
+      const tailorOrder = {
+        id: nextOrder.orderNo,
+        userId,
+        productId: product._id,
+        date: new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        }),
+        name: customerName,
+        product: product.productName,
+        desc: [product.category, ...fabrics].filter(Boolean).join(" | "),
+        status: "PENDING",
+        total: formatPrice(product.price),
+        productImage: safeImage,
+      };
+
+      writeStoredList(storageKey, [nextOrder, ...existingOrders]);
+      writeStoredList(tailorStorageKey, [tailorOrder, ...existingTailorOrders]);
+      window.dispatchEvent(new Event("user-orders-updated"));
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      navigate("/OrderList");
+    } catch (error) {
+      console.error("Order save failed", error);
+      setSubmitError(error?.message || "Order save failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -201,7 +311,7 @@ export default function OrderProduct() {
                   742 Highclere Estate, London
                 </p>
               </div>
-              <button className="text-sm text-yellow-400">CHANGE</button>
+              <button type="button" className="text-sm text-yellow-400">CHANGE</button>
             </div>
           </div>
 
@@ -210,6 +320,7 @@ export default function OrderProduct() {
 
             <div className="space-y-3">
               <button
+                type="button"
                 onClick={() => setPayment("paypal")}
                 className={`w-full rounded-lg border p-3 ${
                   payment === "paypal"
@@ -221,6 +332,7 @@ export default function OrderProduct() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setPayment("google")}
                 className={`w-full rounded-lg border p-3 ${
                   payment === "google"
@@ -232,6 +344,7 @@ export default function OrderProduct() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setPayment("apple")}
                 className={`w-full rounded-lg border p-3 ${
                   payment === "apple"
@@ -243,6 +356,7 @@ export default function OrderProduct() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setPayment("card")}
                 className={`w-full rounded-lg border p-3 ${
                   payment === "card"
@@ -344,13 +458,19 @@ export default function OrderProduct() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCompletePayment}
-            className="mt-6 w-full rounded-lg bg-yellow-400 py-3 font-semibold text-black hover:opacity-90"
-          >
-            {"COMPLETE PAYMENT ->"}
-          </button>
+          <div>
+            <button
+              type="button"
+              onClick={handleCompletePayment}
+              disabled={isSubmitting}
+              className="mt-6 w-full rounded-lg bg-yellow-400 py-3 font-semibold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting ? "PROCESSING..." : "COMPLETE PAYMENT ->"}
+            </button>
+            {submitError ? (
+              <p className="mt-3 text-sm text-red-300">{submitError}</p>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

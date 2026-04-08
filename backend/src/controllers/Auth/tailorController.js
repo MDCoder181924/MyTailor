@@ -267,3 +267,30 @@ export const updateTailorProfile = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 };
+
+export const tailorLogout = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+
+        if (refreshToken) {
+            try {
+                const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+                const tailor = await Tailor.findById(decoded.id);
+
+                if (tailor) {
+                    tailor.refreshToken = null;
+                    await tailor.save();
+                }
+            } catch {
+                // Ignore invalid refresh tokens during logout.
+            }
+        }
+
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+
+        return res.json({ message: "Tailor logged out" });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};

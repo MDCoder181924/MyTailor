@@ -3,6 +3,7 @@ import { Camera, ChevronRight, Lock, Minus, Plus, ShieldCheck, X } from "lucide-
 import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
 import { AuthContext } from "../../../context/AuthContext";
 import { authFetch } from "../../../utils/authFetch.jsx";
+import { useNavigate } from "react-router-dom";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -111,6 +112,7 @@ function TagInput({ label, placeholder, items, setItems, accent }) {
 
 export default function TailorSetting() {
   const { tailor, setTailor } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [form, setForm] = useState(() => getInitialForm(tailor));
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -235,6 +237,21 @@ export default function TailorSetting() {
       setError(err.message || "Failed to update tailor profile");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authFetch(`${apiBaseUrl}/api/tailor/logout`, {
+        method: "POST",
+      });
+    } catch {
+      // Keep logout resilient even if the request fails.
+    } finally {
+      setTailor(null);
+      localStorage.removeItem("tailor");
+      localStorage.removeItem("accessToken");
+      navigate("/auth");
     }
   };
 
@@ -441,6 +458,7 @@ export default function TailorSetting() {
 
         <button
           type="button"
+          onClick={handleLogout}
           className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-red-900/60 bg-red-950/30 px-4 py-4 text-sm font-semibold text-red-300"
         >
           Logout

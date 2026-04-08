@@ -1,75 +1,107 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
+import { getTailors } from "../../../utils/tailorUtils";
 
-const tailors = [
-    {
-        id: 1,
-        name: "Mohit Dobariya",
-        rating: 4.9,
-        image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&q=80",
-    },
-    {
-        id: 2,
-        name: "Param sonani",
-        rating: 4.8,
-        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80",
-    },
-    {
-        id: 3,
-        name: "Ayus paldiya",
-        rating: 4.7,
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
-    },
-    {
-        id: 4,
-        name: "Keval tadaviya",
-        rating: 5.0,
-        image: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=300&q=80",
-    },
-    {
-        id: 5,
-        name: "Manav Valani",
-        rating: 4.6,
-        image: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=300&q=80",
-    },
-];
+const getSafeImage = (image) => {
+  if (typeof image !== "string") {
+    return defaultTailorImage;
+  }
+
+  const trimmed = image.trim();
+  return trimmed || defaultTailorImage;
+};
 
 const PopularTailors = () => {
-    return (
-        <div className="bg-black text-white px-6 py-8">
+  const navigate = useNavigate();
+  const [tailors, setTailors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">Popular Tailors</h2>
-                <span className="text-yellow-400 text-sm cursor-pointer hover:underline">
-                    See Map
-                </span>
-            </div>
+  useEffect(() => {
+    let isMounted = true;
 
-            <div className="flex gap-6 overflow-x-auto no-scrollbar">
-                {tailors.map((item) => (
-                    <div key={item.id} className="flex flex-col items-center min-w-[90px]">
+    const loadTailors = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const tailorList = await getTailors();
 
-                        <div className="relative">
-                            <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-20 h-20 rounded-xl object-cover border border-gray-700"
-                            />
+        if (isMounted) {
+          setTailors(Array.isArray(tailorList) ? tailorList.slice(0, 10) : []);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Failed to load tailors");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-                            <div className="absolute -bottom-2 right-1  bg-yellow-400 text-black text-[10px] px-2 py-[2px] rounded-md font-semibold flex items-center gap-1">
-                                {item.rating}
-                            </div>
-                        </div>
+    loadTailors();
 
-                        <p className="mt-4 text-sm text-center w-[80px] truncate">
-                            {item.name}
-                        </p>
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-                    </div>
-                ))}
-            </div>
+  const handleOpenTailor = (tailor) => {
+    navigate(`/tailors/${tailor._id}`, {
+      state: { tailor },
+    });
+  };
+
+  return (
+    <div className="bg-black px-6 py-8 text-white">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Popular Tailors</h2>
+        <span
+          className="cursor-pointer text-sm text-yellow-400 hover:underline"
+          onClick={() => navigate("/Artisans")}
+        >
+          View All
+        </span>
+      </div>
+
+      {loading ? <div className="py-8 text-sm text-gray-400">Loading tailors...</div> : null}
+      {!loading && error ? <div className="py-8 text-sm text-red-400">{error}</div> : null}
+      {!loading && !error && tailors.length === 0 ? (
+        <div className="py-8 text-sm text-gray-400">No tailors available yet.</div>
+      ) : null}
+
+      {!loading && !error && tailors.length > 0 ? (
+        <div className="no-scrollbar flex gap-6 overflow-x-auto">
+          {tailors.map((item) => (
+            <button
+              key={item._id}
+              type="button"
+              onClick={() => handleOpenTailor(item)}
+              className="flex min-w-[90px] flex-col items-center text-center"
+            >
+              <div className="relative">
+                <img
+                  src={getSafeImage(item.profilePhoto)}
+                  alt={item.tailorName}
+                  className="h-20 w-20 rounded-xl border border-gray-700 object-cover"
+                />
+
+                <div className="absolute -bottom-2 right-1 rounded-md bg-yellow-400 px-2 py-[2px] text-[10px] font-semibold text-black">
+                  Tailor
+                </div>
+              </div>
+
+              <p className="mt-4 w-[90px] truncate text-sm">
+                {item.tailorName}
+              </p>
+            </button>
+          ))}
         </div>
-    );
+      ) : null}
+    </div>
+  );
 };
 
 export default PopularTailors;

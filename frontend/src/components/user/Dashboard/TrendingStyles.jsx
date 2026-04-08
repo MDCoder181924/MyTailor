@@ -1,159 +1,158 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getProducts } from "../../../utils/productUtils";
 
-const data = [
-    {
-        id: 1,
-        title: "Velvet Dinner Jacket",
-        brand: "Savile Row",
-        price: "$450",
-        image: "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7",
-        topPick: true,
-    },
-    {
-        id: 2,
-        title: "Italian Linen Shirt",
-        brand: "Modern Stitch",
-        price: "$120",
-        image: "https://images.unsplash.com/photo-1603252109303-2751441dd157",
-        topPick: false,
-    },
-    {
-        id: 3,
-        title: "Classic Black Suit",
-        brand: "Armani",
-        price: "$600",
-        image: "https://taylor-dresses.com/wp-content/uploads/2025/06/Womens-Square-Neck-Button-Front-A-Line-Dress.jpg",
-        topPick: true,
-    },
-    {
-        id: 4,
-        title: "Casual Denim Jacket",
-        brand: "Levi's",
-        price: "$180",
-        image: "https://images.unsplash.com/photo-1516826957135-700dedea698c",
-        topPick: false,
-    },
-    {
-        id: 5,
-        title: "Slim Fit Blazer",
-        brand: "Zara",
-        price: "$200",
-        image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10",
-        topPick: true,
-    },
-    {
-        id: 6,
-        title: "Formal White Shirt",
-        brand: "Hugo Boss",
-        price: "$150",
-        image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf",
-        topPick: false,
-    },
-    {
-        id: 7,
-        title: "Premium Wool Coat",
-        brand: "Burberry",
-        price: "$850",
-        image: "https://images.unsplash.com/photo-1544441893-675973e31985",
-        topPick: true,
-    },
-    {
-        id: 8,
-        title: "Checked Casual Shirt",
-        brand: "Tommy Hilfiger",
-        price: "$130",
-        image: "https://images.unsplash.com/photo-1589310243389-96a5483213a8",
-        topPick: false,
-    },
-    {
-        id: 9,
-        title: "Luxury Tuxedo",
-        brand: "Gucci",
-        price: "$1200",
-        image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35",
-        topPick: true,
-    },
-    {
-        id: 10,
-        title: "Cotton Summer Shirt",
-        brand: "Uniqlo",
-        price: "$90",
-        image: "https://images.unsplash.com/photo-1603251579431-8041402bdeda",
-        topPick: false,
-    },
-];
+const fallbackImage = "https://picsum.photos/600/800?fashion";
+
+const formatPrice = (price) => {
+  const numericPrice = Number(price);
+  return Number.isNaN(numericPrice) ? "Price on request" : `$${numericPrice}`;
+};
+
+const getSafeImage = (image) => {
+  if (typeof image !== "string") {
+    return fallbackImage;
+  }
+
+  const trimmed = image.trim();
+  return trimmed || fallbackImage;
+};
 
 const TrendingStyles = () => {
+  const navigate = useNavigate();
+  const scrollRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  useEffect(() => {
+    let isMounted = true;
 
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const allProducts = await getProducts();
 
-    const scrollRef = useRef();
-    const [items, setItems] = useState([...data]);
+        if (isMounted) {
+          setProducts(Array.isArray(allProducts) ? allProducts : []);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Failed to load tailor products");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
+    loadProducts();
 
-    const loopData = [...data, ...data, ...data, ...data];
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-    useEffect(() => {
-        const container = scrollRef.current;
+  const visibleProducts = useMemo(() => products.slice(0, 10), [products]);
+  const loopData = useMemo(() => [...visibleProducts, ...visibleProducts], [visibleProducts]);
 
-        let scrollSpeed = 0.5; 
+  useEffect(() => {
+    if (!loopData.length) {
+      return undefined;
+    }
 
-        const scroll = () => {
-            if (!container) return;
+    const container = scrollRef.current;
+    let intervalId = null;
 
-            container.scrollLeft += scrollSpeed;
+    const scroll = () => {
+      if (!container) {
+        return;
+      }
 
-            if (container.scrollLeft >= container.scrollWidth / 2) {
-                container.scrollLeft -= container.scrollWidth / 2;
-            }
-        };
+      container.scrollLeft += 0.5;
 
-        const interval = setInterval(scroll, 16); 
+      if (container.scrollLeft >= container.scrollWidth / 2) {
+        container.scrollLeft -= container.scrollWidth / 2;
+      }
+    };
 
-        return () => clearInterval(interval);
-    }, []);
+    intervalId = window.setInterval(scroll, 16);
 
-    return (
-        <div className="bg-black text-white px-6 py-8">
+    return () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
+    };
+  }, [loopData]);
 
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">Trending Styles</h2>
-                <span className="text-yellow-400 cursor-pointer text-sm">
-                    View All
-                </span>
-            </div>
+  const handleProductSelect = (product) => {
+    navigate(`/OrdarProduct?productId=${product._id}`, {
+      state: { product },
+    });
+  };
 
+  return (
+    <div className="bg-black px-6 py-8 text-white">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Trending Styles</h2>
+        <span
+          className="cursor-pointer text-sm text-yellow-400"
+          onClick={() => navigate("/explore")}
+        >
+          View All
+        </span>
+      </div>
 
-            <div ref={scrollRef} className="flex gap-6 overflow-x-auto no-scrollbar  will-change-transform">
-                {loopData.map((item, index) => (
-                    <div key={`${item.id}-${index}`} className="min-w-[250px]">
+      {loading ? (
+        <div className="py-10 text-sm text-gray-400">Loading tailor products...</div>
+      ) : null}
 
-                        <div className="relative rounded-2xl overflow-hidden ">
-                            <img
-                                src={`${item.image}?w=400&q=80`}
-                                alt={item.title}
-                                loading="lazy"
-                                className="w-full h-[320px] object-cover"
-                            />
-                            {item.topPick && (
-                                <span className="absolute bottom-3 left-3 bg-yellow-400 text-black text-xs px-3 py-1 rounded-md font-medium">
-                                    TOP PICK
-                                </span>
-                            )}
-                        </div>
+      {!loading && error ? (
+        <div className="py-10 text-sm text-red-400">{error}</div>
+      ) : null}
 
-                        <div className="mt-3">
-                            <h3 className="font-semibold">{item.title}</h3>
-                            <p className="text-gray-400 text-sm">
-                                by {item.brand} •{" "}
-                                <span className="text-yellow-400">{item.price}</span>
-                            </p>
-                        </div>
-                    </div>
-                ))}
-            </div>
+      {!loading && !error && visibleProducts.length === 0 ? (
+        <div className="py-10 text-sm text-gray-400">Tailor products not available yet.</div>
+      ) : null}
+
+      {!loading && !error && visibleProducts.length > 0 ? (
+        <div ref={scrollRef} className="no-scrollbar flex gap-6 overflow-x-auto will-change-transform">
+          {loopData.map((item, index) => (
+            <button
+              key={`${item._id}-${index}`}
+              type="button"
+              onClick={() => handleProductSelect(item)}
+              className="min-w-[250px] text-left"
+            >
+              <div className="relative overflow-hidden rounded-2xl">
+                <img
+                  src={getSafeImage(item.image)}
+                  alt={item.productName}
+                  loading="lazy"
+                  className="h-[320px] w-full object-cover"
+                />
+                {index % 2 === 0 ? (
+                  <span className="absolute bottom-3 left-3 rounded-md bg-yellow-400 px-3 py-1 text-xs font-medium text-black">
+                    TOP PICK
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="mt-3">
+                <h3 className="font-semibold">{item.productName}</h3>
+                <p className="text-sm text-gray-400">
+                  by {item.tailor?.tailorName || "Tailor"} | {" "}
+                  <span className="text-yellow-400">{formatPrice(item.price)}</span>
+                </p>
+              </div>
+            </button>
+          ))}
         </div>
-    );
+      ) : null}
+    </div>
+  );
 };
 
 export default TrendingStyles;
