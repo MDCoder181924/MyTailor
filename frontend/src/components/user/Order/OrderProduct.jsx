@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Apple, ArrowLeft, CreditCard, Wallet } from "lucide-react";
+import { Apple, ArrowLeft, Banknote, CreditCard, Wallet } from "lucide-react";
 import { getProducts } from "../../../utils/productUtils";
+import { createOrder } from "../../../utils/orderUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
-const ORDER_STORAGE_PREFIXES = ["orders_", "tailor_orders_"];
 
 const formatPrice = (price) => {
-  const numericPrice = Number(priceta);
+  const numericPrice = Number(price);
 
   if (Number.isNaN(numericPrice)) {
     return "Price on request";
@@ -16,22 +16,9 @@ const formatPrice = (price) => {
   return `$${numericPrice}`;
 };
 
-const readStoredList = (key) => {
-  try {
-    const value = localStorage.getItem(key);
+const getSafeImage = (image, options = {}) => {
+  const { allowDataUrl = true } = options;
 
-    if (!value) {
-      return [];
-    }
-
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const getSafeImage = (image) => {
   if (typeof image !== "string") {
     return fallbackImage;
   }
@@ -43,57 +30,14 @@ const getSafeImage = (image) => {
   }
 
   if (trimmed.startsWith("data:")) {
-    return fallbackImage;
+    return allowDataUrl ? trimmed : fallbackImage;
   }
 
-  if (trimmed.length > 2000) {
+  if (!allowDataUrl && trimmed.length > 2000) {
     return fallbackImage;
   }
 
   return trimmed;
-};
-
-const sanitizeOrderEntry = (entry) => {
-  if (!entry || typeof entry !== "object") {
-    return entry;
-  }
-
-  return {
-    ...entry,
-    img: getSafeImage(entry.img),
-    productImage: getSafeImage(entry.productImage),
-  };
-};
-
-const writeStoredList = (key, items) => {
-  const safeItems = items.map(sanitizeOrderEntry);
-
-  try {
-    localStorage.setItem(key, JSON.stringify(safeItems));
-    return;
-  } catch (error) {
-    if (error?.name !== "QuotaExceededError") {
-      throw error;
-    }
-  }
-
-  Object.keys(localStorage)
-    .filter((storageKey) => ORDER_STORAGE_PREFIXES.some((prefix) => storageKey.startsWith(prefix)))
-    .forEach((storageKey) => {
-      const storedItems = readStoredList(storageKey).map((item) => ({
-        ...sanitizeOrderEntry(item),
-        img: fallbackImage,
-        productImage: fallbackImage,
-      }));
-
-      localStorage.setItem(storageKey, JSON.stringify(storedItems));
-    });
-
-  localStorage.setItem(key, JSON.stringify(safeItems.map((item) => ({
-    ...item,
-    img: fallbackImage,
-    productImage: fallbackImage,
-  }))));
 };
 
 export default function OrderProduct() {
@@ -102,6 +46,13 @@ export default function OrderProduct() {
   const [searchParams] = useSearchParams();
   const [payment, setPayment] = useState("card");
   const [product, setProduct] = useState(location.state?.product || null);
+  const [selectedFabric, setSelectedFabric] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [shippingDetails, setShippingDetails] = useState({
+    fullName: "Alexandria Vane",
+    address: "742 Highclere Estate, London",
+  });
   const [loading, setLoading] = useState(!location.state?.product);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -145,6 +96,43 @@ export default function OrderProduct() {
     };
   }, [location.state, productId]);
 
+  useEffect(() => {
+    const fabrics = Array.isArray(product?.fabrics)
+      ? product.fabrics.filter(Boolean)
+      : product?.fabrics
+        ? [product.fabrics]
+        : [];
+    const sizes = Array.isArray(product?.sizes)
+      ? product.sizes.filter(Boolean)
+      : product?.sizes
+        ? [product.sizes]
+        : [];
+
+    setSelectedFabric((current) => (fabrics.includes(current) ? current : fabrics[0] || ""));
+    setSelectedSize((current) => (sizes.includes(current) ? current : sizes[0] || ""));
+  }, [product]);
+
+  useEffect(() => {
+    try {
+      const rawUser = localStorage.getItem("user");
+      const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+
+      setShippingDetails({
+        fullName:
+          parsedUser?.userFullName ||
+          parsedUser?.name ||
+          parsedUser?.userName ||
+          "Customer",
+        address: parsedUser?.address || parsedUser?.location || "Enter delivery address",
+      });
+    } catch {
+      setShippingDetails({
+        fullName: "Customer",
+        address: "Enter delivery address",
+      });
+    }
+  }, []);
+
   const totalPrice = useMemo(() => {
     const numericPrice = Number(product?.price);
     return Number.isNaN(numericPrice) ? null : numericPrice;
@@ -159,7 +147,14 @@ export default function OrderProduct() {
     navigate("/deshboard");
   };
 
-  const handleCompletePayment = () => {
+  const handleShippingChange = (field, value) => {
+    setShippingDetails((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleCompletePayment = async () => {
     if (!product) {
       setSubmitError("No product selected. Please choose a product first.");
       return;
@@ -176,84 +171,37 @@ export default function OrderProduct() {
       return;
     }
 
+    if (!shippingDetails.fullName.trim() || !shippingDetails.address.trim()) {
+      setSubmitError("Please enter delivery name and address before completing payment.");
+      setIsEditingAddress(true);
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError("");
 
     try {
-      const rawUser = localStorage.getItem("user");
-      let userId = "guest";
-      let customerName = "Customer";
-
-      try {
-        const parsedUser = rawUser ? JSON.parse(rawUser) : null;
-        userId = parsedUser?._id || "guest";
-        customerName =
-          parsedUser?.userFullName || parsedUser?.name || parsedUser?.userName || "Customer";
-      } catch {
-        userId = "guest";
-        customerName = "Customer";
-      }
-
-      const storageKey = `orders_${userId}`;
-      const tailorStorageKey = `tailor_orders_${tailorId}`;
-      const existingOrders = readStoredList(storageKey);
-      const existingTailorOrders = readStoredList(tailorStorageKey);
-      const safeImage = getSafeImage(product.image);
-
-      const nextOrder = {
-        id: `local-${Date.now()}`,
-        userId,
-        productId: product._id,
-        orderNo: `#ORD-${String(Date.now()).slice(-6)}`,
-        estCompletion: "IN PROGRESS",
-        title: product.productName,
-        tailor:
-          product.tailor?.tailorName ||
-          product.tailor?.name ||
-          (typeof product.tailor === "string" ? product.tailor : "Assigned Tailor"),
-        price: formatPrice(product.price),
-        stage: "MEASURING",
-        stageIndex: 0,
-        img: safeImage,
-        actions: [
-          { label: "Track Order", primary: true },
-          { label: "View Details", primary: false },
-        ],
-        quickLinks: [
-          { icon: "MSG", label: "Message Tailor" },
-          { icon: "FAB", label: "Fabric Specs" },
-        ],
-        category: "active",
-        createdAt: new Date().toISOString(),
-      };
-
       const fabrics = Array.isArray(product.fabrics)
         ? product.fabrics
         : product.fabrics
           ? [product.fabrics]
           : [];
-
-      const tailorOrder = {
-        id: nextOrder.orderNo,
-        userId,
+      const sizes = Array.isArray(product.sizes)
+        ? product.sizes
+        : product.sizes
+          ? [product.sizes]
+          : [];
+      await createOrder({
         productId: product._id,
-        date: new Date().toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        }),
-        name: customerName,
-        product: product.productName,
-        desc: [product.category, ...fabrics].filter(Boolean).join(" | "),
-        status: "PENDING",
-        total: formatPrice(product.price),
-        productImage: safeImage,
-      };
-
-      writeStoredList(storageKey, [nextOrder, ...existingOrders]);
-      writeStoredList(tailorStorageKey, [tailorOrder, ...existingTailorOrders]);
+        selectedFabric: selectedFabric || fabrics[0] || "",
+        selectedSize: selectedSize || sizes[0] || "",
+        deliveryName: shippingDetails.fullName.trim(),
+        deliveryAddress: shippingDetails.address.trim(),
+        paymentMethod: payment,
+      });
       window.dispatchEvent(new Event("user-orders-updated"));
       window.dispatchEvent(new Event("tailor-orders-updated"));
+      window.dispatchEvent(new Event("tailor-notifications-updated"));
       navigate("/OrderList");
     } catch (error) {
       console.error("Order save failed", error);
@@ -304,14 +252,50 @@ export default function OrderProduct() {
             <h2 className="mb-3 text-lg font-semibold">Shipping Sanctuary</h2>
 
             <div className="flex items-center justify-between rounded-lg bg-white/5 p-4">
-              <div>
+              <div className="w-full">
                 <p className="text-sm text-gray-400">PRIMARY RESIDENCE</p>
-                <p className="font-semibold">Alexandria Vane</p>
-                <p className="text-xs text-gray-400">
-                  742 Highclere Estate, London
-                </p>
+                {isEditingAddress ? (
+                  <div className="mt-3 space-y-3">
+                    <input
+                      type="text"
+                      value={shippingDetails.fullName}
+                      onChange={(e) => handleShippingChange("fullName", e.target.value)}
+                      placeholder="Full name"
+                      className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none"
+                    />
+                    <textarea
+                      value={shippingDetails.address}
+                      onChange={(e) => handleShippingChange("address", e.target.value)}
+                      placeholder="Delivery address"
+                      rows={3}
+                      className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none"
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingAddress(false)}
+                        className="rounded-full border border-yellow-400 px-4 py-2 text-sm text-yellow-300 transition hover:bg-yellow-400 hover:text-black"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2">
+                    <p className="font-semibold">{shippingDetails.fullName}</p>
+                    <p className="text-xs text-gray-400">
+                      {shippingDetails.address}
+                    </p>
+                  </div>
+                )}
               </div>
-              <button type="button" className="text-sm text-yellow-400">CHANGE</button>
+              <button
+                type="button"
+                onClick={() => setIsEditingAddress((prev) => !prev)}
+                className="ml-4 self-start text-sm text-yellow-400"
+              >
+                {isEditingAddress ? "CLOSE" : "CHANGE"}
+              </button>
             </div>
           </div>
 
@@ -319,6 +303,18 @@ export default function OrderProduct() {
             <h2 className="mb-4 text-lg font-semibold">Wealth Exchange</h2>
 
             <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setPayment("cod")}
+                className={`w-full rounded-lg border p-3 ${
+                  payment === "cod"
+                    ? "border-yellow-400 bg-white/10"
+                    : "border-white/10"
+                } flex items-center gap-3`}
+              >
+                <Banknote size={18} /> Cash on Delivery
+              </button>
+
               <button
                 type="button"
                 onClick={() => setPayment("paypal")}
@@ -394,6 +390,12 @@ export default function OrderProduct() {
                 </div>
               </div>
             )}
+
+            {payment === "cod" ? (
+              <div className="mt-4 rounded-xl border border-yellow-400/20 bg-yellow-400/5 p-4 text-sm text-yellow-100">
+                Pay cash when your order is delivered.
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -403,7 +405,7 @@ export default function OrderProduct() {
 
             <div className="mb-5 overflow-hidden rounded-xl border border-white/10">
               <img
-                src={product.image || fallbackImage}
+                src={getSafeImage(product.image)}
                 alt={product.productName}
                 className="h-64 w-full object-cover"
               />
@@ -437,16 +439,67 @@ export default function OrderProduct() {
             </div>
 
             {product.fabrics?.length ? (
-              <div className="mb-2 flex justify-between gap-4 text-sm text-gray-400">
-                <span>Fabric</span>
-                <span className="text-right">{product.fabrics.join(", ")}</span>
+              <div className="mb-4">
+                <div className="mb-2 flex justify-between gap-4 text-sm text-gray-400">
+                  <span>Material</span>
+                  <span className="text-right">Choose your fabric</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.fabrics.map((fabric) => {
+                    const isActive = selectedFabric === fabric;
+
+                    return (
+                      <button
+                        key={fabric}
+                        type="button"
+                        onClick={() => setSelectedFabric(fabric)}
+                        className={`rounded-full border px-4 py-2 text-sm transition ${
+                          isActive
+                            ? "border-yellow-400 bg-yellow-400 text-black"
+                            : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
+                        }`}
+                      >
+                        {fabric}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             ) : null}
 
             {product.sizes?.length ? (
-              <div className="mb-2 flex justify-between gap-4 text-sm text-gray-400">
-                <span>Sizes</span>
-                <span className="text-right">{product.sizes.join(", ")}</span>
+              <div className="mb-4">
+                <div className="mb-2 flex justify-between gap-4 text-sm text-gray-400">
+                  <span>Size</span>
+                  <span className="text-right">Choose your fit</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => {
+                    const isActive = selectedSize === size;
+
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`min-w-12 rounded-full border px-4 py-2 text-sm transition ${
+                          isActive
+                            ? "border-yellow-400 bg-yellow-400 text-black"
+                            : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {selectedFabric || selectedSize ? (
+              <div className="mb-2 rounded-xl border border-yellow-400/20 bg-yellow-400/5 p-4 text-sm text-gray-300">
+                {selectedFabric ? <p>Selected material: <span className="font-semibold text-yellow-300">{selectedFabric}</span></p> : null}
+                {selectedSize ? <p>Selected size: <span className="font-semibold text-yellow-300">{selectedSize}</span></p> : null}
               </div>
             ) : null}
 

@@ -1,34 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-
-const getTailorOrders = () => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const rawTailor = localStorage.getItem("tailor");
-    const tailor = rawTailor ? JSON.parse(rawTailor) : null;
-    const tailorId = tailor?._id;
-
-    if (!tailorId) {
-      return [];
-    }
-
-    const value = localStorage.getItem(`tailor_orders_${tailorId}`);
-    return value ? JSON.parse(value) : [];
-  } catch {
-    return [];
-  }
-};
+import { completeTailorOrder, getTailorOrders } from "../../../utils/orderUtils";
 
 export default function OrdersTable() {
-  const [orders, setOrders] = useState(() => getTailorOrders());
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const syncOrders = () => {
-      setOrders(getTailorOrders());
+    const syncOrders = async () => {
+      try {
+        const nextOrders = await getTailorOrders();
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setOrders([]);
+      }
     };
 
+    syncOrders();
     window.addEventListener("storage", syncOrders);
     window.addEventListener("tailor-orders-updated", syncOrders);
 
@@ -40,75 +26,13 @@ export default function OrdersTable() {
 
   const activeOrders = useMemo(() => orders.filter((order) => order.status !== "SHIPPED"), [orders]);
 
-  const handleCompleteOrder = (orderId) => {
+  const handleCompleteOrder = async (orderId) => {
     try {
-      const rawTailor = localStorage.getItem("tailor");
-      const tailor = rawTailor ? JSON.parse(rawTailor) : null;
-      const tailorId = tailor?._id;
-
-      if (!tailorId) {
-        return;
-      }
-
-      const storageKey = `tailor_orders_${tailorId}`;
-      const updatedOrders = orders.map((order) =>
-        order.id === orderId ? { ...order, status: "SHIPPED" } : order
-      );
-      const completedOrder = orders.find((order) => order.id === orderId);
-
-      localStorage.setItem(storageKey, JSON.stringify(updatedOrders));
-
-      Object.keys(localStorage)
-        .filter((key) => key.startsWith("orders_"))
-        .forEach((key) => {
-          try {
-            const value = localStorage.getItem(key);
-            const parsed = value ? JSON.parse(value) : [];
-            const nextValue = parsed.map((item) =>
-              item.orderNo === orderId
-                ? {
-                    ...item,
-                    category: "active",
-                    estCompletion: "COMPLETED",
-                    stage: "DELIVER",
-                    stageIndex: 4,
-                  }
-                : item
-            );
-
-            localStorage.setItem(key, JSON.stringify(nextValue));
-          } catch {
-            // Ignore invalid localStorage entries.
-          }
-        });
-
-      if (completedOrder?.userId) {
-        const notificationKey = `notifications_${completedOrder.userId}`;
-        const existingNotifications = (() => {
-          try {
-            const value = localStorage.getItem(notificationKey);
-            return value ? JSON.parse(value) : [];
-          } catch {
-            return [];
-          }
-        })();
-
-        const nextNotification = {
-          id: `notif-${Date.now()}`,
-          title: "Order Completed",
-          message: `Tamaro ${completedOrder.product} order bani gayo chhe ane deliver mate ready chhe.`,
-          orderId,
-          createdAt: new Date().toISOString(),
-          read: false,
-        };
-
-        localStorage.setItem(notificationKey, JSON.stringify([nextNotification, ...existingNotifications]));
-      }
-
-      setOrders(updatedOrders);
+      await completeTailorOrder(orderId);
       window.dispatchEvent(new Event("tailor-orders-updated"));
       window.dispatchEvent(new Event("user-orders-updated"));
-      window.dispatchEvent(new Event("user-notifications-updated"));
+      const nextOrders = await getTailorOrders();
+      setOrders(Array.isArray(nextOrders) ? nextOrders : []);
     } catch {
       // Ignore update failures to keep UI responsive.
     }
@@ -181,7 +105,7 @@ export default function OrdersTable() {
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => handleCompleteOrder(order.id)}
+                  onClick={() => handleCompleteOrder(order.backendId)}
                   className="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-500"
                 >
                   COMPLETE

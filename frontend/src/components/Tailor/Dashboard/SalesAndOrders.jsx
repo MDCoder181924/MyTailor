@@ -1,6 +1,6 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { AuthContext } from "../../../context/AuthContext";
+import { getTailorOrders } from "../../../utils/orderUtils";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -9,26 +9,17 @@ const parseAmount = (value) => {
   return Number.isNaN(numericValue) ? 0 : numericValue;
 };
 
-const getTailorOrders = (tailorId) => {
-  if (typeof window === "undefined" || !tailorId) {
-    return [];
-  }
-
-  try {
-    const value = localStorage.getItem(`tailor_orders_${tailorId}`);
-    return value ? JSON.parse(value) : [];
-  } catch {
-    return [];
-  }
-};
-
 function SalesAndOrders() {
-  const { tailor } = useContext(AuthContext);
-  const [orders, setOrders] = useState(() => getTailorOrders(tailor?._id));
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const syncOrders = () => {
-      setOrders(getTailorOrders(tailor?._id));
+    const syncOrders = async () => {
+      try {
+        const nextOrders = await getTailorOrders();
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setOrders([]);
+      }
     };
 
     syncOrders();
@@ -39,7 +30,7 @@ function SalesAndOrders() {
       window.removeEventListener("storage", syncOrders);
       window.removeEventListener("tailor-orders-updated", syncOrders);
     };
-  }, [tailor?._id]);
+  }, []);
 
   const chartData = useMemo(() => {
     const base = DAYS.map((day) => ({ day, value: 0 }));

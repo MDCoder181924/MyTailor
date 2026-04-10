@@ -1,29 +1,15 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { AuthContext } from "../../../context/AuthContext";
+import { useEffect, useMemo, useState } from "react";
 import { getMyProducts } from "../../../utils/productUtils";
+import { getTailorOrders } from "../../../utils/orderUtils";
 
 const parseAmount = (value) => {
   const numericValue = Number(String(value || "").replace(/[^0-9.]/g, ""));
   return Number.isNaN(numericValue) ? 0 : numericValue;
 };
 
-const getTailorOrders = (tailorId) => {
-  if (typeof window === "undefined" || !tailorId) {
-    return [];
-  }
-
-  try {
-    const value = localStorage.getItem(`tailor_orders_${tailorId}`);
-    return value ? JSON.parse(value) : [];
-  } catch {
-    return [];
-  }
-};
-
 export default function DashboardCards() {
-  const { tailor } = useContext(AuthContext);
   const [products, setProducts] = useState([]);
-  const [orders, setOrders] = useState(() => getTailorOrders(tailor?._id));
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -39,8 +25,13 @@ export default function DashboardCards() {
   }, []);
 
   useEffect(() => {
-    const syncOrders = () => {
-      setOrders(getTailorOrders(tailor?._id));
+    const syncOrders = async () => {
+      try {
+        const nextOrders = await getTailorOrders();
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setOrders([]);
+      }
     };
 
     syncOrders();
@@ -51,7 +42,7 @@ export default function DashboardCards() {
       window.removeEventListener("storage", syncOrders);
       window.removeEventListener("tailor-orders-updated", syncOrders);
     };
-  }, [tailor?._id]);
+  }, []);
 
   const activeOrders = useMemo(
     () => orders.filter((order) => order.status !== "SHIPPED"),

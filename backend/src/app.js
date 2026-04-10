@@ -4,6 +4,7 @@ import userRoutes from "./routes/Auth/userRoutes.js";
 import tailorRoutes from "./routes/Auth/tailorRoutes.js";
 import authRoutes from "./routes/Auth/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -56,6 +57,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/tailor", tailorRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.use((err, _req, res, next) => {
   if (err?.type === "entity.too.large") {

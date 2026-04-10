@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProducts } from "../../../utils/productUtils";
+import { getUserOrders } from "../../../utils/orderUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
 
@@ -12,31 +13,6 @@ const COMMISSIONS = {
 const STAGES = ["MEASURING", "DRAFTING", "FITTING", "FINAL STITCH", "DELIVER"];
 
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
-
-const getStoredOrders = () => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  let userId = "guest";
-
-  try {
-    const rawUser = localStorage.getItem("user");
-    const parsedUser = rawUser ? JSON.parse(rawUser) : null;
-    userId = parsedUser?._id || "guest";
-  } catch {
-    userId = "guest";
-  }
-
-  try {
-    const value = localStorage.getItem(`orders_${userId}`);
-    const parsed = value ? JSON.parse(value) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
 const resolveProductForOrder = (order, products) => {
   if (!Array.isArray(products) || !products.length) {
     return null;
@@ -177,6 +153,15 @@ function CommissionCard({ item }) {
           {item.price}
         </p>
 
+        {(item.selectedFabric || item.selectedSize) ? (
+          <p style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+            {[
+              item.selectedFabric ? `Material: ${item.selectedFabric}` : "",
+              item.selectedSize ? `Size: ${item.selectedSize}` : "",
+            ].filter(Boolean).join(" | ")}
+          </p>
+        ) : null}
+
         <StageProgress stage={item.stage} stageIndex={item.stageIndex} />
       </div>
 
@@ -253,7 +238,7 @@ function CommissionCard({ item }) {
 
 export default function OrderList() {
   const [activeTab, setActiveTab] = useState("active");
-  const [storedOrders, setStoredOrders] = useState(() => getStoredOrders());
+  const [storedOrders, setStoredOrders] = useState([]);
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -270,8 +255,13 @@ export default function OrderList() {
   }, []);
 
   useEffect(() => {
-    const syncOrders = () => {
-      setStoredOrders(getStoredOrders());
+    const syncOrders = async () => {
+      try {
+        const nextOrders = await getUserOrders();
+        setStoredOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setStoredOrders([]);
+      }
     };
 
     syncOrders();

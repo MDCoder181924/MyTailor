@@ -1,34 +1,20 @@
 import { useEffect, useState } from "react";
-
-const getTailorOrders = () => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const rawTailor = localStorage.getItem("tailor");
-    const tailor = rawTailor ? JSON.parse(rawTailor) : null;
-    const tailorId = tailor?._id;
-
-    if (!tailorId) {
-      return [];
-    }
-
-    const value = localStorage.getItem(`tailor_orders_${tailorId}`);
-    return value ? JSON.parse(value) : [];
-  } catch {
-    return [];
-  }
-};
+import { getTailorOrders } from "../../../utils/orderUtils";
 
 export default function OrdersCards() {
-  const [orders, setOrders] = useState(() => getTailorOrders());
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const syncOrders = () => {
-      setOrders(getTailorOrders());
+    const syncOrders = async () => {
+      try {
+        const nextOrders = await getTailorOrders();
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setOrders([]);
+      }
     };
 
+    syncOrders();
     window.addEventListener("storage", syncOrders);
     window.addEventListener("tailor-orders-updated", syncOrders);
 
