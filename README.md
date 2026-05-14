@@ -156,18 +156,6 @@ npm start
 
 ---
 
-## 📸 Screenshots
-
-Add your project screenshots here.
-
-```bash
-screenshots/home.png
-screenshots/dashboard.png
-screenshots/order.png
-```
-
----
-
 ## 📈 Future Improvements
 - AI Size Prediction
 - Virtual Try-On
