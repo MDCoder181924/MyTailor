@@ -22,6 +22,10 @@ const allowedOrigins = new Set([
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5174",
   ...envOrigins,
+  // Deployed frontend origins (add any other deployed domains here)
+  "https://my-tailor-nine.vercel.app",
+  "https://my-tailor-backend.vercel.app",
+  "https://my-tailor.vercel.app",
 ]);
 
 const isAllowedDevOrigin = (origin) => {

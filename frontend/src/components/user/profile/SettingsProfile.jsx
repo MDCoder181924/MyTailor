@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { authFetch } from "../../../utils/authFetch.jsx";
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://my-tailor-backend.vercel.app" : "http://localhost:5000");
 
 const defaultAvatar =
   "data:image/svg+xml;utf8," +

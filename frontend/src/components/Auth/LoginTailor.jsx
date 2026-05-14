@@ -12,7 +12,7 @@ const LoginTailor = ({  onSwitch, identity }) => {
   const navigate = useNavigate();
   const {setTailor , setUser} = useContext(AuthContext);
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://my-tailor-backend.vercel.app" : "http://localhost:5000");
 
   const handleLogin = async (e) => {
     e.preventDefault();
