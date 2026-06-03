@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 import fastImg from "../../assets/images/Home/fasetSectionBg.png";
 
 const Section1 = () => {
@@ -11,28 +12,34 @@ const Section1 = () => {
           style={{ backgroundImage: `url(${fastImg})` }}
         ></div>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
 
-        <div className="relative z-10 flex items-center h-full px-10 md:px-20">
+        <div className="relative z-10 flex items-center h-full px-6 sm:px-10 md:px-20">
           <div className="max-w-xl text-white">
 
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
               The Art of <br /><span className="text-yellow-400">Precision Fit.</span>
             </h1>
 
-            <p className="mt-5 text-gray-300 text-lg">
+            <p className="mt-5 text-gray-300 text-base sm:text-lg">
               Experience the luxury of bespoke tailoring from the comfort of your home.
               Connect with master craftsmen to create garments that define your unique silhouette.
             </p>
 
-            <div className="mt-8 flex gap-4">
-              <button className="bg-yellow-400 hover:bg-black hover:text-white hover:border-2 hover:border-amber-100 text-black px-6 py-3 font-semibold rounded">
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                to="/explore"
+                className="bg-yellow-400 hover:bg-black hover:text-white hover:border-2 hover:border-amber-100 text-black px-6 py-3 font-semibold rounded text-center transition"
+              >
                 START YOUR ORDER
-              </button>
+              </Link>
 
-              <button className="border hover:bg-yellow-400 hover:border-black hover:text-black border-white px-6 py-3 rounded">
+              <Link
+                to="/Artisans"
+                className="border hover:bg-yellow-400 hover:border-black hover:text-black border-white px-6 py-3 rounded text-center transition"
+              >
                 VIEW PORTFOLIO
-              </button>
+              </Link>
             </div>
 
           </div>
@@ -42,5 +49,6 @@ const Section1 = () => {
     </div>
   )
 }
+
 
 export default Section1

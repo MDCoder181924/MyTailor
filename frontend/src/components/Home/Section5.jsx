@@ -2,7 +2,7 @@ import React from "react";
 
 const Section5 = () => {
   return (
-    <div className="bg-black text-white py-20 px-6 md:px-16 text-center md:h-[50vh]">
+    <div className="bg-black text-white py-20 px-6 md:px-16 text-center min-h-[45vh] flex flex-col justify-center">
 
       {/* Title */}
       <h2 className="text-4xl font-bold mb-10">
@@ -10,17 +10,17 @@ const Section5 = () => {
       </h2>
 
       {/* Search Box */}
-      <div className="max-w-4xl mx-auto bg-[#111] p-5 rounded-xl flex flex-col md:flex-row gap-4 items-center">
+      <div className="max-w-4xl w-full mx-auto bg-[#111] p-5 rounded-xl flex flex-col md:flex-row gap-4 items-center">
 
         {/* Input */}
         <input
           type="text"
           placeholder="Search tailors by name or specialty..."
-          className="flex-1 bg-black border border-gray-700 px-4 py-3 rounded text-white outline-none"
+          className="w-full md:flex-1 bg-black border border-gray-700 px-4 py-3 rounded text-white outline-none"
         />
 
         {/* Select */}
-        <select className="bg-black border border-gray-700 px-4 py-3 rounded text-white">
+        <select className="w-full md:w-auto bg-black border border-gray-700 px-4 py-3 rounded text-white">
           <option>All Fabric Types</option>
           <option>Cotton</option>
           <option>Silk</option>
@@ -28,7 +28,7 @@ const Section5 = () => {
         </select>
 
         {/* Button */}
-        <button className="bg-yellow-400 text-black px-6 py-3 rounded font-semibold hover:bg-yellow-500 transition">
+        <button className="w-full md:w-auto bg-yellow-400 text-black px-6 py-3 rounded font-semibold hover:bg-yellow-500 transition">
           Search
         </button>
       </div>
@@ -46,4 +46,4 @@ const Section5 = () => {
   );
 };
 
-export default Section5;
+export default Section5;

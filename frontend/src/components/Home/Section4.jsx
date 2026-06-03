@@ -1,9 +1,10 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import bgImg from "../../assets/images/Home/home4SectionBg.png"; // 2nd photo
 
 const Section4 = () => {
   return (
-    <div className="md:h-screen w-full relative overflow-hidden">
+    <div className="min-h-screen md:h-screen py-16 md:py-0 w-full relative overflow-hidden flex items-center">
 
       {/* Background Image */}
       <div
@@ -11,11 +12,11 @@ const Section4 = () => {
         style={{ backgroundImage: `url(${bgImg})` }}
       ></div>
 
-      {/* Dark Overlay (left thi right fade) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+      {/* Dark Overlay (legible on mobile, right-to-left fade on desktop) */}
+      <div className="absolute inset-0 bg-black/60 md:bg-gradient-to-l md:from-black md:via-black/80 md:to-transparent"></div>
 
       {/* Content (RIGHT SIDE) */}
-      <div className="relative z-10 h-full flex items-center justify-end px-6 md:px-16">
+      <div className="relative z-10 w-full h-full flex items-center justify-end px-6 md:px-16">
 
         <div className="max-w-xl text-white">
 
@@ -44,9 +45,9 @@ const Section4 = () => {
           </div>
 
           {/* Link */}
-          <p className="mt-6 text-yellow-400 cursor-pointer hover:underline">
+          <Link to="/auth" className="block mt-6 text-yellow-400 cursor-pointer hover:underline">
             Setup Your Profile →
-          </p>
+          </Link>
 
         </div>
       </div>
@@ -55,4 +56,4 @@ const Section4 = () => {
   );
 };
 
-export default Section4;
+export default Section4;

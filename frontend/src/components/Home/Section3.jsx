@@ -2,7 +2,7 @@ import React from "react";
 
 const Section3 = () => {
   return (
-    <div className="h-screen bg-black text-white flex flex-col justify-center px-6 md:px-16">
+    <div id="journey" className="min-h-screen bg-black text-white flex flex-col justify-center py-16 px-6 md:px-16">
 
       {/* Title */}
       <div className="text-center mb-12">

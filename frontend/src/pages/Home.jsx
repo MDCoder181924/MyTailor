@@ -13,9 +13,9 @@ const Home = () => {
 
   return (
     <>
-      <div className="bg-black overflow-x-hidden overflow-y-hidden" id='homePage'>
+      <div className="bg-black min-h-screen flex flex-col overflow-x-hidden" id='homePage'>
         <Header />
-        <main className="main-content">
+        <main className="main-content flex-grow">
           <Section1 />
           <Section2 />
           <Section3 />
@@ -26,6 +26,7 @@ const Home = () => {
       </div>
     </>
   );
+
 };
 
 export default Home;

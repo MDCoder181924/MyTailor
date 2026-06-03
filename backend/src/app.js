@@ -24,7 +24,7 @@ const allowedOrigins = new Set([
   ...envOrigins,
   // Deployed frontend origins (add any other deployed domains here)
   "https://my-tailor-nine.vercel.app",
-  "https://my-tailor-backend.vercel.app",
+  "https://mytailor-n8jn.onrender.com",
   "https://my-tailor.vercel.app",
 ]);
 
@@ -33,7 +33,9 @@ const isAllowedDevOrigin = (origin) => {
     return false;
   }
 
-  return /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+  return /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) ||
+         /\.vercel\.app$/.test(origin) ||
+         /\.onrender\.com$/.test(origin);
 };
 
 app.use((req, res, next) => {
