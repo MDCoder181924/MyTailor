@@ -1,21 +1,50 @@
-
 @import "tailwindcss";
 
-/* Minimal global defaults to match previous theme */
+@theme {
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-text: var(--theme-text);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-accent-muted: var(--theme-accent-muted);
+  --color-theme-text-muted: var(--theme-text-muted);
+  --color-theme-border: var(--theme-border);
+  --color-theme-panel: var(--theme-panel);
+}
+
+:root {
+  --theme-bg: #0b0b0b;
+  --theme-text: #ffffff;
+  --theme-accent: #facc15;
+  --theme-accent-muted: rgba(250, 204, 21, 0.1);
+  --theme-text-muted: #8b8f97;
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-panel: #121212;
+}
+
+html.light {
+  --theme-bg: #f3f7fa; /* Beautiful light blue-ish grey background */
+  --theme-text: #0f172a; /* Dark slate blue text */
+  --theme-accent: #2563eb; /* Royal blue accent */
+  --theme-accent-muted: rgba(37, 99, 235, 0.1); /* Light blue background for badges */
+  --theme-text-muted: #475569; /* Slate grey for secondary text */
+  --theme-border: rgba(15, 23, 42, 0.08); /* Clean thin slate borders */
+  --theme-panel: #ffffff; /* pure white for panels/cards */
+}
+
+/* Minimal global defaults */
 html, body, #root {
 	height: 100%;
 }
 
 body {
-	background-color: #050505;
-	color: #f0f0f0;
+	background-color: var(--theme-bg);
+	color: var(--theme-text);
 	font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.homePage{
+.homePage {
 	 overflow-x: hidden;
 }
-
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -23,4 +52,203 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Global Light Theme Overrides for SPA components */
+html.light body,
+html.light #root {
+  background-color: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Overriding Dark Backgrounds with Light Theme Backgrounds */
+html.light .bg-black,
+html.light .bg-\[\#0b0b0b\],
+html.light .bg-\[\#050505\],
+html.light .bg-\[\#000\],
+html.light .bg-\[\#000000\],
+html.light .bg-neutral-950,
+html.light .bg-zinc-950,
+html.light .bg-stone-950 {
+  background-color: var(--theme-bg) !important;
+}
+
+/* Overriding Inner Containers with White Panels */
+html.light .bg-\[\#121212\],
+html.light .bg-\[\#1f1f1f\],
+html.light .bg-neutral-900,
+html.light .bg-zinc-900,
+html.light .bg-stone-900,
+html.light .bg-\[\#1a1a1a\],
+html.light .bg-neutral-800,
+html.light .bg-zinc-850,
+html.light .bg-\[\#111\],
+html.light .bg-\[\#141414\],
+html.light .bg-\[\#151515\],
+html.light .bg-\[\#161616\],
+html.light .bg-\[\#181818\],
+html.light .bg-\[\#2a2a2a\],
+html.light .bg-\[\#2c2c2c\] {
+  background-color: var(--theme-panel) !important;
+}
+
+/* Overriding Text Colors for readability */
+html.light .text-white,
+html.light .text-neutral-100,
+html.light .text-neutral-200,
+html.light .text-neutral-300,
+html.light .text-zinc-100,
+html.light .text-zinc-200,
+html.light .text-zinc-300,
+html.light .text-gray-100,
+html.light .text-gray-200,
+html.light .text-gray-300 {
+  color: var(--theme-text) !important;
+}
+
+html.light .text-neutral-400,
+html.light .text-neutral-500,
+html.light .text-zinc-400,
+html.light .text-zinc-500,
+html.light .text-gray-400,
+html.light .text-gray-500 {
+  color: var(--theme-text-muted) !important;
+}
+
+/* Overriding Accents (Gold to Royal Blue) */
+html.light .text-yellow-400,
+html.light .text-yellow-300,
+html.light .text-yellow-500 {
+  color: var(--theme-accent) !important;
+}
+
+html.light .bg-yellow-400,
+html.light .bg-yellow-300,
+html.light .bg-yellow-500 {
+  background-color: var(--theme-accent) !important;
+  color: #ffffff !important; /* Premium white text for dark blue buttons */
+}
+
+/* Overriding Borders and Separators */
+html.light .border-white\/10,
+html.light .border-white\/5,
+html.light .border-white\/20,
+html.light .border-neutral-800,
+html.light .border-neutral-700,
+html.light .border-zinc-800,
+html.light .border-zinc-700 {
+  border-color: var(--theme-border) !important;
+}
+
+html.light .border-yellow-400,
+html.light .border-yellow-500,
+html.light .border-yellow-400\/20 {
+  border-color: var(--theme-accent) !important;
+}
+
+/* Input Fields styling overrides in light mode */
+html.light input,
+html.light textarea,
+html.light select {
+  color: var(--theme-text) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: var(--theme-text-muted) !important;
+  opacity: 0.6;
+}
+
+/* Header overrides in light mode */
+html.light header {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+html.light header nav a,
+html.light header nav Link {
+  color: var(--theme-text-muted) !important;
+}
+
+html.light header nav a:hover,
+html.light header nav Link:hover {
+  color: var(--theme-accent) !important;
+}
+
+html.light header .text-amber-400 {
+  color: var(--theme-accent) !important;
+}
+
+html.light header .bg-amber-400,
+html.light header .border-amber-400 {
+  background-color: var(--theme-accent) !important;
+  border-color: var(--theme-accent) !important;
+  color: #ffffff !important;
+}
+
+html.light header .bg-amber-400:hover {
+  background-color: transparent !important;
+  color: var(--theme-accent) !important;
+}
+
+html.light header .bg-black\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+/* Keep text white in fixed dark background sections */
+html.light .keep-white,
+html.light .keep-white h1,
+html.light .keep-white h2,
+html.light .keep-white p,
+html.light .keep-white span {
+  color: #ffffff !important;
+}
+
+html.light .keep-white .text-gray-300 {
+  color: #d1d5db !important; /* Keep light grey paragraph description */
+}
+
+html.light .keep-white .text-yellow-400 {
+  color: #facc15 !important; /* Keep gold accents inside dark hero! */
+}
+
+html.light .keep-white .border-white {
+  border-color: #ffffff !important;
+}
+
+html.light .keep-white a.border-white {
+  color: #ffffff !important;
+}
+
+html.light .keep-white a.bg-yellow-400 {
+  background-color: #facc15 !important;
+  color: #000000 !important;
+}
+
+html.light .keep-white a.bg-yellow-400:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Auth Card and Input overrides in light mode */
+html.light .bg-black\/60 {
+  background-color: var(--theme-panel) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html.light .focus\:ring-2:focus {
+  --tw-ring-color: var(--theme-accent) !important;
+}
+
+html.light .bg-teal-400 {
+  background-color: #0d9488 !important; /* Professional teal in light mode */
+  color: #ffffff !important;
 }

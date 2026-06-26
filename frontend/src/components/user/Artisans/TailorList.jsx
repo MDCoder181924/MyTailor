@@ -11,8 +11,8 @@ function Stars() {
   return (
     <span
       style={{
-        backgroundColor: "#EAB800",
-        color: "#0E0E0E",
+        backgroundColor: "var(--theme-accent)",
+        color: "var(--theme-bg)",
         fontSize: 11,
         fontWeight: 700,
         padding: "3px 8px",
@@ -45,13 +45,13 @@ function TailorCard({ tailor, onOpen }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        backgroundColor: "#141414",
-        border: `1px solid ${hovered ? "#EAB800" : "#222"}`,
+        backgroundColor: "var(--theme-panel)",
+        border: `1px solid ${hovered ? "var(--theme-accent)" : "var(--theme-border)"}`,
         borderRadius: 12,
         overflow: "hidden",
         transition: "border-color 0.2s, transform 0.2s, box-shadow 0.2s",
         transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        boxShadow: hovered ? "0 12px 40px rgba(234,184,0,0.12)" : "0 2px 12px rgba(0,0,0,0.4)",
+        boxShadow: hovered ? "0 12px 40px var(--theme-accent-muted)" : "0 2px 12px var(--theme-border)",
         cursor: "pointer",
       }}
     >
@@ -78,22 +78,22 @@ function TailorCard({ tailor, onOpen }) {
             left: 0,
             right: 0,
             height: "45%",
-            background: "linear-gradient(to top, rgba(10,10,10,0.95), transparent)",
+            background: "linear-gradient(to top, var(--theme-panel), transparent)",
           }}
         />
       </div>
 
       <div style={{ padding: "12px 14px 14px" }}>
-        <p style={{ color: "#606060", fontSize: 10, letterSpacing: "0.14em", marginBottom: 3 }}>
+        <p style={{ color: "var(--theme-text-muted)", opacity: 0.8, fontSize: 10, letterSpacing: "0.14em", marginBottom: 3 }}>
           REGISTERED TAILOR
         </p>
-        <h3 style={{ color: "#E8E8E8", fontSize: 14, fontWeight: 700, marginBottom: 2 }}>
+        <h3 style={{ color: "var(--theme-text)", fontSize: 14, fontWeight: 700, marginBottom: 2 }}>
           {tailor.tailorName}
         </h3>
-        <p style={{ color: "#888", fontSize: 10, letterSpacing: "0.1em", marginBottom: 12 }}>
+        <p style={{ color: "var(--theme-text-muted)", fontSize: 10, letterSpacing: "0.1em", marginBottom: 12 }}>
           {tailor.professionalTitle || tailor.tailorEmail}
         </p>
-        <p style={{ color: "#A0A0A0", fontSize: 11 }}>
+        <p style={{ color: "var(--theme-text-muted)", opacity: 0.9, fontSize: 11 }}>
           {tailor.shopAddress || tailor.tailorMobileNumber}
         </p>
       </div>
@@ -107,12 +107,13 @@ function Dropdown({ options, value, onChange }) {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       style={{
-        backgroundColor: "#181818",
-        border: "1px solid #2C2C2C",
+        backgroundColor: "var(--theme-panel)",
+        border: "1px solid var(--theme-border)",
         borderRadius: 8,
         padding: "7px 14px",
-        color: "#C0C0C0",
+        color: "var(--theme-text-muted)",
         fontSize: 12,
+        outline: "none",
       }}
     >
       {options.map((opt) => (
@@ -258,16 +259,17 @@ export default function TailorList() {
   };
 
   return (
-    <div style={{ backgroundColor: "#0E0E0E", minHeight: "100vh", color: "#E8E8E8", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div style={{ backgroundColor: "var(--theme-bg)", minHeight: "100vh", color: "var(--theme-text)", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", transition: "background-color 0.3s ease, color 0.3s ease" }}>
       <div
         style={{
-          backgroundColor: "#111",
-          borderBottom: "1px solid #1E1E1E",
+          backgroundColor: "var(--theme-panel)",
+          borderBottom: "1px solid var(--theme-border)",
           padding: "10px 24px",
           display: "flex",
           alignItems: "center",
           gap: 16,
           flexWrap: "wrap",
+          transition: "background-color 0.3s ease, border-bottom-color 0.3s ease",
         }}
       >
         <div style={{ display: "flex", gap: 6 }}>
@@ -282,9 +284,10 @@ export default function TailorList() {
                 fontWeight: 600,
                 letterSpacing: "0.06em",
                 border: "none",
-                backgroundColor: c === activeCategory ? "#EAB800" : "#1E1E1E",
-                color: c === activeCategory ? "#0E0E0E" : "#888",
+                backgroundColor: c === activeCategory ? "var(--theme-accent)" : "var(--theme-border)",
+                color: c === activeCategory ? "var(--theme-bg)" : "var(--theme-text-muted)",
                 cursor: "pointer",
+                transition: "all 0.2s",
               }}
             >
               {c}
@@ -292,7 +295,7 @@ export default function TailorList() {
           ))}
         </div>
 
-        <div style={{ width: 1, height: 20, backgroundColor: "#2C2C2C" }} />
+        <div style={{ width: 1, height: 20, backgroundColor: "var(--theme-border)" }} />
 
         <Dropdown options={LOCATIONS} value={location} onChange={setLocation} />
         <Dropdown options={RATINGS} value={ratingFilter} onChange={setRatingFilter} />
@@ -316,14 +319,15 @@ export default function TailorList() {
             onKeyDown={handleSearchKeyDown}
             placeholder="Search tailors..."
             style={{
-              backgroundColor: "#181818",
-              border: "1px solid #2C2C2C",
+              backgroundColor: "var(--theme-bg)",
+              border: "1px solid var(--theme-border)",
               borderRadius: 8,
               padding: "7px 14px",
               fontSize: 12,
-              color: "#C0C0C0",
+              color: "var(--theme-text)",
               outline: "none",
               width: 220,
+              transition: "all 0.2s",
             }}
           />
           {showSuggestions && suggestions.length > 0 ? (
@@ -333,11 +337,11 @@ export default function TailorList() {
                 top: "calc(100% + 8px)",
                 right: 0,
                 width: 280,
-                backgroundColor: "#151515",
-                border: "1px solid #2C2C2C",
+                backgroundColor: "var(--theme-panel)",
+                border: "1px solid var(--theme-border)",
                 borderRadius: 12,
                 overflow: "hidden",
-                boxShadow: "0 18px 50px rgba(0,0,0,0.45)",
+                boxShadow: "0 18px 50px rgba(0,0,0,0.15)",
                 zIndex: 20,
               }}
             >
@@ -355,15 +359,15 @@ export default function TailorList() {
                     gap: 2,
                     padding: "10px 14px",
                     border: "none",
-                    borderBottom: index === suggestions.length - 1 ? "none" : "1px solid #242424",
-                    backgroundColor: activeSuggestionIndex === index ? "#202020" : "transparent",
-                    color: "#E8E8E8",
+                    borderBottom: index === suggestions.length - 1 ? "none" : "1px solid var(--theme-border)",
+                    backgroundColor: activeSuggestionIndex === index ? "var(--theme-bg)" : "transparent",
+                    color: "var(--theme-text)",
                     cursor: "pointer",
                     textAlign: "left",
                   }}
                 >
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{suggestion.label}</span>
-                  <span style={{ fontSize: 11, color: "#8B8B8B" }}>{suggestion.tailorName}</span>
+                  <span style={{ fontSize: 11, color: "var(--theme-text-muted)" }}>{suggestion.tailorName}</span>
                 </button>
               ))}
             </div>
@@ -373,7 +377,7 @@ export default function TailorList() {
 
       <div style={{ padding: "28px 24px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", color: "#888", padding: "80px 0", fontSize: 14 }}>
+          <div style={{ textAlign: "center", color: "var(--theme-text-muted)", padding: "80px 0", fontSize: 14 }}>
             Loading tailors...
           </div>
         ) : null}
@@ -385,7 +389,7 @@ export default function TailorList() {
         ) : null}
 
         {!loading && !error && filtered.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#444", padding: "80px 0", fontSize: 14 }}>
+          <div style={{ textAlign: "center", color: "var(--theme-text-muted)", padding: "80px 0", fontSize: 14 }}>
             No tailors found.
           </div>
         ) : null}

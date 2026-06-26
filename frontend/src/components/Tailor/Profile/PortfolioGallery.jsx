@@ -27,7 +27,7 @@ export default function PortfolioGallery() {
   const visibleProducts = showAll ? products : products.slice(0, 6);
 
   return (
-    <div className="bg-black text-white p-8">
+    <div className="bg-theme-bg text-theme-text p-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-serif font-bold">
           The Masterpiece Gallery
@@ -36,22 +36,22 @@ export default function PortfolioGallery() {
         <button
           type="button"
           onClick={() => setShowAll((prev) => !prev)}
-          className="text-yellow-400 text-sm hover:underline"
+          className="text-theme-accent text-sm hover:underline font-semibold tracking-wider"
         >
           {showAll ? "SHOW LESS" : "VIEW ARCHIVE"}
         </button>
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-gray-400">Loading products...</div>
+        <div className="py-12 text-center text-theme-text-muted">Loading products...</div>
       ) : null}
 
       {!loading && error ? (
-        <div className="py-12 text-center text-red-400">{error}</div>
+        <div className="py-12 text-center text-red-500">{error}</div>
       ) : null}
 
       {!loading && !error && visibleProducts.length === 0 ? (
-        <div className="py-12 text-center text-gray-400">
+        <div className="py-12 text-center text-theme-text-muted italic">
           No products added yet.
         </div>
       ) : null}
@@ -61,7 +61,7 @@ export default function PortfolioGallery() {
           {visibleProducts.map((item) => (
             <div
               key={item._id}
-              className="rounded-xl overflow-hidden bg-gray-900 group"
+              className="rounded-xl overflow-hidden bg-theme-panel group border border-theme-border shadow-md"
             >
               <img
                 src={item.image || "https://picsum.photos/300?fashion"}
@@ -69,9 +69,9 @@ export default function PortfolioGallery() {
                 className="w-full h-[220px] object-cover transition duration-300 group-hover:scale-110"
               />
 
-              <div className="p-3">
-                <p className="text-sm font-semibold">{item.productName}</p>
-                <p className="text-xs text-gray-400 mt-1">{item.category}</p>
+              <div className="p-4">
+                <p className="text-sm font-semibold text-theme-text">{item.productName}</p>
+                <p className="text-xs text-theme-text-muted mt-1">{item.category}</p>
               </div>
             </div>
           ))}

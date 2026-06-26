@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { getTailorOrders } from "../../../utils/orderUtils";
+import { ThemeContext } from "../../../context/ThemeContext";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -11,6 +12,7 @@ const parseAmount = (value) => {
 
 function SalesAndOrders() {
   const [orders, setOrders] = useState([]);
+  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     const syncOrders = async () => {
@@ -63,16 +65,18 @@ function SalesAndOrders() {
 
   const recentOrders = useMemo(() => orders.slice(0, 3), [orders]);
 
+  const chartStroke = theme === "light" ? "#2563eb" : "#facc15";
+
   return (
-    <div className="grid grid-cols-1 gap-6 bg-black p-6 text-white lg:grid-cols-3">
-      <div className="bg-gray-900 p-6 rounded-xl shadow-lg lg:col-span-2">
+    <div className="grid grid-cols-1 gap-6 bg-theme-bg p-6 text-theme-text lg:grid-cols-3">
+      <div className="bg-theme-panel p-6 rounded-xl shadow-lg border border-theme-border lg:col-span-2">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Weekly Sales Trends</h2>
-            <p className="text-xs text-gray-400">GROWTH & ENGAGEMENT</p>
+            <h2 className="text-xl font-serif font-bold text-theme-text">Weekly Sales Trends</h2>
+            <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">GROWTH & ENGAGEMENT</p>
           </div>
 
-          <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs text-black">
+          <span className="rounded-xl border border-theme-accent/30 bg-theme-accent-muted px-3 py-1 text-xs font-bold text-theme-accent">
             7D
           </span>
         </div>
@@ -80,35 +84,35 @@ function SalesAndOrders() {
         <div className="h-60">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <XAxis dataKey="day" stroke="#888" />
-              <Tooltip />
-              <Line type="monotone" dataKey="value" stroke="#facc15" strokeWidth={3} dot={{ r: 4 }} />
+              <XAxis dataKey="day" stroke="currentColor" className="text-theme-text-muted opacity-50" />
+              <Tooltip contentStyle={{ backgroundColor: "var(--theme-panel)", borderColor: "var(--theme-border)", color: "var(--theme-text)" }} />
+              <Line type="monotone" dataKey="value" stroke={chartStroke} strokeWidth={3} dot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-6 flex justify-between text-sm">
+        <div className="mt-6 flex justify-between text-sm border-t border-theme-border pt-4">
           <div>
-            <p className="text-gray-400">Completed Orders</p>
-            <p className="font-semibold">{completedOrders.length}</p>
+            <p className="text-[10px] font-bold tracking-[0.12em] text-theme-text-muted uppercase">Completed Orders</p>
+            <p className="font-semibold text-theme-text mt-0.5">{completedOrders.length}</p>
           </div>
 
           <div>
-            <p className="text-gray-400">Avg Order</p>
-            <p className="font-semibold">${avgOrder.toFixed(0)}</p>
+            <p className="text-[10px] font-bold tracking-[0.12em] text-theme-text-muted uppercase">Avg Order</p>
+            <p className="font-semibold text-theme-text mt-0.5">${avgOrder.toFixed(0)}</p>
           </div>
 
           <div>
-            <p className="text-gray-400">Total Orders</p>
-            <p className="font-semibold">{orders.length}</p>
+            <p className="text-[10px] font-bold tracking-[0.12em] text-theme-text-muted uppercase">Total Orders</p>
+            <p className="font-semibold text-theme-text mt-0.5">{orders.length}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Recent Orders</h2>
-          <span className="cursor-pointer text-sm text-yellow-400">VIEW ALL</span>
+          <h2 className="text-lg font-serif font-bold text-theme-text">Recent Orders</h2>
+          <span className="cursor-pointer text-xs font-bold tracking-wider text-theme-accent hover:underline">VIEW ALL</span>
         </div>
 
         {recentOrders.length ? (
@@ -118,22 +122,22 @@ function SalesAndOrders() {
             return (
               <div
                 key={order.id}
-                className={`rounded-xl bg-gray-900 p-4 ${shipped ? "border-l-4 border-green-400" : "border-l-4 border-yellow-400"}`}
+                className={`rounded-xl bg-theme-panel p-4 border border-theme-border ${shipped ? "border-l-4 border-l-emerald-500" : "border-l-4 border-l-theme-accent"}`}
               >
-                <div className="flex justify-between text-sm">
-                  <span className={`rounded px-2 py-1 text-xs ${shipped ? "bg-green-400 text-black" : "bg-yellow-400 text-black"}`}>
+                <div className="flex justify-between items-center text-sm">
+                  <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${shipped ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-theme-accent-muted text-theme-accent border border-theme-accent/20"}`}>
                     {shipped ? "SHIPPED" : "IN PROGRESS"}
                   </span>
-                  <span>{order.total}</span>
+                  <span className="font-bold text-theme-text">{order.total}</span>
                 </div>
 
-                <h3 className="mt-2 font-semibold">{order.product}</h3>
-                <p className="text-xs text-gray-400">Customer: {order.name}</p>
+                <h3 className="mt-3 font-semibold text-theme-text">{order.product}</h3>
+                <p className="text-xs text-theme-text-muted mt-1">Customer: {order.name}</p>
               </div>
             );
           })
         ) : (
-          <div className="rounded-xl bg-gray-900 p-4 text-sm text-gray-400">
+          <div className="rounded-xl bg-theme-panel border border-theme-border p-5 text-sm text-theme-text-muted italic text-center">
             No orders yet for this tailor.
           </div>
         )}

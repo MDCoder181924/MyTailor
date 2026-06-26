@@ -5,8 +5,8 @@ import OrdersTable from '../../components/Tailor/OrderListPage/OrdersTable'
 
 const OrdersList = () => {
   return (
-    <div>
-        <Header/>
+    <div className="bg-theme-bg min-h-screen pb-12 w-full transition-colors duration-300">
+      <Header/>
       <OrdersCards/>
       <OrdersTable/>
     </div>

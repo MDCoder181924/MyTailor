@@ -126,22 +126,21 @@ export default function UploadProduct() {
     <form
       onSubmit={handleSubmit}
       style={{
-        // background: "linear-gradient(180deg, #0A0A0A 0%, #000000 100%)",
-        background: "#000000",
-        minHeight: "10-0vh",
-        color: "#F5F5F5",
+        background: "var(--theme-bg)",
+        minHeight: "100vh",
+        color: "var(--theme-text)",
       }}
-      className="px-6 py-10"
+      className="px-6 py-10 transition-colors duration-300"
     >
 
       <div className="max-w-5xl mx-auto mb-10">
-        <p className="text-xs tracking-widest mb-2 text-[#D4A017] uppercase">
+        <p className="text-xs font-bold tracking-[0.2em] mb-2 text-theme-accent uppercase">
           CURATION
         </p>
         <h1 className="text-5xl font-serif font-bold mb-3">
           Upload New Product
         </h1>
-        <p className="text-[#7A7A7A] text-sm max-w-md">
+        <p className="text-theme-text-muted text-sm max-w-md font-light">
           Introduce a new masterpiece to your digital gallery.
         </p>
       </div>
@@ -156,15 +155,15 @@ export default function UploadProduct() {
             onDrop={handleDrop}
             onClick={() => fileInputRef.current.click()}
             style={{
-              backgroundColor: "#101010",
+              backgroundColor: "var(--theme-panel)",
               border: "2px dashed",
-              borderColor: dragging ? "#D4A017" : "#2A2A2A",
+              borderColor: dragging ? "var(--theme-accent)" : "var(--theme-border)",
               boxShadow: dragging
-                ? "0 0 15px rgba(212,160,23,0.3)"
+                ? "0 0 15px var(--theme-accent-muted)"
                 : "none",
               minHeight: 260,
             }}
-            className="rounded-2xl flex flex-col items-center justify-center cursor-pointer transition"
+            className="rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 border"
           >
             <input
               ref={fileInputRef}
@@ -177,16 +176,16 @@ export default function UploadProduct() {
               <img src={mediaPreview} className="w-full h-full object-cover rounded-2xl" />
             ) : (
               <>
-                <p className="font-semibold text-lg mb-1 text-center">
+                <p className="font-semibold text-lg mb-1 text-center text-theme-text">
                   Drag and drop garment imagery
                 </p>
-                <p className="text-[#7A7A7A] text-xs text-center px-6">
+                <p className="text-theme-text-muted text-xs text-center px-6">
                   JPG, PNG up to 50MB
                 </p>
 
                 <button
                   type="button"
-                  className="mt-4 px-4 py-2 rounded bg-[#1E1E1E] border border-[#2A2A2A] text-sm"
+                  className="mt-4 px-4 py-2 rounded-xl bg-theme-bg border border-theme-border text-sm font-semibold text-theme-text-muted hover:text-theme-accent hover:bg-theme-accent-muted transition-colors"
                 >
                   Browse Media
                 </button>
@@ -199,7 +198,7 @@ export default function UploadProduct() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe craftsmanship..."
-            className="w-full h-40 bg-[#0D0D0D] border border-[#2A2A2A] rounded-xl p-4 text-sm outline-none focus:border-[#D4A017]"
+            className="w-full h-40 bg-theme-panel border border-theme-border rounded-xl p-4 text-sm outline-none focus:border-theme-accent transition-colors text-theme-text placeholder:text-theme-text-muted/50 resize-none leading-relaxed"
           />
 
         </div>
@@ -208,50 +207,50 @@ export default function UploadProduct() {
         <div className="space-y-6">
 
           {/* Card */}
-          <div className="bg-[#141414] border border-[#2A2A2A] p-5 rounded-xl shadow-lg">
-            <h2 className="mb-4 font-semibold">Product Details</h2>
+          <div className="bg-theme-panel border border-theme-border p-5 rounded-xl shadow-lg">
+            <h2 className="mb-4 font-serif font-bold text-theme-text">Product Details</h2>
 
             <input
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               placeholder="Product Name"
               required
-              className="w-full mb-3 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded focus:border-[#D4A017]"
+              className="w-full mb-3 bg-theme-bg border border-theme-border p-2.5 rounded-xl outline-none focus:border-theme-accent transition-colors text-theme-text placeholder:text-theme-text-muted/50"
             />
 
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded"
+              className="w-full bg-theme-bg border border-theme-border p-2.5 rounded-xl outline-none focus:border-theme-accent transition-colors text-theme-text"
             >
               {CATEGORIES.map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} className="bg-theme-panel text-theme-text">{c}</option>
               ))}
             </select>
           </div>
 
           {/* Economics */}
-          <div className="bg-[#141414] border border-[#2A2A2A] p-5 rounded-xl shadow-lg">
-            <h2 className="mb-4 font-semibold">Economics & Material</h2>
+          <div className="bg-theme-panel border border-theme-border p-5 rounded-xl shadow-lg">
+            <h2 className="mb-4 font-serif font-bold text-theme-text">Economics & Material</h2>
 
             <div className="flex gap-3 mb-4">
               <input
-              value = {prise}
-              onChange={(e) => setPrise(e.target.value)}
+                value={prise}
+                onChange={(e) => setPrise(e.target.value)}
                 placeholder="$0.00"
                 type="number"
                 min="0"
                 required
-                className="w-1/2 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded"
+                className="w-1/2 bg-theme-bg border border-theme-border p-2.5 rounded-xl outline-none focus:border-theme-accent transition-colors text-theme-text placeholder:text-theme-text-muted/50"
               />
               <input
-              value={stock}
-              onChange={(e)=>{setStock(e.target.value)}}
+                value={stock}
+                onChange={(e) => { setStock(e.target.value); }}
                 placeholder="Stock"
                 type="number"
                 min="0"
                 required
-                className="w-1/2 bg-[#0D0D0D] border border-[#2A2A2A] p-2 rounded"
+                className="w-1/2 bg-theme-bg border border-theme-border p-2.5 rounded-xl outline-none focus:border-theme-accent transition-colors text-theme-text placeholder:text-theme-text-muted/50"
               />
             </div>
 
@@ -263,9 +262,9 @@ export default function UploadProduct() {
                     type="button"
                     key={f}
                     onClick={() => toggleFabric(f)}
-                    className={`px-3 py-1 text-xs rounded ${active
-                      ? "bg-[#D4A017] text-black"
-                      : "bg-[#111] text-gray-400"
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 ${active
+                      ? "bg-theme-accent text-theme-bg border-theme-accent shadow-sm"
+                      : "bg-theme-bg text-theme-text-muted border-theme-border hover:bg-theme-accent-muted hover:text-theme-accent"
                       }`}
                   >
                     {f}
@@ -276,8 +275,8 @@ export default function UploadProduct() {
           </div>
 
           {/* Sizes */}
-          <div className="bg-[#141414] border border-[#2A2A2A] p-5 rounded-xl shadow-lg">
-            <h2 className="mb-4 font-semibold">Sizing Availability</h2>
+          <div className="bg-theme-panel border border-theme-border p-5 rounded-xl shadow-lg">
+            <h2 className="mb-4 font-serif font-bold text-theme-text">Sizing Availability</h2>
 
             <div className="flex gap-2">
               {SIZES.map((s) => {
@@ -287,9 +286,9 @@ export default function UploadProduct() {
                     type="button"
                     key={s}
                     onClick={() => toggleSize(s)}
-                    className={`flex-1 py-2 rounded ${active
-                      ? "bg-[#D4A017] text-black"
-                      : "bg-[#111] text-gray-400"
+                    className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 ${active
+                      ? "bg-theme-accent text-theme-bg border-theme-accent shadow-sm"
+                      : "bg-theme-bg text-theme-text-muted border-theme-border hover:bg-theme-accent-muted hover:text-theme-accent"
                       }`}
                   >
                     {s}
@@ -303,7 +302,7 @@ export default function UploadProduct() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-[#D4A017] text-black font-semibold shadow-lg hover:bg-[#b89212] transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3.5 rounded-xl bg-theme-accent text-theme-bg font-bold shadow-lg hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wider"
           >
             {isSubmitting ? "SAVING PRODUCT..." : "PUBLISH TO GALLERY"}
           </button>

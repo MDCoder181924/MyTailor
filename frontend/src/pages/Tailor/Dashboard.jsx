@@ -6,7 +6,7 @@ import SalesAndOrders from '../../components/Tailor/Dashboard/SalesAndOrders'
 
 const Dashboard = () => {
   return (
-    <div className='bg-black h-full w-full'>
+    <div className='bg-theme-bg min-h-screen pb-12 w-full transition-colors duration-300'>
       <Header/>
       <HeroSection/>
       <DashboardCards/>

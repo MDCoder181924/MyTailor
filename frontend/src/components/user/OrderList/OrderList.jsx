@@ -38,9 +38,9 @@ const resolveProductForOrder = (order, products) => {
 function StageProgress({ stage, stageIndex }) {
   return (
     <div style={{ marginTop: 12 }}>
-      <p style={{ fontSize: 10, color: "#606060", letterSpacing: "0.14em", marginBottom: 8 }}>
+      <p style={{ fontSize: 10, color: "var(--theme-text-muted)", letterSpacing: "0.14em", marginBottom: 8 }}>
         CURRENT STAGE:{" "}
-        <span style={{ color: "#EAB800", fontWeight: 700 }}>{stage}</span>
+        <span style={{ color: "var(--theme-accent)", fontWeight: 700 }}>{stage}</span>
       </p>
       <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 6 }}>
         {STAGES.map((_, i) => (
@@ -50,7 +50,7 @@ function StageProgress({ stage, stageIndex }) {
               flex: 1,
               height: 3,
               borderRadius: 2,
-              backgroundColor: i <= stageIndex ? "#EAB800" : "#2C2C2C",
+              backgroundColor: i <= stageIndex ? "var(--theme-accent)" : "var(--theme-border)",
               transition: "background-color 0.3s",
             }}
           />
@@ -62,7 +62,7 @@ function StageProgress({ stage, stageIndex }) {
             <span
               style={{
                 fontSize: 8,
-                color: i <= stageIndex ? "#EAB800" : "#444",
+                color: i <= stageIndex ? "var(--theme-accent)" : "var(--theme-text-muted)",
                 letterSpacing: "0.06em",
                 fontWeight: i === stageIndex ? 700 : 400,
               }}
@@ -80,8 +80,8 @@ function CommissionCard({ item }) {
   return (
     <div
       style={{
-        backgroundColor: "#161616",
-        border: "1px solid #222",
+        backgroundColor: "var(--theme-panel)",
+        border: "1px solid var(--theme-border)",
         borderRadius: 14,
         overflow: "hidden",
         display: "flex",
@@ -99,7 +99,7 @@ function CommissionCard({ item }) {
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(to right, transparent 60%, #161616)",
+            background: "linear-gradient(to right, transparent 60%, var(--theme-panel))",
           }}
         />
       </div>
@@ -108,8 +108,8 @@ function CommissionCard({ item }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <span
             style={{
-              backgroundColor: "#EAB800",
-              color: "#0E0E0E",
+              backgroundColor: "var(--theme-accent)",
+              color: "var(--theme-bg)",
               fontSize: 9,
               fontWeight: 800,
               padding: "3px 8px",
@@ -119,12 +119,12 @@ function CommissionCard({ item }) {
           >
             ORDER {item.orderNo}
           </span>
-          <span style={{ color: "#606060", fontSize: 10, letterSpacing: "0.1em" }}>
+          <span style={{ color: "var(--theme-text-muted)", fontSize: 10, letterSpacing: "0.1em" }}>
             EST. COMPLETION: {item.estCompletion}
           </span>
         </div>
 
-        <h2 style={{ color: "#F0F0F0", fontSize: 22, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>
+        <h2 style={{ color: "var(--theme-text)", fontSize: 22, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>
           {item.title}
         </h2>
 
@@ -134,27 +134,28 @@ function CommissionCard({ item }) {
               width: 20,
               height: 20,
               borderRadius: "50%",
-              backgroundColor: "#2A2A2A",
+              backgroundColor: "var(--theme-border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 10,
+              color: "var(--theme-text-muted)",
             }}
           >
             U
           </div>
-          <span style={{ color: "#888", fontSize: 12 }}>
+          <span style={{ color: "var(--theme-text-muted)", fontSize: 12 }}>
             Master Tailor:{" "}
-            <span style={{ color: "#C0C0C0", fontWeight: 600 }}>{item.tailor}</span>
+            <span style={{ color: "var(--theme-text)", fontWeight: 600 }}>{item.tailor}</span>
           </span>
         </div>
 
-        <p style={{ color: "#EAB800", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
+        <p style={{ color: "var(--theme-accent)", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
           {item.price}
         </p>
 
         {(item.selectedFabric || item.selectedSize) ? (
-          <p style={{ color: "#9CA3AF", fontSize: 12, marginBottom: 8 }}>
+          <p style={{ color: "var(--theme-text-muted)", fontSize: 12, marginBottom: 8 }}>
             {[
               item.selectedFabric ? `Material: ${item.selectedFabric}` : "",
               item.selectedSize ? `Size: ${item.selectedSize}` : "",
@@ -169,7 +170,7 @@ function CommissionCard({ item }) {
         style={{
           width: 180,
           minWidth: 180,
-          borderLeft: "1px solid #222",
+          borderLeft: "1px solid var(--theme-border)",
           padding: "20px 16px",
           display: "flex",
           flexDirection: "column",
@@ -184,9 +185,9 @@ function CommissionCard({ item }) {
               padding: "10px 0",
               borderRadius: 8,
               border: "1px solid",
-              borderColor: action.primary ? "#EAB800" : "#2C2C2C",
-              backgroundColor: action.primary ? "#EAB800" : "#1E1E1E",
-              color: action.primary ? "#0E0E0E" : "#B0B0B0",
+              borderColor: action.primary ? "var(--theme-accent)" : "var(--theme-border)",
+              backgroundColor: action.primary ? "var(--theme-accent)" : "var(--theme-border)",
+              color: action.primary ? "var(--theme-bg)" : "var(--theme-text)",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.08em",
@@ -205,7 +206,7 @@ function CommissionCard({ item }) {
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: 8,
-            borderTop: "1px solid #222",
+            borderTop: "1px solid var(--theme-border)",
             paddingTop: 12,
           }}
         >
@@ -225,7 +226,7 @@ function CommissionCard({ item }) {
               }}
             >
               <span style={{ fontSize: 16 }}>{link.icon}</span>
-              <span style={{ fontSize: 9, color: "#606060", letterSpacing: "0.08em", textAlign: "center", lineHeight: 1.3 }}>
+              <span style={{ fontSize: 9, color: "var(--theme-text-muted)", letterSpacing: "0.08em", textAlign: "center", lineHeight: 1.3 }}>
                 {link.label.toUpperCase()}
               </span>
             </button>
@@ -313,18 +314,19 @@ export default function OrderList() {
   return (
     <div
       style={{
-        backgroundColor: "#0E0E0E",
+        backgroundColor: "var(--theme-bg)",
         minHeight: "100vh",
-        color: "#E8E8E8",
+        color: "var(--theme-text)",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         padding: "36px 32px",
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}
     >
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 36, fontWeight: 800, color: "#FFFFFF", marginBottom: 4, letterSpacing: "-0.03em" }}>
+        <h1 style={{ fontSize: 36, fontWeight: 800, color: "var(--theme-text)", marginBottom: 4, letterSpacing: "-0.03em" }}>
           My Commissions
         </h1>
-        <p style={{ fontSize: 10, color: "#EAB800", letterSpacing: "0.22em", fontWeight: 600 }}>
+        <p style={{ fontSize: 10, color: "var(--theme-accent)", letterSpacing: "0.22em", fontWeight: 600 }}>
           TRACKING YOUR BESPOKE JOURNEY
         </p>
       </div>
@@ -333,7 +335,7 @@ export default function OrderList() {
         style={{
           display: "flex",
           gap: 0,
-          borderBottom: "1px solid #222",
+          borderBottom: "1px solid var(--theme-border)",
           marginBottom: 28,
         }}
       >
@@ -347,8 +349,8 @@ export default function OrderList() {
                 padding: "10px 20px",
                 backgroundColor: "transparent",
                 border: "none",
-                borderBottom: active ? "2px solid #EAB800" : "2px solid transparent",
-                color: active ? "#EAB800" : "#606060",
+                borderBottom: active ? "2px solid var(--theme-accent)" : "2px solid transparent",
+                color: active ? "var(--theme-accent)" : "var(--theme-text-muted)",
                 fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.12em",
@@ -363,8 +365,8 @@ export default function OrderList() {
                 <span
                   style={{
                     marginLeft: 6,
-                    backgroundColor: active ? "#EAB800" : "#2A2A2A",
-                    color: active ? "#0E0E0E" : "#666",
+                    backgroundColor: active ? "var(--theme-accent)" : "var(--theme-border)",
+                    color: active ? "var(--theme-bg)" : "var(--theme-text-muted)",
                     fontSize: 9,
                     fontWeight: 800,
                     padding: "2px 6px",
@@ -380,7 +382,7 @@ export default function OrderList() {
       </div>
 
       {items.length === 0 ? (
-        <div style={{ textAlign: "center", color: "#444", padding: "60px 0", fontSize: 14 }}>
+        <div style={{ textAlign: "center", color: "var(--theme-text-muted)", padding: "60px 0", fontSize: 14 }}>
           No commissions in this section yet.
         </div>
       ) : (

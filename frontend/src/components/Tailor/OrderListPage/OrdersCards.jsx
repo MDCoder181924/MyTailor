@@ -29,28 +29,28 @@ export default function OrdersCards() {
   const completedOrders = orders.filter((order) => order.status === "SHIPPED").length;
 
   return (
-    <div className="bg-black p-8 text-white">
+    <div className="bg-theme-bg p-8 text-theme-text">
       <div className="mb-10">
         <h1 className="text-5xl font-serif font-bold">Orders</h1>
-        <p className="mt-2 text-sm tracking-widest text-gray-400">
+        <p className="mt-2 text-xs font-bold tracking-[0.18em] text-theme-text-muted uppercase">
           LIVE TAILOR ORDER MANAGEMENT
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="relative overflow-hidden rounded-xl bg-gray-900 p-6 shadow-lg">
-          <p className="text-sm text-gray-400">TOTAL ACTIVE ORDERS</p>
-          <h2 className="mt-4 text-4xl font-bold text-yellow-400">{activeOrders}</h2>
+        <div className="relative overflow-hidden rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
+          <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">TOTAL ACTIVE ORDERS</p>
+          <h2 className="mt-4 text-4xl font-bold text-theme-accent">{activeOrders}</h2>
         </div>
 
-        <div className="relative overflow-hidden rounded-xl bg-gray-900 p-6 shadow-lg">
-          <p className="text-sm text-gray-400">PENDING ORDERS</p>
-          <h2 className="mt-4 text-4xl font-bold text-yellow-300">{pendingOrders}</h2>
+        <div className="relative overflow-hidden rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
+          <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">PENDING ORDERS</p>
+          <h2 className="mt-4 text-4xl font-bold text-theme-accent">{pendingOrders}</h2>
         </div>
 
-        <div className="relative overflow-hidden rounded-xl bg-gray-900 p-6 shadow-lg">
-          <p className="text-sm text-gray-400">COMPLETED ORDERS</p>
-          <h2 className="mt-4 text-4xl font-bold text-green-400">{completedOrders}</h2>
+        <div className="relative overflow-hidden rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
+          <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">COMPLETED ORDERS</p>
+          <h2 className="mt-4 text-4xl font-bold text-emerald-500 dark:text-emerald-400">{completedOrders}</h2>
         </div>
       </div>
     </div>

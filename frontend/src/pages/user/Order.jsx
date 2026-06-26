@@ -5,7 +5,7 @@ import PhoneFooter from '../../components/user/Dashboard/PhoneFotter'
 
 const Order = () => {
   return (
-    <div className="bg-black min-h-screen pb-24">
+    <div className="bg-theme-bg min-h-screen pb-24 transition-colors duration-300">
       <Headeer/>
       <OrderList/>
       <PhoneFooter />

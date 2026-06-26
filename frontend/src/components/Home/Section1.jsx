@@ -15,7 +15,7 @@ const Section1 = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
 
         <div className="relative z-10 flex items-center h-full px-6 sm:px-10 md:px-20">
-          <div className="max-w-xl text-white">
+          <div className="max-w-xl text-white keep-white">
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
               The Art of <br /><span className="text-yellow-400">Precision Fit.</span>

@@ -11,15 +11,15 @@ export default function TailorProfilePhoto() {
   const years = Number.isFinite(Number(tailor?.yearsOfExperience)) ? Number(tailor.yearsOfExperience) : 0;
 
   return (
-    <div className="bg-black text-white p-8 flex flex-col lg:flex-row items-center gap-10">
+    <div className="bg-theme-bg text-theme-text p-8 flex flex-col lg:flex-row items-center gap-10 border-b border-theme-border">
       <div className="relative">
         <img
           src={profilePhoto}
           alt={tailor?.tailorName || "Tailor"}
-          className="w-[300px] h-[400px] object-cover rounded-lg"
+          className="w-[300px] h-[400px] object-cover rounded-lg shadow-lg"
         />
 
-        <span className="absolute bottom-3 left-3 bg-yellow-400 text-black text-xs px-3 py-1 rounded">
+        <span className="absolute bottom-3 left-3 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded">
           {tailor?.shopName || "MY TAILOR"}
         </span>
       </div>
@@ -31,30 +31,30 @@ export default function TailorProfilePhoto() {
               {tailor?.tailorName || "My Tailor"}
             </h1>
 
-            <p className="text-yellow-400 mt-3 italic">
+            <p className="text-yellow-400 mt-3 italic font-semibold">
               {title}
             </p>
           </div>
 
-          <Link to="/TailorSettings" className="bg-gray-800 px-4 py-2 rounded-lg text-sm hover:bg-gray-700">
+          <Link to="/TailorSettings" className="rounded-xl border border-theme-accent/30 bg-theme-accent-muted px-4 py-2 text-sm font-bold uppercase tracking-wider text-theme-accent transition-colors hover:bg-theme-accent/20">
             Edit Profile
           </Link>
         </div>
 
-        <div className="flex gap-10 mt-10 border-t border-gray-800 pt-6 flex-wrap">
+        <div className="flex gap-10 mt-10 border-t border-theme-border pt-6 flex-wrap">
           <div>
             <p className="text-yellow-400 text-xl font-bold">{years}+</p>
-            <p className="text-xs text-gray-400">YEARS EXPERIENCE</p>
+            <p className="text-xs text-theme-text-muted">YEARS EXPERIENCE</p>
           </div>
 
           <div>
             <p className="text-yellow-400 text-xl font-bold">{tailor?.specializations?.length || 0}</p>
-            <p className="text-xs text-gray-400">SPECIALIZATIONS</p>
+            <p className="text-xs text-theme-text-muted">SPECIALIZATIONS</p>
           </div>
 
           <div>
             <p className="text-yellow-400 text-xl font-bold">{tailor?.keySkills?.length || 0}</p>
-            <p className="text-xs text-gray-400">KEY SKILLS</p>
+            <p className="text-xs text-theme-text-muted">KEY SKILLS</p>
           </div>
         </div>
       </div>

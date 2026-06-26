@@ -44,24 +44,24 @@ export default function FabricsGrid() {
   }, []);
 
   if (loading) {
-    return <div className="bg-black px-8 py-10 text-center text-gray-400">Loading your products...</div>;
+    return <div className="bg-theme-bg px-8 py-10 text-center text-theme-text-muted">Loading your products...</div>;
   }
 
   if (error) {
-    return <div className="bg-black px-8 py-10 text-center text-red-400">{error}</div>;
+    return <div className="bg-theme-bg px-8 py-10 text-center text-red-500">{error}</div>;
   }
 
   if (!products.length) {
-    return <div className="bg-black px-8 py-10 text-center text-gray-400">No products added yet.</div>;
+    return <div className="bg-theme-bg px-8 py-10 text-center text-theme-text-muted italic">No products added yet.</div>;
   }
 
   return (
-    <div className="bg-black p-8 text-white">
+    <div className="bg-theme-bg p-8 text-theme-text">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
         {products.map((item) => (
           <div
             key={item._id}
-            className="group overflow-hidden rounded-xl bg-gray-900 shadow-lg transition hover:scale-105"
+            className="group overflow-hidden rounded-xl bg-theme-panel shadow-lg border border-theme-border transition hover:scale-[1.02] duration-300"
           >
             <div className="relative">
               <img
@@ -70,12 +70,12 @@ export default function FabricsGrid() {
                 className="h-48 w-full object-cover"
               />
 
-              <span className="absolute left-2 top-2 rounded bg-black/60 px-2 py-1 text-xs">
+              <span className="absolute left-2 top-2 rounded bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
                 {item.category || "Tailor Product"}
               </span>
 
               {Number(item.stock) <= 5 ? (
-                <span className="absolute right-2 top-2 rounded bg-red-600 px-2 py-1 text-xs">
+                <span className="absolute right-2 top-2 rounded bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
                   LOW STOCK
                 </span>
               ) : null}
@@ -83,16 +83,16 @@ export default function FabricsGrid() {
 
             <div className="p-4">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="text-sm font-semibold leading-tight">{item.productName}</h3>
+                <h3 className="text-sm font-semibold leading-tight text-theme-text">{item.productName}</h3>
 
-                <span className="font-semibold text-yellow-400">{formatPrice(item.price)}</span>
+                <span className="font-bold text-theme-accent">{formatPrice(item.price)}</span>
               </div>
 
               {item.description ? (
-                <p className="mt-3 line-clamp-2 text-xs text-gray-400">{item.description}</p>
+                <p className="mt-3 line-clamp-2 text-xs text-theme-text-muted font-light">{item.description}</p>
               ) : null}
 
-              <p className="mt-3 text-xs text-gray-400">Stock: {item.stock ?? 0}</p>
+              <p className="mt-3 text-xs text-theme-text-muted font-light">Stock: {item.stock ?? 0}</p>
             </div>
           </div>
         ))}

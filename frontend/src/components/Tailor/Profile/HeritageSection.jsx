@@ -13,40 +13,40 @@ export default function HeritageSection() {
     "Add your shop description from settings to tell customers about your tailoring style, expertise, and services.";
 
   return (
-    <div className="bg-black text-white p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
+    <div className="bg-theme-bg text-theme-text p-8 grid grid-cols-1 lg:grid-cols-2 gap-10 border-b border-theme-border">
       <div>
-        <p className="text-yellow-400 text-xs tracking-widest mb-4">
+        <p className="text-theme-accent text-xs tracking-[0.18em] font-bold mb-4 font-serif">
           HERITAGE & PHILOSOPHY
         </p>
 
-        <p className="italic text-yellow-200 text-lg leading-relaxed mb-6">
+        <p className="font-serif italic text-theme-text/90 text-lg leading-relaxed mb-6 pl-4 border-l-2 border-theme-accent/30">
           "{tailor?.professionalTitle || "MASTER TAILOR & DESIGNER"}"
         </p>
 
-        <p className="text-gray-400 leading-relaxed">
+        <p className="text-theme-text-muted leading-relaxed font-light">
           {description}
         </p>
       </div>
 
-      <div className="bg-gray-900 p-6 rounded-xl shadow-lg">
-        <p className="text-gray-400 text-xs mb-4">
+      <div className="bg-theme-panel p-6 rounded-xl shadow-lg border border-theme-border">
+        <p className="text-theme-text-muted text-[10px] font-bold tracking-[0.18em] uppercase mb-4">
           TECHNICAL EXPERTISE
         </p>
 
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="flex flex-wrap gap-2.5 mb-6">
           {specializations.map((item) => (
             <span
               key={item}
-              className="border border-yellow-400 text-yellow-400 text-xs px-3 py-1 rounded-full"
+              className="border border-theme-accent/20 bg-theme-accent-muted text-theme-accent text-xs px-3.5 py-1 rounded-full font-medium"
             >
               {item}
             </span>
           ))}
         </div>
 
-        <div className="bg-black p-4 rounded-lg border-l-4 border-yellow-400">
-          <p className="text-xs text-gray-400 mb-1">SHOP ADDRESS</p>
-          <p className="text-sm">
+        <div className="bg-theme-bg p-4 rounded-lg border-l-4 border-theme-accent border border-theme-border/50">
+          <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-theme-text-muted mb-1">SHOP ADDRESS</p>
+          <p className="text-sm font-light text-theme-text-muted leading-relaxed">
             {tailor?.shopAddress || "Add your shop address from settings."}
           </p>
         </div>

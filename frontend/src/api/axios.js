@@ -44,7 +44,6 @@ api.interceptors.response.use(
         localStorage.removeItem("tailor");
         localStorage.removeItem("accessToken");
 
-        window.location.href = "/auth";
         return Promise.reject(refreshError);
       }
     }

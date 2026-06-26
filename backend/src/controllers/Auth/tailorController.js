@@ -180,6 +180,8 @@ export const updateTailorProfile = async (req, res) => {
             specializations,
             keySkills,
             identityStatus,
+            currentPassword,
+            newPassword,
         } = req.body;
 
         if (typeof tailorName === "string") {
@@ -253,6 +255,24 @@ export const updateTailorProfile = async (req, res) => {
 
         if (typeof identityStatus === "string") {
             tailor.identityStatus = identityStatus.trim() || "Verified";
+        }
+
+        if (currentPassword || newPassword) {
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ message: "Current password and new password are required" });
+            }
+
+            if (String(newPassword).trim().length < 6) {
+                return res.status(400).json({ message: "New password must be at least 6 characters" });
+            }
+
+            const isPasswordOk = await bcrypt.compare(currentPassword, tailor.tailorPassword);
+
+            if (!isPasswordOk) {
+                return res.status(400).json({ message: "Current password is incorrect" });
+            }
+
+            tailor.tailorPassword = await bcrypt.hash(newPassword, 10);
         }
 
         await tailor.save();

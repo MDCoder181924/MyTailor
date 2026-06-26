@@ -12,25 +12,25 @@ function HeroSection() {
   });
 
   return (
-    <div className="flex items-center justify-between bg-black px-8 py-10 text-white">
+    <div className="flex items-center justify-between bg-theme-bg px-8 py-10 text-theme-text">
       <div>
         <h1 className="text-4xl font-serif font-bold leading-tight md:text-5xl">
           Welcome Back,
           <br />
           {tailor?.tailorName || "Tailor"}
         </h1>
-        <p className="mt-3 text-sm tracking-[0.2em] text-yellow-400">
+        <p className="mt-3 text-sm font-bold tracking-[0.2em] text-theme-accent">
           {tailor?.shopName || "MYTAILOR STUDIO"}
         </p>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg bg-gray-900 px-5 py-3 shadow-lg">
-        <div className="rounded-md bg-yellow-400 p-2 text-black">
+      <div className="flex items-center gap-3 rounded-lg bg-theme-panel px-5 py-3 shadow-lg border border-theme-border">
+        <div className="rounded-md bg-yellow-400 text-black p-2">
           <Calendar size={18} />
         </div>
 
         <div>
-          <p className="text-xs text-gray-400">CURRENT SESSION</p>
+          <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">CURRENT SESSION</p>
           <p className="text-sm font-semibold">{currentDate}</p>
         </div>
       </div>
