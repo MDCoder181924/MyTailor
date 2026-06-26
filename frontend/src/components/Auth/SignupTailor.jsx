@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import api from '../../api/axios';
+import { toast } from 'react-hot-toast';
 
 const SignupTailor = ({  onSwitch, identity }) => {
     const [tailorName, setName] = useState("");
@@ -8,8 +10,6 @@ const SignupTailor = ({  onSwitch, identity }) => {
     const [tailorPassword1, setPassword1] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
-
     const onSubmitTailorSignup = async (e) => {
       e.preventDefault();
 
@@ -17,51 +17,42 @@ const SignupTailor = ({  onSwitch, identity }) => {
       const normalizedMobile = tailorMobileNumber.replace(/\D/g, "");
 
       if (!tailorName.trim() || !normalizedEmail || !normalizedMobile || !tailorPassword) {
-        alert("Badha fields bharva jaruri chhe.");
+        toast.error("Badha fields bharva jaruri chhe.");
         return;
       }
 
       if (normalizedMobile.length < 10) {
-        alert("Valid mobile number enter karo.");
+        toast.error("Valid mobile number enter karo.");
         return;
       }
 
       if (tailorPassword !== tailorPassword1) {
-        alert("Password not match");
+        toast.error("Password not match");
         return;
       }
 
       try {
         setIsSubmitting(true);
 
-        const res = await fetch(`${apiBaseUrl}/api/tailor/signup`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            tailorName: tailorName.trim(),
-            tailorEmail: normalizedEmail,
-            tailorMobileNumber: normalizedMobile,
-            tailorPassword
-          })
+        const res = await api.post("/api/tailor/signup", {
+          tailorName: tailorName.trim(),
+          tailorEmail: normalizedEmail,
+          tailorMobileNumber: normalizedMobile,
+          tailorPassword
         });
 
-        const data = await res.json();
+        const data = res.data;
 
-        if (res.ok) {
-          alert(data.message || "Tailor signup success");
-          setName("");
-          setEmail("");
-          setPhoneNumber("");
-          setPassword("");
-          setPassword1("");
-          onSwitch("login");
-        } else {
-          alert(data.message || "Tailor signup failed");
-        }
+        toast.success(data.message || "Tailor signup success");
+        setName("");
+        setEmail("");
+        setPhoneNumber("");
+        setPassword("");
+        setPassword1("");
+        onSwitch("login");
       } catch (error) {
-        alert("Server sathe connect thai shakyu nathi. Backend chalu chhe ke nai te check karo.");
+        const errMsg = error.response?.data?.message || "Server sathe connect thai shakyu nathi. Backend chalu chhe ke nai te check karo.";
+        toast.error(errMsg);
       } finally {
         setIsSubmitting(false);
       }
@@ -153,4 +144,4 @@ const SignupTailor = ({  onSwitch, identity }) => {
   )
 }
 
-export default SignupTailor
+export default SignupTailor;

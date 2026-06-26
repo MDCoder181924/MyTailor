@@ -2,10 +2,9 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Camera, ChevronRight, Lock, Minus, Plus, ShieldCheck, X } from "lucide-react";
 import defaultTailorImage from "../../../assets/images/by-defalt-tailor-img.avif";
 import { AuthContext } from "../../../context/AuthContext";
-import { authFetch } from "../../../utils/authFetch.jsx";
+import api from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
-
-const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
+import { toast } from "react-hot-toast";
 
 const getInitialForm = (tailor) => ({
   tailorName: tailor?.tailorName || "My Tailor",
@@ -127,18 +126,16 @@ export default function TailorSetting() {
   useEffect(() => {
     const loadTailorProfile = async () => {
       try {
-        const res = await authFetch(`${apiBaseUrl}/api/tailor/profile`);
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to load tailor profile");
-        }
+        const res = await api.get("/api/tailor/profile");
+        const data = res.data;
 
         setTailor(data.tailor);
         localStorage.setItem("tailor", JSON.stringify(data.tailor));
         setForm(getInitialForm(data.tailor));
       } catch (err) {
-        setError(err.message || "Failed to load tailor profile");
+        const errMsg = err.response?.data?.message || err.message || "Failed to load tailor profile";
+        setError(errMsg);
+        toast.error(errMsg);
       } finally {
         setIsLoading(false);
       }
@@ -215,26 +212,18 @@ export default function TailorSetting() {
         identityStatus: form.identityStatus,
       };
 
-      const res = await authFetch(`${apiBaseUrl}/api/tailor/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to update tailor profile");
-      }
+      const res = await api.patch("/api/tailor/profile", payload);
+      const data = res.data;
 
       setTailor(data.tailor);
       localStorage.setItem("tailor", JSON.stringify(data.tailor));
       setForm(getInitialForm(data.tailor));
       setMessage("Profile updated successfully.");
+      toast.success("Profile updated successfully.");
     } catch (err) {
-      setError(err.message || "Failed to update tailor profile");
+      const errMsg = err.response?.data?.message || err.message || "Failed to update tailor profile";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsSaving(false);
     }
@@ -242,9 +231,7 @@ export default function TailorSetting() {
 
   const handleLogout = async () => {
     try {
-      await authFetch(`${apiBaseUrl}/api/tailor/logout`, {
-        method: "POST",
-      });
+      await api.post("/api/tailor/logout");
     } catch {
       // Keep logout resilient even if the request fails.
     } finally {

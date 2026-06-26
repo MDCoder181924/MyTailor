@@ -1,89 +1,55 @@
-import { authFetch } from "./authFetch";
-
-const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
-
-const parseResponse = async (res) => {
-  const rawResponse = await res.text();
-
-  try {
-    return rawResponse ? JSON.parse(rawResponse) : {};
-  } catch {
-    return { message: rawResponse || "Unexpected server response" };
-  }
-};
+import api from "../api/axios";
 
 export const createOrder = async (payload) => {
-  const res = await authFetch(`${apiBaseUrl}/api/orders`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Order save failed");
+  try {
+    const res = await api.post("/api/orders", payload);
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Order save failed");
   }
-
-  return data;
 };
 
 export const getUserOrders = async () => {
-  const res = await authFetch(`${apiBaseUrl}/api/orders/mine`);
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to fetch orders");
+  try {
+    const res = await api.get("/api/orders/mine");
+    return Array.isArray(res.data.orders) ? res.data.orders : [];
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch orders");
   }
-
-  return Array.isArray(data.orders) ? data.orders : [];
 };
 
 export const getTailorOrders = async () => {
-  const res = await authFetch(`${apiBaseUrl}/api/orders/tailor`);
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to fetch tailor orders");
+  try {
+    const res = await api.get("/api/orders/tailor");
+    return Array.isArray(res.data.orders) ? res.data.orders : [];
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch tailor orders");
   }
-
-  return Array.isArray(data.orders) ? data.orders : [];
 };
 
 export const completeTailorOrder = async (orderId) => {
-  const res = await authFetch(`${apiBaseUrl}/api/orders/${orderId}/status`, {
-    method: "PATCH",
-  });
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to update order status");
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/status`);
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to update order status");
   }
-
-  return data.order;
 };
 
 export const getTailorNotifications = async () => {
-  const res = await authFetch(`${apiBaseUrl}/api/orders/tailor/notifications`);
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to fetch notifications");
+  try {
+    const res = await api.get("/api/orders/tailor/notifications");
+    return Array.isArray(res.data.notifications) ? res.data.notifications : [];
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch notifications");
   }
-
-  return Array.isArray(data.notifications) ? data.notifications : [];
 };
 
 export const markTailorNotificationsRead = async () => {
-  const res = await authFetch(`${apiBaseUrl}/api/orders/tailor/notifications/read`, {
-    method: "PATCH",
-  });
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to update notifications");
+  try {
+    const res = await api.patch("/api/orders/tailor/notifications/read");
+    return Array.isArray(res.data.notifications) ? res.data.notifications : [];
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to update notifications");
   }
-
-  return Array.isArray(data.notifications) ? data.notifications : [];
 };

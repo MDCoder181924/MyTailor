@@ -1,6 +1,7 @@
 import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { createProduct } from "../../../utils/productUtils";
+import { toast } from "react-hot-toast";
 
 const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
@@ -35,7 +36,7 @@ export default function UploadProduct() {
       setMediaPreview(URL.createObjectURL(file));
     }
     else {
-      alert("Please upload a valid image file (JPG, PNG, etc.)");
+      toast.error("Please upload a valid image file (JPG, PNG, etc.)");
     }
   };
 
@@ -78,22 +79,22 @@ export default function UploadProduct() {
     e.preventDefault();
 
     if (!tailor?._id) {
-      alert("Please login as tailor first.");
+      toast.error("Please login as tailor first.");
       return;
     }
 
     if (!productName.trim()) {
-      alert("Please enter product name.");
+      toast.error("Please enter product name.");
       return;
     }
 
     if (prise === "" || Number(prise) < 0) {
-      alert("Please enter valid price.");
+      toast.error("Please enter valid price.");
       return;
     }
 
     if (stock === "" || Number(stock) < 0) {
-      alert("Please enter valid stock.");
+      toast.error("Please enter valid stock.");
       return;
     }
 
@@ -112,10 +113,10 @@ export default function UploadProduct() {
         image,
       });
 
-      alert("Product saved successfully");
+      toast.success("Product saved successfully");
       resetForm();
     } catch (err) {
-      alert(err.message || "Server error while saving product");
+      toast.error(err.message || "Server error while saving product");
     } finally {
       setIsSubmitting(false);
     }

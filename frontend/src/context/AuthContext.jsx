@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { authFetch } from "../utils/authFetch";
+import api from "../api/axios";
 
 export const AuthContext = createContext();
 
@@ -16,44 +16,34 @@ export const AuthProvider = ({ children }) => {
 
     const [user, setUser] = useState(() => readStoredAccount("user"));
     const [tailor, setTailor] = useState(() => readStoredAccount("tailor"));
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
+                const accountRes = await api.get("/api/auth/me");
+                const data = accountRes.data;
 
-                const accountRes = await authFetch(`${apiBaseUrl}/api/auth/me`);
-
-                if (accountRes.ok) {
-                    const data = await accountRes.json();
-
-                    if (data.role === "user") {
-                        setUser(data.user);
-                        localStorage.setItem("user", JSON.stringify(data.user));
-                        setTailor(null);
-                        localStorage.removeItem("tailor");
-                        return;
-                    }
-
-                    if (data.role === "tailor") {
-                        setTailor(data.tailor);
-                        localStorage.setItem("tailor", JSON.stringify(data.tailor));
-                        setUser(null);
-                        localStorage.removeItem("user");
-                        return;
-                    }
+                if (data.role === "user") {
+                    setUser(data.user);
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                    setTailor(null);
+                    localStorage.removeItem("tailor");
+                } else if (data.role === "tailor") {
+                    setTailor(data.tailor);
+                    localStorage.setItem("tailor", JSON.stringify(data.tailor));
+                    setUser(null);
+                    localStorage.removeItem("user");
                 }
-
-                if (accountRes.status === 401 || accountRes.status === 403 || accountRes.status === 404) {
+            } catch (err) {
+                console.log("Auth check failed");
+                const status = err.response?.status;
+                if (status === 401 || status === 403 || status === 404) {
                     setUser(null);
                     setTailor(null);
                     localStorage.removeItem("user");
                     localStorage.removeItem("tailor");
                 }
-
-            } catch (err) {
-                console.log("Auth check failed");
             } finally {
                 setLoading(false);
             }

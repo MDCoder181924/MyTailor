@@ -1,35 +1,19 @@
-import { authFetch } from "./authFetch";
-
-const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
-
-const parseResponse = async (res) => {
-  const rawResponse = await res.text();
-
-  try {
-    return rawResponse ? JSON.parse(rawResponse) : {};
-  } catch {
-    return { message: rawResponse || "Unexpected server response" };
-  }
-};
+import api from "../api/axios";
 
 export const getTailors = async () => {
-  const res = await authFetch(`${apiBaseUrl}/api/tailor`);
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to fetch tailors");
+  try {
+    const res = await api.get("/api/tailor");
+    return res.data.tailors || [];
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch tailors");
   }
-
-  return data.tailors || [];
 };
 
 export const getTailorById = async (tailorId) => {
-  const res = await authFetch(`${apiBaseUrl}/api/tailor/${tailorId}`);
-  const data = await parseResponse(res);
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to fetch tailor");
+  try {
+    const res = await api.get(`/api/tailor/${tailorId}`);
+    return res.data.tailor || null;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch tailor");
   }
-
-  return data.tailor || null;
 };

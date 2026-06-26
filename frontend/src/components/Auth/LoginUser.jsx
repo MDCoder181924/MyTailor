@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-
+import api from '../../api/axios';
+import { toast } from 'react-hot-toast';
 
 const LoginUser = ({ onSwitch, identity }) => {
   const [userEmail, setEmail] = useState("");
@@ -9,9 +10,7 @@ const LoginUser = ({ onSwitch, identity }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const { setUser, setTailor } = useContext(AuthContext)
-
-  const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
+  const { setUser, setTailor } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -19,35 +18,25 @@ const LoginUser = ({ onSwitch, identity }) => {
     try {
       setIsSubmitting(true);
 
-      const res = await fetch(`${apiBaseUrl}/api/user/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          userEmail,
-          userPassword
-        })
+      const res = await api.post("/api/user/login", {
+        userEmail,
+        userPassword
       });
 
-      const data = await res.json();
+      const data = res.data;
 
-      if (res.ok) {
-        alert(data.message)
-        setUser(data.user)
-        setTailor(null);
-        localStorage.removeItem("tailor")
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.removeItem("accessToken");
+      toast.success(data.message || "Logged in successfully!");
+      setUser(data.user);
+      setTailor(null);
+      localStorage.removeItem("tailor");
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.removeItem("accessToken");
 
-        navigate("/deshboard");
-      } else {
-        alert(data.message || "Login failed");
-      }
+      navigate("/deshboard");
 
     } catch (err) {
-      alert("Server error");
+      const errMsg = err.response?.data?.message || "Login failed";
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,4 +74,4 @@ const LoginUser = ({ onSwitch, identity }) => {
   )
 }
 
-export default LoginUser
+export default LoginUser;

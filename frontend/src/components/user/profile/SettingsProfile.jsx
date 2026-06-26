@@ -14,9 +14,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
-import { authFetch } from "../../../utils/authFetch.jsx";
-
-const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
+import api from "../../../api/axios";
+import { toast } from "react-hot-toast";
 
 const defaultAvatar =
   "data:image/svg+xml;utf8," +
@@ -146,28 +145,26 @@ export default function SettingsProfile() {
     setForm(getInitialForm(user));
   }, [user]);
 
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        const res = await authFetch(`${apiBaseUrl}/api/user/profile`);
-        const data = await res.json();
+    useEffect(() => {
+      const loadUserProfile = async () => {
+        try {
+          const res = await api.get("/api/user/profile");
+          const data = res.data;
 
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to load user profile");
+          setUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          setForm(getInitialForm(data.user));
+        } catch (err) {
+          const errMsg = err.response?.data?.message || err.message || "Failed to load user profile";
+          setError(errMsg);
+          toast.error(errMsg);
+        } finally {
+          setIsLoading(false);
         }
+      };
 
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        setForm(getInitialForm(data.user));
-      } catch (err) {
-        setError(err.message || "Failed to load user profile");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserProfile();
-  }, [setUser]);
+      loadUserProfile();
+    }, [setUser]);
 
   const setField = (field) => (event) => {
     setMessage("");
@@ -237,26 +234,18 @@ export default function SettingsProfile() {
         payload.newPassword = form.newPassword;
       }
 
-      const res = await authFetch(`${apiBaseUrl}/api/user/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to update user profile");
-      }
+      const res = await api.patch("/api/user/profile", payload);
+      const data = res.data;
 
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
       setForm(getInitialForm(data.user));
       setMessage("Profile updated successfully.");
+      toast.success("Profile updated successfully.");
     } catch (err) {
-      setError(err.message || "Failed to update user profile");
+      const errMsg = err.response?.data?.message || err.message || "Failed to update user profile";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsSaving(false);
     }
@@ -264,9 +253,7 @@ export default function SettingsProfile() {
 
   const handleLogout = async () => {
     try {
-      await authFetch(`${apiBaseUrl}/api/user/logout`, {
-        method: "POST",
-      });
+      await api.post("/api/user/logout");
     } catch {
       // Keep logout resilient even if the request fails.
     } finally {

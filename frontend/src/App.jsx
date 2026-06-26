@@ -1,13 +1,15 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from './context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
     return (
         <AuthProvider>
             <BrowserRouter>
                 <AppRoutes />
+                <Toaster position="top-center" reverseOrder={false} />
             </BrowserRouter>
         </AuthProvider>
     );

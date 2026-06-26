@@ -1,52 +1,42 @@
 import React, { useState } from 'react';
+import api from '../../api/axios';
+import { toast } from 'react-hot-toast';
 
-const SignupUser = ({  onSwitch, identity }) => {
+const SignupUser = ({ onSwitch, identity }) => {
   const [userFullName, setName] = useState("");
   const [userEmail, setEmail] = useState("");
   const [userPassword, setPassword] = useState("");
   const [userPassword1, setPassword1] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
-
   const onSubmitUserSignUp = async (e) => {
-
     e.preventDefault();
     if (userPassword !== userPassword1) {
-      alert("Password not match");
+      toast.error("Password not match");
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      const res = await fetch(`${apiBaseUrl}/api/user/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          userFullName: userFullName.trim(),
-          userEmail: userEmail.trim(),
-          userPassword
-        })
+      const res = await api.post("/api/user/signup", {
+        userFullName: userFullName.trim(),
+        userEmail: userEmail.trim(),
+        userPassword
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        alert(data.message || "Signup Success");
-        setEmail("");
-        setName("");
-        setPassword("");
-        setPassword1("");
-        onSwitch("login");
-      }
-      else {
-        alert(data.message || data.error || "Signup failed");
-      }
+      const data = res.data;
+
+      toast.success(data.message || "Signup Success");
+      setEmail("");
+      setName("");
+      setPassword("");
+      setPassword1("");
+      onSwitch("login");
     }
     catch (error) {
-      alert("Server sathe connect thai shakyu nathi. Backend chalu chhe ke nai te check karo.");
+      const errMsg = error.response?.data?.message || "Server sathe connect thai shakyu nathi. Backend chalu chhe ke nai te check karo.";
+      toast.error(errMsg);
     }
     finally {
       setIsSubmitting(false);
@@ -108,4 +98,4 @@ const SignupUser = ({  onSwitch, identity }) => {
   )
 }
 
-export default SignupUser
+export default SignupUser;

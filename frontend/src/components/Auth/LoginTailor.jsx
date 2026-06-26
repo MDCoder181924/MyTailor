@@ -1,7 +1,8 @@
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-
+import api from '../../api/axios';
+import { toast } from 'react-hot-toast';
 
 const LoginTailor = ({  onSwitch, identity }) => {
   
@@ -12,47 +13,35 @@ const LoginTailor = ({  onSwitch, identity }) => {
   const navigate = useNavigate();
   const {setTailor , setUser} = useContext(AuthContext);
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location && window.location.hostname && window.location.hostname.includes("vercel.app") ? "https://mytailor-n8jn.onrender.com" : "http://localhost:5000");
-
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
       setIsSubmitting(true);
 
-      const res = await fetch(`${apiBaseUrl}/api/tailor/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          tailorEmail: tailorEmail.trim().toLowerCase(),
-          tailorPassword
-        })
+      const res = await api.post("/api/tailor/login", {
+        tailorEmail: tailorEmail.trim().toLowerCase(),
+        tailorPassword
       });
 
-      const data = await res.json();
+      const data = res.data;
 
-      if (res.ok) {
-        setTailor(data.tailor)
-        setUser(null)
-        localStorage.setItem("tailor", JSON.stringify(data.tailor));
-        localStorage.removeItem("user")
-        localStorage.removeItem("accessToken");
+      toast.success(data.message || "Logged in successfully!");
+      setTailor(data.tailor)
+      setUser(null)
+      localStorage.setItem("tailor", JSON.stringify(data.tailor));
+      localStorage.removeItem("user")
+      localStorage.removeItem("accessToken");
 
-        navigate("/tailordahboard");
-      } else {
-        alert(data.message || "Tailor login failed");
-      }
+      navigate("/tailordahboard");
 
     } catch (err) {
-      alert("Server error");
+      const errMsg = err.response?.data?.message || "Tailor login failed";
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <form id="tailor-login" className="space-y-4 mt-4" onSubmit={handleLogin}>
@@ -90,4 +79,4 @@ const LoginTailor = ({  onSwitch, identity }) => {
   )
 }
 
-export default LoginTailor
+export default LoginTailor;
