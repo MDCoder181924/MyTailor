@@ -68,3 +68,26 @@ export const getProductsByTailorId = async (tailorId) => {
     throw new Error(err.response?.data?.message || "Failed to fetch tailor products");
   }
 };
+
+export const updateProduct = async (productId, productData) => {
+  try {
+    const res = await api.put(`/api/products/${productId}`, productData);
+    productsCache = null;
+    productsCacheTime = 0;
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Product update failed");
+  }
+};
+
+export const deleteProduct = async (productId) => {
+  try {
+    const res = await api.delete(`/api/products/${productId}`);
+    productsCache = null;
+    productsCacheTime = 0;
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Product deletion failed");
+  }
+};
+

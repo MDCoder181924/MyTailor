@@ -1,5 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
+import { ProtectedRoute, PublicRoute } from "../components/RouteGuard";
 
 const Home = lazy(() => import("../pages/Home"));
 const Auth = lazy(() => import("../pages/Auth"));
@@ -28,22 +29,29 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/deshboard" element={<Dashboard />} />
+        {/* Guest only routes (redirect to dashboard if logged in) */}
+        <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
+        <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+
+        {/* Public pages available to everyone (guest or logged in) */}
         <Route path="/explore" element={<Explore />} />
         <Route path="/explore/:category" element={<ExploreCategory />} />
-        <Route path="/tailordahboard" element={<TailorDashboard />} />
-        <Route path="/OrdersList" element={<OrdersListPage />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/addproduct" element={<AddProduct />} />
         <Route path="/Artisans" element={<Artisans />} />
         <Route path="/tailors/:tailorId" element={<TailorPublicProfile />} />
-        <Route path="/OrderList" element={<OrderList />} />
-        <Route path="/TailorSettings" element={<TailorProfileSettings />} />
-        <Route path="/OrdarProduct" element={<OrderProduct />} />
-        <Route path="/userProfiie" element={<UserProfiie />} />
+
+        {/* Customer only routes */}
+        <Route path="/deshboard" element={<ProtectedRoute allowedRole="user"><Dashboard /></ProtectedRoute>} />
+        <Route path="/OrderList" element={<ProtectedRoute allowedRole="user"><OrderList /></ProtectedRoute>} />
+        <Route path="/OrdarProduct" element={<ProtectedRoute allowedRole="user"><OrderProduct /></ProtectedRoute>} />
+        <Route path="/userProfiie" element={<ProtectedRoute allowedRole="user"><UserProfiie /></ProtectedRoute>} />
+
+        {/* Tailor only routes */}
+        <Route path="/tailordahboard" element={<ProtectedRoute allowedRole="tailor"><TailorDashboard /></ProtectedRoute>} />
+        <Route path="/OrdersList" element={<ProtectedRoute allowedRole="tailor"><OrdersListPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute allowedRole="tailor"><Profile /></ProtectedRoute>} />
+        <Route path="/inventory" element={<ProtectedRoute allowedRole="tailor"><Inventory /></ProtectedRoute>} />
+        <Route path="/addproduct" element={<ProtectedRoute allowedRole="tailor"><AddProduct /></ProtectedRoute>} />
+        <Route path="/TailorSettings" element={<ProtectedRoute allowedRole="tailor"><TailorProfileSettings /></ProtectedRoute>} />
       </Routes>
     </Suspense>
   );

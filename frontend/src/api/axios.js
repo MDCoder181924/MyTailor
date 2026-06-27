@@ -44,6 +44,9 @@ api.interceptors.response.use(
         localStorage.removeItem("tailor");
         localStorage.removeItem("accessToken");
 
+        // Dispatch custom window event to notify AuthContext to update React state
+        window.dispatchEvent(new Event("auth-logout"));
+
         return Promise.reject(refreshError);
       }
     }

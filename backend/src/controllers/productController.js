@@ -78,3 +78,80 @@ export const getProductsByTailorId = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { productName, description, category, price, stock, fabrics, sizes, image } = req.body;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.tailor.toString() !== req.user.id) {
+      return res.status(403).json({ message: "You are not authorized to update this product" });
+    }
+
+    if (productName !== undefined) product.productName = productName.trim();
+    if (description !== undefined) product.description = description?.trim() || "";
+    if (category !== undefined) product.category = category.trim();
+    
+    if (price !== undefined) {
+      const parsedPrice = Number(price);
+      if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+        return res.status(400).json({ message: "Valid price is required" });
+      }
+      product.price = parsedPrice;
+    }
+
+    if (stock !== undefined) {
+      const parsedStock = Number(stock);
+      if (Number.isNaN(parsedStock) || parsedStock < 0) {
+        return res.status(400).json({ message: "Valid stock is required" });
+      }
+      product.stock = parsedStock;
+    }
+
+    if (fabrics !== undefined) product.fabrics = Array.isArray(fabrics) ? fabrics : [];
+    if (sizes !== undefined) product.sizes = Array.isArray(sizes) ? sizes : [];
+    if (image !== undefined) product.image = image || "";
+
+    await product.save();
+    
+    const updatedProduct = await Product.findById(id).populate("tailor", tailorSelect);
+
+    res.json({
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.tailor.toString() !== req.user.id) {
+      return res.status(403).json({ message: "You are not authorized to delete this product" });
+    }
+
+    await Product.findByIdAndDelete(id);
+
+    res.json({
+      message: "Product deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+

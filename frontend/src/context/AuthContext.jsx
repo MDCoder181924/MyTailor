@@ -52,6 +52,20 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
+    useEffect(() => {
+        const handleLogoutEvent = () => {
+            setUser(null);
+            setTailor(null);
+            localStorage.removeItem("user");
+            localStorage.removeItem("tailor");
+        };
+
+        window.addEventListener("auth-logout", handleLogoutEvent);
+        return () => {
+            window.removeEventListener("auth-logout", handleLogoutEvent);
+        };
+    }, []);
+
     return (
         <AuthContext.Provider value={{ user, setUser, tailor, setTailor, loading }}>
             {children}

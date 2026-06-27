@@ -407,7 +407,7 @@ export default function OrderProduct() {
               <img
                 src={getSafeImage(product.image)}
                 alt={product.productName}
-                className="h-64 w-full object-cover"
+                className="w-full h-auto aspect-[3/4] object-cover object-top"
               />
             </div>
 

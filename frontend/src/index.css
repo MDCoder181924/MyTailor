@@ -67,6 +67,7 @@ html.light .bg-\[\#0b0b0b\],
 html.light .bg-\[\#050505\],
 html.light .bg-\[\#000\],
 html.light .bg-\[\#000000\],
+html.light .bg-\[\#0b0f17\],
 html.light .bg-neutral-950,
 html.light .bg-zinc-950,
 html.light .bg-stone-950 {
@@ -88,7 +89,10 @@ html.light .bg-\[\#151515\],
 html.light .bg-\[\#161616\],
 html.light .bg-\[\#181818\],
 html.light .bg-\[\#2a2a2a\],
-html.light .bg-\[\#2c2c2c\] {
+html.light .bg-\[\#2c2c2c\],
+html.light .bg-\[\#0f0f0f\],
+html.light .bg-\[\#101010\],
+html.light .bg-\[\#0d0d0d\] {
   background-color: var(--theme-panel) !important;
 }
 
@@ -122,12 +126,47 @@ html.light .text-yellow-500 {
   color: var(--theme-accent) !important;
 }
 
+html.light .hover\:text-yellow-400:hover,
+html.light .hover\:text-yellow-300:hover,
+html.light .hover\:text-yellow-500:hover {
+  color: var(--theme-accent) !important;
+}
+
 html.light .bg-yellow-400,
 html.light .bg-yellow-300,
 html.light .bg-yellow-500 {
   background-color: var(--theme-accent) !important;
   color: #ffffff !important; /* Premium white text for dark blue buttons */
 }
+
+html.light .hover\:bg-yellow-400:hover,
+html.light .hover\:bg-yellow-300:hover,
+html.light .hover\:bg-yellow-500:hover {
+  background-color: var(--theme-accent) !important;
+  color: #ffffff !important;
+}
+
+html.light .hover\:border-yellow-400:hover,
+html.light .hover\:border-yellow-300:hover,
+html.light .hover\:border-yellow-500:hover {
+  border-color: var(--theme-accent) !important;
+}
+
+/* Overriding Zinc button backgrounds in light mode */
+html.light .bg-zinc-800 {
+  background-color: var(--theme-panel) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+html.light .hover\:bg-zinc-700:hover {
+  background-color: var(--theme-accent-muted) !important;
+  color: var(--theme-accent) !important;
+}
+
+html.light .hover\:bg-zinc-800:hover {
+  background-color: var(--theme-bg) !important;
+}
+
 
 /* Overriding Borders and Separators */
 html.light .border-white\/10,
@@ -237,6 +276,11 @@ html.light .bg-black\/60 {
   background-color: var(--theme-panel) !important;
   border-color: var(--theme-border) !important;
   box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light .bg-black\/40 {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+  border-color: var(--theme-border) !important;
 }
 
 html.light .bg-white\/5 {
