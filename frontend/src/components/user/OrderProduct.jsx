@@ -2,6 +2,94 @@ import { useState } from "react";
 
 const SIZES = ["S", "M", "L", "XL", "2XL"];
 
+const BRANDS = [
+  { id: "custom", name: "Custom Tailor" },
+  { id: "zara", name: "Zara" },
+  { id: "hnm", name: "H&M" },
+  { id: "levis", name: "Levi's" },
+  { id: "adidas", name: "Adidas" },
+  { id: "nike", name: "Nike" },
+];
+
+const BRAND_SIZE_CHARTS = {
+  zara: {
+    title: "Zara Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Sleeve (in)"],
+    rows: [
+      ["XS", "34", "30", "31.5"],
+      ["S", "36", "32", "32"],
+      ["M", "38", "34", "32.5"],
+      ["L", "40", "36", "33"],
+      ["XL", "42", "38", "33.5"],
+      ["2XL", "44", "40", "34"],
+      ["3XL", "46", "42", "34.5"]
+    ]
+  },
+  hnm: {
+    title: "H&M Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Sleeve (in)"],
+    rows: [
+      ["XS", "32-34", "28-30", "31"],
+      ["S", "36-38", "31-33", "32"],
+      ["M", "40-42", "34-36", "33"],
+      ["L", "44-46", "38-40", "34"],
+      ["XL", "48-50", "42-44", "35"],
+      ["2XL", "52-54", "46-48", "36"]
+    ]
+  },
+  levis: {
+    title: "Levi's Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Neck (in)"],
+    rows: [
+      ["XS", "32-34", "26-28", "13.5-14"],
+      ["S", "35-37", "29-31", "14-14.5"],
+      ["M", "38-40", "32-34", "15-15.5"],
+      ["L", "41-43", "36-38", "16-16.5"],
+      ["XL", "44-46", "40-42", "17-17.5"],
+      ["2XL", "47-49", "44-46", "18-18.5"]
+    ]
+  },
+  adidas: {
+    title: "Adidas Sizing Guide",
+    headers: ["Size", "Waist (in)", "Chest (in)", "Hip (in)"],
+    rows: [
+      ["XS", "27-29", "31-33", "32-34"],
+      ["S", "30-32", "34-37", "35-37"],
+      ["M", "33-35", "37-40", "38-40"],
+      ["L", "36-38", "40-44", "40-44"],
+      ["XL", "39-41", "44-48", "44-48"],
+      ["2XL", "42-45", "48-52", "48-51"]
+    ]
+  },
+  nike: {
+    title: "Nike Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Hip (in)"],
+    rows: [
+      ["XS", "32.5-35", "26-29", "32.5-35"],
+      ["S", "35-37.5", "29-32", "35-37.5"],
+      ["M", "37.5-41", "32-35", "37.5-41"],
+      ["L", "41-44", "35-38", "41-44"],
+      ["XL", "44-48.5", "38-43", "44-48.5"],
+      ["2XL", "48.5-53.5", "43-47.5", "48.5-53.5"]
+    ]
+  },
+  custom: {
+    title: "Custom Tailor Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Shoulder (in)"],
+    rows: [
+      ["XS", "34", "30", "16.5"],
+      ["S", "36", "32", "17"],
+      ["M", "38", "34", "17.5"],
+      ["L", "40", "36", "18"],
+      ["XL", "42", "38", "18.5"],
+      ["2XL", "44", "40", "19"],
+      ["3XL", "46", "42", "19.5"],
+      ["4XL", "48", "44", "20"],
+      ["5XL", "50", "46", "20.5"]
+    ]
+  }
+};
+
 const FABRICS = [
   { id: "imperial",  name: "Imperial Silk",    subtitle: "HAND-LOOMED ITALIAN SILK",  price: 800,  display: "+$800",   included: false },
   { id: "super150",  name: "Super 150s Wool",  subtitle: "ITALIAN MERINO EXCELLENCE", price: 0,    display: "INCLUDED",included: true  },
@@ -193,6 +281,8 @@ function _unused() {
 // ── Main Component ─────────────────────────────────────────────
 export default function OrderProduct() {
   const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedBrand, setSelectedBrand] = useState("custom");
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [selectedFabric, setSelectedFabric] = useState("super150");
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
@@ -231,6 +321,45 @@ export default function OrderProduct() {
         {/* Section 01 */}
         <div style={{ marginBottom: 32 }}>
           <SectionHeader number="01" title="SELECT YOUR FIT" />
+          
+          {/* Brand Selector */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 10, color: "#666", letterSpacing: "0.14em", textTransform: "uppercase" }}>Brand Sizing Standard</span>
+              <button
+                type="button"
+                onClick={() => setIsSizeChartOpen(true)}
+                style={{
+                  background: "none", border: "none", color: "#EAB800", fontSize: 10,
+                  letterSpacing: "0.1em", cursor: "pointer", textTransform: "uppercase",
+                  textDecoration: "underline", padding: 0
+                }}
+              >
+                View Size Chart
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {BRANDS.map((brand) => {
+                const isActive = selectedBrand === brand.id;
+                return (
+                  <button
+                    key={brand.id}
+                    type="button"
+                    onClick={() => setSelectedBrand(brand.id)}
+                    style={{
+                      padding: "6px 12px", borderRadius: 15,
+                      border: `1px solid ${isActive ? "#EAB800" : "#2A2A2A"}`,
+                      backgroundColor: isActive ? "#EAB800" : "transparent",
+                      color: isActive ? "#0E0E0E" : "#888",
+                      fontSize: 10, fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
+                    }}
+                  >
+                    {brand.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
             {SIZES.map((s) => {
               const active = selectedSize === s;
@@ -249,6 +378,7 @@ export default function OrderProduct() {
           </div>
           <p style={{ fontSize: 9, color: "#555", letterSpacing: "0.1em" }}>
             COMPLIMENTARY TAILORING AVAILABLE AFTER PURCHASE
+            {selectedSize && selectedBrand !== "custom" && ` | STANDARD: ${BRANDS.find(b => b.id === selectedBrand)?.name.toUpperCase()} (${selectedSize})`}
           </p>
         </div>
 
@@ -344,6 +474,94 @@ export default function OrderProduct() {
           </svg>
         </button>
       </div>
+
+      {/* Sizing Chart Modal */}
+      {isSizeChartOpen && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 16, backgroundColor: "rgba(0,0,0,0.85)", backdropFilter: "blur(4px)"
+        }}>
+          <div style={{
+            position: "relative", width: "100%", maxWidth: 480,
+            borderRadius: 16, border: "1px solid #2A2A2A", backgroundColor: "#0E0E0E",
+            padding: 24, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)", color: "#FFF",
+            fontFamily: "inherit"
+          }}>
+            <button
+              type="button"
+              onClick={() => setIsSizeChartOpen(false)}
+              style={{
+                position: "absolute", top: 16, right: 16,
+                background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: 18
+              }}
+            >
+              ✕
+            </button>
+            
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#EAB800", marginBottom: 8, marginTop: 0 }}>
+              {BRAND_SIZE_CHARTS[selectedBrand]?.title || "Sizing Guide"}
+            </h3>
+            <p style={{ fontSize: 11, color: "#888", marginBottom: 16, marginTop: 0 }}>
+              Measurements shown below are in inches. Click on any size to select it directly.
+            </p>
+
+            <div style={{ overflowX: "auto", borderRadius: 8, border: "1px solid #2A2A2A", backgroundColor: "#141414" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: 12 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #2A2A2A", backgroundColor: "#1C1C1C", color: "#888", fontSize: 10, textTransform: "uppercase" }}>
+                    {BRAND_SIZE_CHARTS[selectedBrand]?.headers.map((header) => (
+                      <th key={header} style={{ padding: "8px 12px" }}>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {BRAND_SIZE_CHARTS[selectedBrand]?.rows.map((row, idx) => {
+                    const rowSize = row[0];
+                    const isSelectedRow = selectedSize && rowSize.toUpperCase() === selectedSize.toUpperCase();
+                    return (
+                      <tr
+                        key={idx}
+                        style={{
+                          borderBottom: "1px solid #2A2A2A",
+                          backgroundColor: isSelectedRow ? "rgba(234,184,0,0.1)" : "transparent",
+                          color: isSelectedRow ? "#EAB800" : "#CCC",
+                          fontWeight: isSelectedRow ? 700 : 400,
+                          cursor: "pointer"
+                        }}
+                        onClick={() => {
+                          setSelectedSize(rowSize);
+                          setIsSizeChartOpen(false);
+                        }}
+                      >
+                        {row.map((cell, cIdx) => (
+                          <td key={cIdx} style={{ padding: "10px 12px" }}>{cell}</td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 10, color: "#555", fontStyle: "italic" }}>
+                * Click a row to select that size
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsSizeChartOpen(false)}
+                style={{
+                  padding: "8px 16px", borderRadius: 20, backgroundColor: "#EAB800",
+                  border: "none", color: "#0E0E0E", fontSize: 11, fontWeight: 700, cursor: "pointer"
+                }}
+              >
+                Close Guide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

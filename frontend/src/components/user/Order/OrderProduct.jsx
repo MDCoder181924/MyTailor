@@ -6,6 +6,94 @@ import { createOrder } from "../../../utils/orderUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
 
+const BRANDS = [
+  { id: "custom", name: "Custom Tailor" },
+  { id: "zara", name: "Zara" },
+  { id: "hnm", name: "H&M" },
+  { id: "levis", name: "Levi's" },
+  { id: "adidas", name: "Adidas" },
+  { id: "nike", name: "Nike" },
+];
+
+const BRAND_SIZE_CHARTS = {
+  zara: {
+    title: "Zara Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Sleeve (in)"],
+    rows: [
+      ["XS", "34", "30", "31.5"],
+      ["S", "36", "32", "32"],
+      ["M", "38", "34", "32.5"],
+      ["L", "40", "36", "33"],
+      ["XL", "42", "38", "33.5"],
+      ["2XL", "44", "40", "34"],
+      ["3XL", "46", "42", "34.5"]
+    ]
+  },
+  hnm: {
+    title: "H&M Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Sleeve (in)"],
+    rows: [
+      ["XS", "32-34", "28-30", "31"],
+      ["S", "36-38", "31-33", "32"],
+      ["M", "40-42", "34-36", "33"],
+      ["L", "44-46", "38-40", "34"],
+      ["XL", "48-50", "42-44", "35"],
+      ["2XL", "52-54", "46-48", "36"]
+    ]
+  },
+  levis: {
+    title: "Levi's Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Neck (in)"],
+    rows: [
+      ["XS", "32-34", "26-28", "13.5-14"],
+      ["S", "35-37", "29-31", "14-14.5"],
+      ["M", "38-40", "32-34", "15-15.5"],
+      ["L", "41-43", "36-38", "16-16.5"],
+      ["XL", "44-46", "40-42", "17-17.5"],
+      ["2XL", "47-49", "44-46", "18-18.5"]
+    ]
+  },
+  adidas: {
+    title: "Adidas Sizing Guide",
+    headers: ["Size", "Waist (in)", "Chest (in)", "Hip (in)"],
+    rows: [
+      ["XS", "27-29", "31-33", "32-34"],
+      ["S", "30-32", "34-37", "35-37"],
+      ["M", "33-35", "37-40", "38-40"],
+      ["L", "36-38", "40-44", "40-44"],
+      ["XL", "39-41", "44-48", "44-48"],
+      ["2XL", "42-45", "48-52", "48-51"]
+    ]
+  },
+  nike: {
+    title: "Nike Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Hip (in)"],
+    rows: [
+      ["XS", "32.5-35", "26-29", "32.5-35"],
+      ["S", "35-37.5", "29-32", "35-37.5"],
+      ["M", "37.5-41", "32-35", "37.5-41"],
+      ["L", "41-44", "35-38", "41-44"],
+      ["XL", "44-48.5", "38-43", "44-48.5"],
+      ["2XL", "48.5-53.5", "43-47.5", "48.5-53.5"]
+    ]
+  },
+  custom: {
+    title: "Custom Tailor Sizing Guide",
+    headers: ["Size", "Chest (in)", "Waist (in)", "Shoulder (in)"],
+    rows: [
+      ["XS", "34", "30", "16.5"],
+      ["S", "36", "32", "17"],
+      ["M", "38", "34", "17.5"],
+      ["L", "40", "36", "18"],
+      ["XL", "42", "38", "18.5"],
+      ["2XL", "44", "40", "19"],
+      ["3XL", "46", "42", "19.5"],
+      ["4XL", "48", "44", "20"],
+      ["5XL", "50", "46", "20.5"]
+    ]
+  }
+};
+
 const formatPrice = (price) => {
   const numericPrice = Number(price);
 
@@ -48,6 +136,8 @@ export default function OrderProduct() {
   const [product, setProduct] = useState(location.state?.product || null);
   const [selectedFabric, setSelectedFabric] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("custom");
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [shippingDetails, setShippingDetails] = useState({
     fullName: "Alexandria Vane",
@@ -191,10 +281,15 @@ export default function OrderProduct() {
         : product.sizes
           ? [product.sizes]
           : [];
+      const baseSize = selectedSize || sizes[0] || "";
+      const formattedSize = (baseSize && selectedBrand !== "custom")
+        ? `${baseSize} (${BRANDS.find(b => b.id === selectedBrand)?.name})`
+        : baseSize;
+
       await createOrder({
         productId: product._id,
         selectedFabric: selectedFabric || fabrics[0] || "",
-        selectedSize: selectedSize || sizes[0] || "",
+        selectedSize: formattedSize,
         deliveryName: shippingDetails.fullName.trim(),
         deliveryAddress: shippingDetails.address.trim(),
         paymentMethod: payment,
@@ -469,6 +564,45 @@ export default function OrderProduct() {
 
             {product.sizes?.length ? (
               <div className="mb-4">
+                {/* Brand Selector */}
+                <div className="mb-4">
+                  <div className="mb-2 flex justify-between gap-4 text-sm text-gray-400">
+                    <span>Brand Sizing Standard</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className="text-xs text-yellow-400 hover:underline flex items-center gap-1 font-medium"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline mr-0.5">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                        <path d="M6 6h10"/>
+                        <path d="M6 10h10"/>
+                        <path d="M6 14h10"/>
+                      </svg>
+                      View Size Chart
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {BRANDS.map((brand) => {
+                      const isActive = selectedBrand === brand.id;
+                      return (
+                        <button
+                          key={brand.id}
+                          type="button"
+                          onClick={() => setSelectedBrand(brand.id)}
+                          className={`rounded-full border px-4 py-2 text-sm transition ${
+                            isActive
+                              ? "border-yellow-400 bg-yellow-400 text-black font-semibold"
+                              : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
+                          }`}
+                        >
+                          {brand.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="mb-2 flex justify-between gap-4 text-sm text-gray-400">
                   <span>Size</span>
                   <span className="text-right">Choose your fit</span>
@@ -499,7 +633,14 @@ export default function OrderProduct() {
             {selectedFabric || selectedSize ? (
               <div className="mb-2 rounded-xl border border-yellow-400/20 bg-yellow-400/5 p-4 text-sm text-gray-300">
                 {selectedFabric ? <p>Selected material: <span className="font-semibold text-yellow-300">{selectedFabric}</span></p> : null}
-                {selectedSize ? <p>Selected size: <span className="font-semibold text-yellow-300">{selectedSize}</span></p> : null}
+                {selectedSize ? (
+                  <p>
+                    Selected size:{" "}
+                    <span className="font-semibold text-yellow-300">
+                      {selectedSize} {selectedBrand !== "custom" ? `(${BRANDS.find((b) => b.id === selectedBrand)?.name} Sizing)` : ""}
+                    </span>
+                  </p>
+                ) : null}
               </div>
             ) : null}
 
@@ -526,6 +667,77 @@ export default function OrderProduct() {
           </div>
         </div>
       </div>
+
+      {/* Sizing Chart Modal */}
+      {isSizeChartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#0e121a] p-6 shadow-2xl animate-in fade-in zoom-in duration-200 text-white">
+            <button
+              type="button"
+              onClick={() => setIsSizeChartOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <h3 className="text-xl font-bold text-yellow-400 mb-2">
+              {BRAND_SIZE_CHARTS[selectedBrand]?.title || "Sizing Guide"}
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Measurements shown below are in inches. Click on any size to select it directly.
+            </p>
+
+            <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/5">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/5 text-xs font-bold uppercase tracking-wider text-gray-400">
+                    {BRAND_SIZE_CHARTS[selectedBrand]?.headers.map((header) => (
+                      <th key={header} className="px-4 py-3">{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {BRAND_SIZE_CHARTS[selectedBrand]?.rows.map((row, idx) => {
+                    const rowSize = row[0];
+                    const isSelectedRow = selectedSize && rowSize.toUpperCase() === selectedSize.toUpperCase();
+                    return (
+                      <tr
+                        key={idx}
+                        className={`border-b border-white/5 transition-colors hover:bg-white/5 cursor-pointer ${
+                          isSelectedRow ? "bg-yellow-400/10 text-yellow-300 font-semibold" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedSize(rowSize);
+                          setIsSizeChartOpen(false);
+                        }}
+                      >
+                        {row.map((cell, cIdx) => (
+                          <td key={cIdx} className="px-4 py-3">{cell}</td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="mt-5 flex justify-between items-center">
+              <span className="text-xs text-gray-500 italic">
+                * Highlighted row matches current selection.
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsSizeChartOpen(false)}
+                className="rounded-full bg-yellow-400 px-5 py-2 text-xs font-bold text-black hover:opacity-90 transition"
+              >
+                Close Guide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
