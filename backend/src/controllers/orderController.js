@@ -92,7 +92,7 @@ export const createOrder = async (req, res) => {
     }
 
     const [product, user] = await Promise.all([
-      Product.findById(productId).populate("tailor", "tailorName"),
+      Product.findById(productId).populate("tailor", "tailorName disabledSizes"),
       User.findById(req.user.id).select("userFullName"),
     ]);
 
@@ -102,6 +102,22 @@ export const createOrder = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    let baseSize = String(selectedSize || "").trim();
+    if (baseSize.includes("(")) {
+      baseSize = baseSize.split("(")[0].trim();
+    }
+
+    if (
+      product.tailor?.disabledSizes &&
+      product.tailor.disabledSizes.some(
+        (ds) => ds.toUpperCase() === baseSize.toUpperCase()
+      )
+    ) {
+      return res.status(400).json({
+        message: `The size "${baseSize}" is unavailable because the tailor cannot make this size.`,
+      });
     }
 
     const order = await Order.create({

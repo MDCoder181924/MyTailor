@@ -610,16 +610,21 @@ export default function OrderProduct() {
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => {
                     const isActive = selectedSize === size;
+                    const isDisabled = product.tailor?.disabledSizes?.includes(size);
 
                     return (
                       <button
                         key={size}
                         type="button"
+                        disabled={isDisabled}
                         onClick={() => setSelectedSize(size)}
+                        title={isDisabled ? "Tailor cannot make this size" : ""}
                         className={`min-w-12 rounded-full border px-4 py-2 text-sm transition ${
-                          isActive
-                            ? "border-yellow-400 bg-yellow-400 text-black"
-                            : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
+                          isDisabled
+                            ? "border-red-500/20 bg-red-950/10 text-gray-500 cursor-not-allowed line-through"
+                            : isActive
+                              ? "border-yellow-400 bg-yellow-400 text-black"
+                              : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
                         }`}
                       >
                         {size}
@@ -627,6 +632,12 @@ export default function OrderProduct() {
                     );
                   })}
                 </div>
+                {product.tailor?.disabledSizes?.length > 0 && (
+                  <p className="mt-2 text-xs text-red-400 flex items-center gap-1.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                    Sizes tailor cannot make: {product.tailor.disabledSizes.join(", ")}
+                  </p>
+                )}
               </div>
             ) : null}
 
@@ -702,19 +713,34 @@ export default function OrderProduct() {
                   {BRAND_SIZE_CHARTS[selectedBrand]?.rows.map((row, idx) => {
                     const rowSize = row[0];
                     const isSelectedRow = selectedSize && rowSize.toUpperCase() === selectedSize.toUpperCase();
+                    const isRowDisabled = product.tailor?.disabledSizes?.some(
+                      (ds) => ds.toUpperCase() === rowSize.toUpperCase()
+                    );
                     return (
                       <tr
                         key={idx}
-                        className={`border-b border-white/5 transition-colors hover:bg-white/5 cursor-pointer ${
-                          isSelectedRow ? "bg-yellow-400/10 text-yellow-300 font-semibold" : ""
+                        className={`border-b border-white/5 transition-colors ${
+                          isRowDisabled
+                            ? "opacity-40 text-gray-500 cursor-not-allowed line-through"
+                            : isSelectedRow
+                              ? "bg-yellow-400/10 text-yellow-300 font-semibold cursor-pointer hover:bg-yellow-400/20"
+                              : "cursor-pointer hover:bg-white/5"
                         }`}
                         onClick={() => {
+                          if (isRowDisabled) return;
                           setSelectedSize(rowSize);
                           setIsSizeChartOpen(false);
                         }}
                       >
                         {row.map((cell, cIdx) => (
-                          <td key={cIdx} className="px-4 py-3">{cell}</td>
+                          <td key={cIdx} className="px-4 py-3">
+                            {cell}
+                            {cIdx === 0 && isRowDisabled && (
+                              <span className="ml-2 text-[10px] font-bold text-red-500 no-underline inline-block bg-red-950/40 border border-red-500/20 rounded px-1.5 py-0.5">
+                                UNAVAILABLE
+                              </span>
+                            )}
+                          </td>
                         ))}
                       </tr>
                     );

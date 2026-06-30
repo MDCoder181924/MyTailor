@@ -180,6 +180,7 @@ export const updateTailorProfile = async (req, res) => {
             specializations,
             keySkills,
             identityStatus,
+            disabledSizes,
             currentPassword,
             newPassword,
         } = req.body;
@@ -255,6 +256,11 @@ export const updateTailorProfile = async (req, res) => {
 
         if (typeof identityStatus === "string") {
             tailor.identityStatus = identityStatus.trim() || "Verified";
+        }
+
+        const normalizedDisabledSizes = normalizeStringArray(disabledSizes);
+        if (normalizedDisabledSizes !== undefined) {
+            tailor.disabledSizes = normalizedDisabledSizes;
         }
 
         if (currentPassword || newPassword) {

@@ -57,6 +57,10 @@ const tailorSchema = mongoose.Schema({
     identityStatus: {
         type: String,
         default: "Verified"
+    },
+    disabledSizes: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true })
 

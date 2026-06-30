@@ -1,6 +1,6 @@
 import Product from "../models/Product.js";
 
-const tailorSelect = "tailorName tailorEmail tailorMobileNumber createdAt updatedAt";
+const tailorSelect = "tailorName tailorEmail tailorMobileNumber disabledSizes createdAt updatedAt";
 
 export const createProduct = async (req, res) => {
   try {

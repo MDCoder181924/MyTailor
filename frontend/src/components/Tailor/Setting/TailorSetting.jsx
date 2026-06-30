@@ -20,6 +20,7 @@ const getInitialForm = (tailor) => ({
   specializations: Array.isArray(tailor?.specializations) ? tailor.specializations : [],
   keySkills: Array.isArray(tailor?.keySkills) ? tailor.keySkills : [],
   identityStatus: tailor?.identityStatus || "Verified",
+  disabledSizes: Array.isArray(tailor?.disabledSizes) ? tailor.disabledSizes : [],
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
@@ -174,6 +175,18 @@ export default function TailorSetting() {
     }));
   };
 
+  const toggleDisabledSize = (size) => {
+    setMessage("");
+    setError("");
+    setForm((prev) => {
+      const disabledSizes = prev.disabledSizes || [];
+      const updated = disabledSizes.includes(size)
+        ? disabledSizes.filter((s) => s !== size)
+        : [...disabledSizes, size];
+      return { ...prev, disabledSizes: updated };
+    });
+  };
+
   const handlePhotoChange = (event) => {
     const file = event.target.files?.[0];
 
@@ -216,6 +229,7 @@ export default function TailorSetting() {
         specializations: form.specializations,
         keySkills: form.keySkills,
         identityStatus: form.identityStatus,
+        disabledSizes: form.disabledSizes,
       };
 
       if (form.currentPassword || form.newPassword || form.confirmPassword) {
@@ -393,6 +407,30 @@ export default function TailorSetting() {
                     ))
                   ) : (
                     <span className="text-sm text-theme-text-muted italic">None listed.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Size Constraints */}
+          <div className="space-y-6">
+            <SectionLabel>Size Constraints</SectionLabel>
+            <div className="space-y-4 px-1">
+              <div>
+                <p className="text-[10px] text-theme-text-muted uppercase tracking-[0.18em] font-bold mb-3">Sizes I Cannot Make</p>
+                <div className="flex flex-wrap gap-2">
+                  {form.disabledSizes && form.disabledSizes.length > 0 ? (
+                    form.disabledSizes.map((size) => (
+                      <span
+                        key={size}
+                        className="rounded-full bg-red-500/10 border border-red-500/20 px-3.5 py-1 text-xs text-red-500 font-medium"
+                      >
+                        {size}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-theme-text-muted italic">All sizes can be made (No constraints).</span>
                   )}
                 </div>
               </div>
@@ -631,6 +669,38 @@ export default function TailorSetting() {
                       setItems={updateListField("keySkills")}
                       accent="neutral"
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Size Constraints Form */}
+              <div className="space-y-6">
+                <SectionLabel>Size Constraints</SectionLabel>
+                <div className="space-y-4 px-1">
+                  <div>
+                    <FieldLabel>Sizes You Cannot Make</FieldLabel>
+                    <p className="text-xs text-theme-text-muted mb-4 leading-relaxed">
+                      Select the standard sizes you are unable to tailor. These sizes will be disabled for users during checkout.
+                    </p>
+                    <div className="flex flex-wrap gap-2.5 mt-2">
+                      {["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"].map((s) => {
+                        const isCannotMake = form.disabledSizes.includes(s);
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => toggleDisabledSize(s)}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${
+                              isCannotMake
+                                ? "border-red-500 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                                : "border-theme-border bg-theme-panel text-theme-text-muted hover:border-theme-accent/50 hover:text-theme-accent"
+                            }`}
+                          >
+                            {s} {isCannotMake ? "✕" : ""}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
