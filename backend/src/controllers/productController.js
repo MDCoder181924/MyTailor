@@ -4,7 +4,7 @@ const tailorSelect = "tailorName tailorEmail tailorMobileNumber disabledSizes cr
 
 export const createProduct = async (req, res) => {
   try {
-    const { productName, description, category, price, stock, fabrics, sizes, image } = req.body;
+    const { productName, description, category, price, stock, fabrics, image } = req.body;
     const parsedPrice = Number(price);
     const parsedStock = Number(stock);
 
@@ -27,7 +27,6 @@ export const createProduct = async (req, res) => {
       price: parsedPrice,
       stock: parsedStock,
       fabrics: Array.isArray(fabrics) ? fabrics : [],
-      sizes: Array.isArray(sizes) ? sizes : [],
       image: image || "",
       tailor: req.user.id,
     });
@@ -82,7 +81,7 @@ export const getProductsByTailorId = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { productName, description, category, price, stock, fabrics, sizes, image } = req.body;
+    const { productName, description, category, price, stock, fabrics, image } = req.body;
 
     const product = await Product.findById(id);
 
@@ -115,7 +114,6 @@ export const updateProduct = async (req, res) => {
     }
 
     if (fabrics !== undefined) product.fabrics = Array.isArray(fabrics) ? fabrics : [];
-    if (sizes !== undefined) product.sizes = Array.isArray(sizes) ? sizes : [];
     if (image !== undefined) product.image = image || "";
 
     await product.save();

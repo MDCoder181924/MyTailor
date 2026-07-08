@@ -138,6 +138,11 @@ export default function TailorList() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const searchContainerRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [search, activeCategory, location, ratingFilter]);
 
   useEffect(() => {
     const loadTailors = async () => {
@@ -218,6 +223,24 @@ export default function TailorList() {
       address.toLowerCase().includes(normalizedSearch)
     );
   });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (filtered.length <= visibleCount) return;
+
+      const threshold = 300;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const clientHeight = window.innerHeight;
+
+      if (clientHeight + scrollTop >= scrollHeight - threshold) {
+        setVisibleCount((prev) => Math.min(prev + 12, filtered.length));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [filtered.length, visibleCount]);
 
   const applySuggestion = (value) => {
     setSearch(value);
@@ -395,16 +418,24 @@ export default function TailorList() {
         ) : null}
 
         {!loading && !error && filtered.length > 0 ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {filtered.map((tailor) => (
-              <TailorCard key={tailor._id} tailor={tailor} onOpen={handleOpenTailor} />
-            ))}
+          <div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                gap: 16,
+              }}
+            >
+              {filtered.slice(0, visibleCount).map((tailor) => (
+                <TailorCard key={tailor._id} tailor={tailor} onOpen={handleOpenTailor} />
+              ))}
+            </div>
+            {filtered.length > visibleCount && (
+              <div style={{ textAlign: "center", color: "var(--theme-text-muted)", padding: "24px 0", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <div style={{ width: 14, height: 14, border: "2px solid var(--theme-accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                Scroll to load more tailors...
+              </div>
+            )}
           </div>
         ) : null}
       </div>

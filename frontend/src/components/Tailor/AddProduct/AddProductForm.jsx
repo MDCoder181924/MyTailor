@@ -2,10 +2,9 @@ import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { createProduct } from "../../../utils/productUtils";
 import { toast } from "react-hot-toast";
+import { CATEGORIES } from "../../../data/sizeData";
 
 const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
-const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
-const CATEGORIES = ["Suits", "Shirts", "Trousers", "Jackets", "Coats", "Accessories", "Other"];
 
 export default function UploadProduct() {
   const { tailor } = useContext(AuthContext);
@@ -16,7 +15,6 @@ export default function UploadProduct() {
   const [prise, setPrise] = useState("");
   const [stock, setStock] = useState("");
   const [selectedFabrics, setSelectedFabrics] = useState(["Silk"]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [dragging, setDragging] = useState(false);
@@ -45,11 +43,6 @@ export default function UploadProduct() {
       prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]
     );
 
-  const toggleSize = (s) =>
-    setSelectedSizes((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-
   const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
       if (!file) {
@@ -71,7 +64,6 @@ export default function UploadProduct() {
     setPrise("");
     setStock("");
     setSelectedFabrics(["Silk"]);
-    setSelectedSizes([]);
     setMediaPreview(null);
   };
 
@@ -109,7 +101,6 @@ export default function UploadProduct() {
         price: Number(prise),
         stock: Number(stock),
         fabrics: selectedFabrics,
-        sizes: selectedSizes,
         image,
       });
 
@@ -268,30 +259,6 @@ export default function UploadProduct() {
                       }`}
                   >
                     {f}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Sizes */}
-          <div className="bg-theme-panel border border-theme-border p-5 rounded-xl shadow-lg">
-            <h2 className="mb-4 font-serif font-bold text-theme-text">Sizing Availability</h2>
-
-            <div className="flex gap-2">
-              {SIZES.map((s) => {
-                const active = selectedSizes.includes(s);
-                return (
-                  <button
-                    type="button"
-                    key={s}
-                    onClick={() => toggleSize(s)}
-                    className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 ${active
-                      ? "bg-theme-accent text-theme-bg border-theme-accent shadow-sm"
-                      : "bg-theme-bg text-theme-text-muted border-theme-border hover:bg-theme-accent-muted hover:text-theme-accent"
-                      }`}
-                  >
-                    {s}
                   </button>
                 );
               })}

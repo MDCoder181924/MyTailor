@@ -18,6 +18,7 @@ const OrderList = lazy(() => import("../pages/user/Order"));
 const TailorProfileSettings = lazy(() => import("../pages/Tailor/TailorProfileSettings"));
 const OrderProduct = lazy(() => import("../pages/user/OrdarProduct"));
 const UserProfiie = lazy(() => import("../pages/user/userProfiie"));
+const Cart = lazy(() => import("../pages/user/Cart"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-black text-sm text-gray-400">
@@ -44,6 +45,7 @@ const AppRoutes = () => {
         <Route path="/OrderList" element={<ProtectedRoute allowedRole="user"><OrderList /></ProtectedRoute>} />
         <Route path="/OrdarProduct" element={<ProtectedRoute allowedRole="user"><OrderProduct /></ProtectedRoute>} />
         <Route path="/userProfiie" element={<ProtectedRoute allowedRole="user"><UserProfiie /></ProtectedRoute>} />
+        <Route path="/Cart" element={<ProtectedRoute allowedRole="user"><Cart /></ProtectedRoute>} />
 
         {/* Tailor only routes */}
         <Route path="/tailordahboard" element={<ProtectedRoute allowedRole="tailor"><TailorDashboard /></ProtectedRoute>} />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "../../../utils/productUtils";
+import { addToCart } from "../../../utils/cartUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
 
@@ -36,11 +37,23 @@ const CategoryItems = ({ category }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toastMsg, setToastMsg] = useState("");
 
   const handleProductSelect = (product) => {
     navigate(`/OrdarProduct?productId=${product._id}`, {
       state: { product },
     });
+  };
+
+  const handleAddToCart = (e, product) => {
+    e.stopPropagation();
+    const added = addToCart(product);
+    if (added) {
+      setToastMsg(`${product.productName} added to Bag!`);
+    } else {
+      setToastMsg(`${product.productName} is already in your Bag!`);
+    }
+    setTimeout(() => setToastMsg(""), 3000);
   };
 
   useEffect(() => {
@@ -73,6 +86,12 @@ const CategoryItems = ({ category }) => {
     };
   }, []);
 
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [category]);
+
   const selectedCategory = normalizeCategory(category);
   const filteredProducts =
     selectedCategory === "all"
@@ -80,6 +99,24 @@ const CategoryItems = ({ category }) => {
       : products.filter(
           (item) => normalizeCategory(item.category) === selectedCategory
         );
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (filteredProducts.length <= visibleCount) return;
+
+      const threshold = 300;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const clientHeight = window.innerHeight;
+
+      if (clientHeight + scrollTop >= scrollHeight - threshold) {
+        setVisibleCount((prev) => Math.min(prev + 10, filteredProducts.length));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [filteredProducts.length, visibleCount]);
 
   if (loading) {
     return (
@@ -105,9 +142,13 @@ const CategoryItems = ({ category }) => {
     );
   }
 
+  const displayedProducts = filteredProducts.slice(0, visibleCount);
+  const hasMore = filteredProducts.length > visibleCount;
+
   return (
-      <div className="grid grid-cols-2 gap-2 bg-black px-6 py-6 md:mx-10 md:grid-cols-4 md:gap-10">
-      {filteredProducts.map((item) => (
+    <div className="bg-black py-6">
+      <div className="grid grid-cols-2 gap-4 bg-black px-6 md:mx-10 md:grid-cols-4 lg:grid-cols-5 md:gap-6">
+      {displayedProducts.map((item) => (
         <div key={item._id} className="bg-black text-white">
           <button
             type="button"
@@ -118,7 +159,7 @@ const CategoryItems = ({ category }) => {
               <img
                 src={item.image || fallbackImage}
                 alt={item.productName}
-                className="h-[180px] w-full object-cover md:h-[320px]"
+                className="h-[150px] w-full object-cover md:h-[220px] rounded-xl"
               />
 
               <span className="absolute left-3 top-3 rounded bg-yellow-400 px-2 py-1 text-xs text-black">
@@ -164,8 +205,8 @@ const CategoryItems = ({ category }) => {
 
               <button
                 type="button"
-                onClick={() => handleProductSelect(item)}
-                className="rounded bg-yellow-400 px-3 py-2 text-black"
+                onClick={(e) => handleAddToCart(e, item)}
+                className="rounded bg-yellow-400 px-3 py-2 text-black cursor-pointer font-bold hover:opacity-90 transition"
               >
                 +
               </button>
@@ -173,6 +214,18 @@ const CategoryItems = ({ category }) => {
           </div>
         </div>
       ))}
+      </div>
+      {hasMore && (
+        <div className="mt-8 flex justify-center items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
+          <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+          Scroll to load more...
+        </div>
+      )}
+      {toastMsg && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-yellow-400 px-6 py-3 text-sm font-bold text-black shadow-2xl animate-bounce">
+          {toastMsg}
+        </div>
+      )}
     </div>
   );
 };

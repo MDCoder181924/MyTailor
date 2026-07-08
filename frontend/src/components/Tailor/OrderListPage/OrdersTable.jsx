@@ -86,6 +86,19 @@ export default function OrdersTable() {
               <div>
                 <p className="font-semibold text-theme-text">{order.product}</p>
                 <p className="text-xs text-theme-text-muted mt-0.5">{order.desc || "Tailor order"}</p>
+                {order.customMeasurements && Object.keys(order.customMeasurements).length > 0 && (
+                  <div className="mt-2 rounded-lg bg-theme-bg/60 p-2.5 border border-theme-border text-[11px] text-theme-text-muted">
+                    <span className="font-bold text-theme-accent uppercase tracking-wider block mb-1">📐 Custom Measurements:</span>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                      {Object.entries(order.customMeasurements).map(([key, val]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="capitalize">{key}:</span>
+                          <span className="font-semibold text-theme-text">{val} in</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

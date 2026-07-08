@@ -1,17 +1,16 @@
 import axios from "axios";
 
-// Dynamically determine backend base URL.
-// If running locally, connect to localhost on port 5000 (or the same host's port 5000 for local network/mobile testing).
-// If running in production (e.g. deployed to Vercel/Netlify), connect to the online server on Render.
-const apiBaseUrl = (typeof window !== "undefined" && (
-  window.location.hostname === "localhost" || 
-  window.location.hostname === "127.0.0.1" || 
-  window.location.hostname.startsWith("192.168.") ||
-  window.location.hostname.startsWith("10.") ||
-  window.location.hostname.startsWith("172.")
-))
-  ? `http://${window.location.hostname}:5000`
-  : "https://mytailor-n8jn.onrender.com";
+const apiBaseUrl = import.meta.env.VITE_API_URL || (
+  (typeof window !== "undefined" && (
+    window.location.hostname === "localhost" || 
+    window.location.hostname === "127.0.0.1" || 
+    window.location.hostname.startsWith("192.168.") ||
+    window.location.hostname.startsWith("10.") ||
+    window.location.hostname.startsWith("172.")
+  ))
+    ? `http://${window.location.hostname}:5000`
+    : "https://mytailor-n8jn.onrender.com"
+);
 
 const api = axios.create({
   baseURL: apiBaseUrl,

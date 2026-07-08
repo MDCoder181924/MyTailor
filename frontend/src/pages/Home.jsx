@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Header from '../components/Home/Header';
 import Section1 from '../components/Home/Section1';
 import Section2 from '../components/Home/Section2';
+import FeaturedProducts from '../components/Home/FeaturedProducts';
 import Section3 from '../components/Home/Section3';
 import Section4 from '../components/Home/Section4';
 import Section5 from '../components/Home/Section5';
@@ -18,6 +19,7 @@ const Home = () => {
         <main className="main-content flex-grow">
           <Section1 />
           <Section2 />
+          <FeaturedProducts />
           <Section3 />
           <Section4 />
           <Section5 />

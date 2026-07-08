@@ -36,6 +36,14 @@ const resolveProductForOrder = (order, products) => {
 };
 
 function StageProgress({ stage, stageIndex }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div style={{ marginTop: 12 }}>
       <p style={{ fontSize: 10, color: "var(--theme-text-muted)", letterSpacing: "0.14em", marginBottom: 8 }}>
@@ -56,27 +64,37 @@ function StageProgress({ stage, stageIndex }) {
           />
         ))}
       </div>
-      <div style={{ display: "flex", gap: 4 }}>
-        {STAGES.map((s, i) => (
-          <div key={i} style={{ flex: 1, textAlign: "center" }}>
-            <span
-              style={{
-                fontSize: 8,
-                color: i <= stageIndex ? "var(--theme-accent)" : "var(--theme-text-muted)",
-                letterSpacing: "0.06em",
-                fontWeight: i === stageIndex ? 700 : 400,
-              }}
-            >
-              {s}
-            </span>
-          </div>
-        ))}
-      </div>
+      {!isMobile && (
+        <div style={{ display: "flex", gap: 4 }}>
+          {STAGES.map((s, i) => (
+            <div key={i} style={{ flex: 1, textAlign: "center" }}>
+              <span
+                style={{
+                  fontSize: 8,
+                  color: i <= stageIndex ? "var(--theme-accent)" : "var(--theme-text-muted)",
+                  letterSpacing: "0.06em",
+                  fontWeight: i === stageIndex ? 700 : 400,
+                }}
+              >
+                {s}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 function CommissionCard({ item }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div
       style={{
@@ -85,26 +103,29 @@ function CommissionCard({ item }) {
         borderRadius: 14,
         overflow: "hidden",
         display: "flex",
+        flexDirection: isMobile ? "column" : "row",
         gap: 0,
         marginBottom: 16,
       }}
     >
-      <div style={{ width: 180, minWidth: 180, flexShrink: 0, position: "relative" }}>
+      <div
+        style={{
+          width: isMobile ? "100%" : 180,
+          height: isMobile ? 220 : "auto",
+          minHeight: isMobile ? 220 : "auto",
+          minWidth: isMobile ? "auto" : 180,
+          flexShrink: 0,
+          position: "relative",
+        }}
+      >
         <img
           src={item.img || fallbackImage}
           alt={item.title}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to right, transparent 60%, var(--theme-panel))",
-          }}
-        />
       </div>
 
-      <div style={{ flex: 1, padding: "20px 24px" }}>
+      <div style={{ flex: 1, padding: isMobile ? "16px" : "20px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <span
             style={{
@@ -168,9 +189,10 @@ function CommissionCard({ item }) {
 
       <div
         style={{
-          width: 180,
-          minWidth: 180,
-          borderLeft: "1px solid var(--theme-border)",
+          width: isMobile ? "100%" : 180,
+          minWidth: isMobile ? "auto" : 180,
+          borderLeft: isMobile ? "none" : "1px solid var(--theme-border)",
+          borderTop: isMobile ? "1px solid var(--theme-border)" : "none",
           padding: "20px 16px",
           display: "flex",
           flexDirection: "column",

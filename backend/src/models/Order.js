@@ -64,6 +64,20 @@ const orderSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    selectedBrand: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    clothingType: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    customMeasurements: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
     deliveryName: {
       type: String,
       default: "",

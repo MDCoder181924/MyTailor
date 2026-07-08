@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { getMyProducts, updateProduct, deleteProduct } from "../../../utils/productUtils";
 import { Edit, Trash2, Upload, X } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { CATEGORIES } from "../../../data/sizeData";
 
 const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
-const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
-const CATEGORIES = ["Suits", "Shirts", "Trousers", "Jackets", "Coats", "Accessories", "Other"];
 
 const fallbackImage = "https://picsum.photos/800/600?tailor";
 
@@ -89,7 +88,6 @@ export default function FabricsGrid() {
       price: product.price || "",
       stock: product.stock || "",
       fabrics: Array.isArray(product.fabrics) ? product.fabrics : [],
-      sizes: Array.isArray(product.sizes) ? product.sizes : [],
       image: product.image || "",
     });
     setImgPreview(product.image || null);
@@ -117,16 +115,6 @@ export default function FabricsGrid() {
       return {
         ...prev,
         fabrics: exists ? prev.fabrics.filter((x) => x !== f) : [...prev.fabrics, f],
-      };
-    });
-  };
-
-  const toggleSize = (s) => {
-    setEditingForm((prev) => {
-      const exists = prev.sizes.includes(s);
-      return {
-        ...prev,
-        sizes: exists ? prev.sizes.filter((x) => x !== s) : [...prev.sizes, s],
       };
     });
   };
@@ -188,7 +176,6 @@ export default function FabricsGrid() {
         price: Number(editingForm.price),
         stock: Number(editingForm.stock),
         fabrics: editingForm.fabrics,
-        sizes: editingForm.sizes,
         image: imageBase64,
       });
 
@@ -375,30 +362,6 @@ export default function FabricsGrid() {
                         }`}
                       >
                         {f}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Sizes Selection */}
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-theme-text-muted mb-2 font-bold">Sizes</label>
-                <div className="flex flex-wrap gap-2">
-                  {SIZES.map((s) => {
-                    const active = editingForm.sizes.includes(s);
-                    return (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => toggleSize(s)}
-                        className={`rounded px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
-                          active
-                            ? "bg-theme-accent text-white border border-theme-accent"
-                            : "bg-transparent border border-theme-border text-theme-text-muted hover:border-theme-accent hover:text-theme-accent"
-                        }`}
-                      >
-                        {s}
                       </button>
                     );
                   })}

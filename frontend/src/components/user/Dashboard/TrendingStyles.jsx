@@ -124,14 +124,14 @@ const TrendingStyles = () => {
               key={`${item._id}-${index}`}
               type="button"
               onClick={() => handleProductSelect(item)}
-              className="min-w-[250px] text-left"
+              className="flex-shrink-0 w-[220px] md:w-[260px] text-left cursor-pointer"
             >
-              <div className="relative overflow-hidden rounded-2xl">
+              <div className="relative overflow-hidden rounded-2xl aspect-[3/4] w-full">
                 <img
                   src={getSafeImage(item.image)}
                   alt={item.productName}
                   loading="lazy"
-                  className="h-[320px] w-full object-cover"
+                  className="w-full h-full object-cover"
                 />
                 {index % 2 === 0 ? (
                   <span className="absolute bottom-3 left-3 rounded-md bg-yellow-400 px-3 py-1 text-xs font-medium text-black">
@@ -141,8 +141,8 @@ const TrendingStyles = () => {
               </div>
 
               <div className="mt-3">
-                <h3 className="font-semibold">{item.productName}</h3>
-                <p className="text-sm text-gray-400">
+                <h3 className="font-semibold truncate">{item.productName}</h3>
+                <p className="text-sm text-gray-400 truncate">
                   by {item.tailor?.tailorName || "Tailor"} | {" "}
                   <span className="text-yellow-400">{formatPrice(item.price)}</span>
                 </p>

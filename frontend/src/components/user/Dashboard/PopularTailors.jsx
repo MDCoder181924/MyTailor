@@ -79,7 +79,7 @@ const PopularTailors = () => {
               key={item._id}
               type="button"
               onClick={() => handleOpenTailor(item)}
-              className="flex min-w-[90px] flex-col items-center text-center"
+              className="flex-shrink-0 flex min-w-[90px] flex-col items-center text-center"
             >
               <div className="relative">
                 <img

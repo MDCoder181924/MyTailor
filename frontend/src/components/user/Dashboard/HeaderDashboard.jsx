@@ -1,11 +1,30 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Bell, ShoppingBag, User } from "lucide-react";
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo, useState, useContext } from 'react'
+import { Bell, ShoppingBag, User, Sun, Moon } from "lucide-react";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getCartCount } from "../../../utils/cartUtils";
+import { ThemeContext } from "../../../context/ThemeContext";
 
 const HeaderDashbord = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [cartCount, setCartCount] = useState(getCartCount());
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      setCartCount(getCartCount());
+    };
+
+    window.addEventListener("cart-updated", handleCartUpdate);
+    window.addEventListener("storage", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("cart-updated", handleCartUpdate);
+      window.removeEventListener("storage", handleCartUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const loadNotifications = () => {
@@ -71,22 +90,24 @@ const HeaderDashbord = () => {
 
   const getNavLinkClassName = (isActive) =>
     `text-[1.1rem] cursor-pointer transition-all duration-300 ${
-      isActive ? "text-yellow-400" : "text-white hover:text-yellow-400"
+      isActive ? "text-theme-accent font-semibold" : "text-theme-text hover:text-theme-accent"
     }`;
 
   const getNavLinkStyle = (isActive) =>
     isActive
       ? {
-          textShadow: "0 0 8px rgba(250, 204, 21, 0.95), 0 0 18px rgba(250, 204, 21, 0.7)",
+          textShadow: theme === "dark" 
+            ? "0 0 8px rgba(250, 204, 21, 0.95), 0 0 18px rgba(250, 204, 21, 0.7)"
+            : "0 0 8px rgba(37, 99, 235, 0.4)",
         }
       : undefined;
 
   return (
-    <div>
-      <div className="w-full text-white h-18 px-6 py-4 flex items-center justify-between">
+    <div className="sticky top-0 z-50 bg-theme-bg border-b border-theme-border transition-colors duration-300">
+      <div className="max-w-7xl mx-auto w-full text-theme-text h-18 px-6 py-4 flex items-center justify-between">
         
         <div className="">
-        <h1 className="text-yellow-400 text-3xl font-serif font-bold">
+        <h1 className="text-theme-accent text-3xl font-serif font-bold cursor-pointer" onClick={() => navigate("/deshboard")}>
           MyTailor
         </h1>
         </div>
@@ -111,33 +132,46 @@ const HeaderDashbord = () => {
         </div>
 
         <div className="flex items-center gap-5 mr-3 relative" >
-          <button type="button" onClick={handleBellClick} className="relative">
-            <Bell className="cursor-pointer hover:text-yellow-400" size={20} />
+          <button type="button" onClick={toggleTheme} className="relative cursor-pointer text-theme-text hover:text-theme-accent transition">
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
+          <button type="button" onClick={handleBellClick} className="relative cursor-pointer text-theme-text hover:text-theme-accent transition">
+            <Bell size={20} />
             {unreadCount > 0 ? (
-              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-yellow-400 px-1 text-[10px] font-bold text-black">
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-theme-accent px-1 text-[10px] font-bold text-theme-bg animate-pulse">
                 {unreadCount}
               </span>
             ) : null}
           </button>
-          <ShoppingBag className="cursor-pointer hover:text-yellow-400" size={20} />
-          <Link to="/userProfiie">
-            <User className="cursor-pointer hover:text-yellow-400" size={20} />
+          
+          <Link to="/Cart" className="relative text-theme-text hover:text-theme-accent transition">
+            <ShoppingBag size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-theme-accent px-1 text-[10px] font-bold text-theme-bg animate-pulse">
+                {cartCount}
+              </span>
+            )}
+          </Link>
+          
+          <Link to="/userProfiie" className="text-theme-text hover:text-theme-accent transition">
+            <User size={20} />
           </Link>
 
           {showNotifications ? (
-            <div className="absolute right-16 top-10 z-20 w-80 rounded-xl border border-[#2a2a2a] bg-[#151515] p-3 shadow-2xl">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-yellow-400">Notifications</p>
+            <div className="absolute right-16 top-10 z-20 w-80 rounded-xl border border-theme-border bg-theme-panel p-3 shadow-2xl">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-theme-accent">Notifications</p>
               {notifications.length ? (
                 <div className="space-y-2">
                   {notifications.slice(0, 5).map((notification) => (
-                    <div key={notification.id} className="rounded-lg bg-[#1f1f1f] p-3">
-                      <p className="text-sm font-semibold text-white">{notification.title}</p>
-                      <p className="mt-1 text-xs text-gray-400">{notification.message}</p>
+                    <div key={notification.id} className="rounded-lg bg-theme-bg p-3 border border-theme-border">
+                      <p className="text-sm font-semibold text-theme-text">{notification.title}</p>
+                      <p className="mt-1 text-xs text-theme-text-muted">{notification.message}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400">No notifications yet.</p>
+                <p className="text-sm text-theme-text-muted">No notifications yet.</p>
               )}
             </div>
           ) : null}
