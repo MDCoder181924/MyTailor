@@ -141,7 +141,7 @@ function CommissionCard({ item }) {
             ORDER {item.orderNo}
           </span>
           <span style={{ color: "var(--theme-text-muted)", fontSize: 10, letterSpacing: "0.1em" }}>
-            EST. COMPLETION: {item.estCompletion}
+            EST. COMPLETION: {item.status === "PENDING" ? "PENDING ACCEPTANCE" : item.estCompletion}
           </span>
         </div>
 
@@ -184,7 +184,13 @@ function CommissionCard({ item }) {
           </p>
         ) : null}
 
-        <StageProgress stage={item.stage} stageIndex={item.stageIndex} />
+        {item.status === "PENDING" ? (
+          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 10, backgroundColor: "rgba(250, 204, 21, 0.06)", border: "1px dashed rgba(250, 204, 21, 0.25)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ color: "var(--theme-accent)", fontSize: 11, fontWeight: 600 }}>⏳ WAITING FOR TAILOR ACCEPTANCE</span>
+          </div>
+        ) : (
+          <StageProgress stage={item.stage} stageIndex={item.stageIndex} />
+        )}
       </div>
 
       <div

@@ -242,3 +242,31 @@ export const completeOrder = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
+
+export const acceptOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, tailor: req.user.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status !== "PENDING") {
+      return res.status(400).json({ message: "Order is already accepted or shipped" });
+    }
+
+    order.status = "ACCEPTED";
+    order.estCompletion = "IN PROGRESS";
+    order.stage = "MEASURING";
+    order.stageIndex = 0;
+    order.userNotificationRead = false;
+    await order.save();
+
+    return res.json({
+      message: "Order accepted successfully",
+      order: toTailorOrder(order),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};

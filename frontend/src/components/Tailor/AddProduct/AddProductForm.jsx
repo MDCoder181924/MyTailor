@@ -1,4 +1,5 @@
 import { useContext, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { createProduct } from "../../../utils/productUtils";
 import { toast } from "react-hot-toast";
@@ -8,6 +9,7 @@ const FABRICS = ["Silk", "Wool", "Linen", "Cashmere", "Cotton", "Velvet"];
 
 export default function UploadProduct() {
   const { tailor } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [imgStore , setimgStore] = useState(null);
   const [description, setDescription] = useState("");
   const [productName, setProductName] = useState("");
@@ -20,6 +22,42 @@ export default function UploadProduct() {
   const [dragging, setDragging] = useState(false);
   const [mediaPreview, setMediaPreview] = useState(null);
   const fileInputRef = useRef(null);
+
+  const hasPhone = tailor?.tailorMobileNumber && tailor.tailorMobileNumber.trim();
+  const hasAddress = tailor?.shopAddress && tailor.shopAddress.trim();
+  const needsProfileSetup = !hasPhone || !hasAddress;
+
+  if (needsProfileSetup) {
+    return (
+      <div
+        style={{
+          background: "var(--theme-bg)",
+          minHeight: "80vh",
+          color: "var(--theme-text)",
+        }}
+        className="px-6 py-20 transition-colors duration-300 flex items-center justify-center"
+      >
+        <div className="max-w-md w-full bg-theme-panel border border-theme-border rounded-2xl p-8 text-center shadow-xl space-y-6">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto text-2xl">
+            ⚠️
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-serif font-bold">Profile Setup Required</h2>
+            <p className="text-sm text-theme-text-muted leading-relaxed font-light">
+              Before you can upload products, please add your <strong>phone number</strong> and <strong>shop address</strong> in your settings so customers can contact you and receive orders.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/TailorSettings")}
+            className="w-full py-3.5 rounded-xl bg-theme-accent text-theme-bg font-bold shadow-lg hover:opacity-90 transition uppercase tracking-wider text-xs cursor-pointer"
+          >
+            Go to Profile Settings
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleDrop = (e) => {
     e.preventDefault();

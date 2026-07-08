@@ -4,6 +4,7 @@ import isUser from "../middleware/isUser.js";
 import isTailor from "../middleware/isTailor.js";
 import {
   completeOrder,
+  acceptOrder,
   createOrder,
   getTailorNotifications,
   getTailorOrders,
@@ -18,6 +19,7 @@ router.get("/mine", authMiddleware, isUser, getUserOrders);
 router.get("/tailor", authMiddleware, isTailor, getTailorOrders);
 router.get("/tailor/notifications", authMiddleware, isTailor, getTailorNotifications);
 router.patch("/tailor/notifications/read", authMiddleware, isTailor, markTailorNotificationsRead);
+router.patch("/:id/accept", authMiddleware, isTailor, acceptOrder);
 router.patch("/:id/status", authMiddleware, isTailor, completeOrder);
 
 export default router;

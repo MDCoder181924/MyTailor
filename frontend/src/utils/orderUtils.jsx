@@ -36,6 +36,15 @@ export const completeTailorOrder = async (orderId) => {
   }
 };
 
+export const acceptTailorOrder = async (orderId) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/accept`);
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to accept order");
+  }
+};
+
 export const getTailorNotifications = async () => {
   try {
     const res = await api.get("/api/orders/tailor/notifications");

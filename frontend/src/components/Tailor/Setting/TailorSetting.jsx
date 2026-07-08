@@ -763,7 +763,7 @@ export default function TailorSetting() {
                       onChange={setField("shopAddress")}
                       rows={2}
                       placeholder="Enter shop address"
-                      className="w-full bg-transparent text-sm text-theme-text-muted outline-none border-b border-theme-border pb-1.5 focus:border-theme-accent transition-colors resize-none leading-relaxed"
+                      className="w-full bg-transparent text-sm text-theme-text outline-none border-b border-theme-border pb-1.5 focus:border-theme-accent transition-colors resize-none leading-relaxed"
                     />
                   </div>
 
@@ -774,7 +774,7 @@ export default function TailorSetting() {
                       onChange={setField("shopDescription")}
                       rows={3}
                       placeholder="Describe your tailoring shop and services"
-                      className="w-full bg-transparent text-sm text-theme-text-muted outline-none border-b border-theme-border pb-1.5 focus:border-theme-accent transition-colors resize-none leading-relaxed"
+                      className="w-full bg-transparent text-sm text-theme-text outline-none border-b border-theme-border pb-1.5 focus:border-theme-accent transition-colors resize-none leading-relaxed"
                     />
                   </div>
                 </div>

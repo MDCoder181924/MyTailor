@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { completeTailorOrder, getTailorOrders } from "../../../utils/orderUtils";
+import { completeTailorOrder, getTailorOrders, acceptTailorOrder } from "../../../utils/orderUtils";
 
 export default function OrdersTable() {
   const [orders, setOrders] = useState([]);
@@ -26,6 +26,18 @@ export default function OrdersTable() {
 
   const activeOrders = useMemo(() => orders.filter((order) => order.status !== "SHIPPED"), [orders]);
 
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      await acceptTailorOrder(orderId);
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      window.dispatchEvent(new Event("user-orders-updated"));
+      const nextOrders = await getTailorOrders();
+      setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch {
+      // Ignore update failures.
+    }
+  };
+
   const handleCompleteOrder = async (orderId) => {
     try {
       await completeTailorOrder(orderId);
@@ -39,7 +51,7 @@ export default function OrdersTable() {
   };
 
   return (
-    <div className="bg-theme-bg p-6 text-theme-text">
+    <div className="bg-theme-bg p-4 md:p-6 text-theme-text">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row">
         <input
           type="text"
@@ -54,7 +66,7 @@ export default function OrdersTable() {
       </div>
 
       <div className="overflow-hidden rounded-xl bg-theme-panel border border-theme-border shadow-md">
-        <div className="grid grid-cols-6 border-b border-theme-border px-6 py-4 text-xs font-bold tracking-[0.14em] text-theme-text-muted uppercase">
+        <div className="hidden md:grid grid-cols-6 border-b border-theme-border px-6 py-4 text-xs font-bold tracking-[0.14em] text-theme-text-muted uppercase">
           <span>ORDER ID</span>
           <span>CLIENT</span>
           <span>PRODUCT DETAILS</span>
@@ -67,11 +79,14 @@ export default function OrdersTable() {
           activeOrders.map((order) => (
             <div
               key={order.id}
-              className="grid grid-cols-6 items-center border-b border-theme-border px-6 py-5 hover:bg-theme-accent-muted/20 transition-colors"
+              className="flex flex-col md:grid md:grid-cols-6 gap-4 md:gap-0 items-start md:items-center border-b border-theme-border px-6 py-5 hover:bg-theme-accent-muted/20 transition-colors"
             >
-              <div>
-                <p className="font-bold text-theme-accent">{order.id}</p>
-                <p className="text-[11px] text-theme-text-muted mt-0.5">{order.date}</p>
+              <div className="w-full md:w-auto flex justify-between md:block items-center">
+                <div>
+                  <p className="font-bold text-theme-accent">{order.id}</p>
+                  <p className="text-[11px] text-theme-text-muted mt-0.5">{order.date}</p>
+                </div>
+                <div className="md:hidden font-bold text-theme-accent text-lg">{order.total}</div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -80,10 +95,14 @@ export default function OrdersTable() {
                   alt={order.name}
                   className="h-8 w-8 rounded-full border border-theme-border"
                 />
-                <span className="font-medium text-theme-text">{order.name}</span>
+                <div>
+                  <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider">Client</p>
+                  <span className="font-medium text-theme-text">{order.name}</span>
+                </div>
               </div>
 
-              <div>
+              <div className="w-full">
+                <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider mb-0.5">Product Details</p>
                 <p className="font-semibold text-theme-text">{order.product}</p>
                 <p className="text-xs text-theme-text-muted mt-0.5">{order.desc || "Tailor order"}</p>
                 {order.customMeasurements && Object.keys(order.customMeasurements).length > 0 && (
@@ -102,10 +121,13 @@ export default function OrdersTable() {
               </div>
 
               <div>
+                <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider mb-1">Status</p>
                 <span
                   className={`inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-wider ${
                     order.status === "SHIPPED"
                       ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                      : order.status === "PENDING"
+                      ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                       : "bg-theme-accent-muted text-theme-accent border border-theme-accent/20"
                   }`}
                 >
@@ -113,17 +135,28 @@ export default function OrdersTable() {
                 </span>
               </div>
 
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => handleCompleteOrder(order.backendId)}
-                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm"
-                >
-                  COMPLETE
-                </button>
+              <div className="w-full md:text-center">
+                <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider mb-1.5">Action</p>
+                {order.status === "PENDING" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleAcceptOrder(order.backendId)}
+                    className="w-full md:w-auto rounded-lg bg-theme-accent hover:opacity-90 text-theme-bg px-4 py-2 text-xs font-bold transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    ACCEPT
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleCompleteOrder(order.backendId)}
+                    className="w-full md:w-auto rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    COMPLETE
+                  </button>
+                )}
               </div>
 
-              <div className="text-right font-bold text-theme-accent">{order.total}</div>
+              <div className="hidden md:block text-right font-bold text-theme-accent">{order.total}</div>
             </div>
           ))
         ) : (
