@@ -1,8 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { completeTailorOrder, getTailorOrders, acceptTailorOrder } from "../../../utils/orderUtils";
+import { completeTailorOrder, getTailorOrders, acceptTailorOrder, payTailorOrder, shipTailorOrder } from "../../../utils/orderUtils";
+import { X } from "lucide-react";
 
 export default function OrdersTable() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        const nextOrders = await getTailorOrders();
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   useEffect(() => {
     const syncOrders = async () => {
@@ -14,7 +33,6 @@ export default function OrdersTable() {
       }
     };
 
-    syncOrders();
     window.addEventListener("storage", syncOrders);
     window.addEventListener("tailor-orders-updated", syncOrders);
 
@@ -23,6 +41,16 @@ export default function OrdersTable() {
       window.removeEventListener("tailor-orders-updated", syncOrders);
     };
   }, []);
+
+  // Update selectedOrderDetail modal state if orders sync
+  useEffect(() => {
+    if (selectedOrderDetail) {
+      const updated = orders.find((o) => o.backendId === selectedOrderDetail.backendId);
+      if (updated) {
+        setSelectedOrderDetail(updated);
+      }
+    }
+  }, [orders, selectedOrderDetail]);
 
   const activeOrders = useMemo(() => orders.filter((order) => order.status !== "SHIPPED"), [orders]);
 
@@ -47,6 +75,30 @@ export default function OrdersTable() {
       setOrders(Array.isArray(nextOrders) ? nextOrders : []);
     } catch {
       // Ignore update failures to keep UI responsive.
+    }
+  };
+
+  const handleMarkAsPaid = async (orderId) => {
+    try {
+      await payTailorOrder(orderId);
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      window.dispatchEvent(new Event("user-orders-updated"));
+      const nextOrders = await getTailorOrders();
+      setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch {
+      // Ignore failures
+    }
+  };
+
+  const handleShipOrder = async (orderId) => {
+    try {
+      await shipTailorOrder(orderId);
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      window.dispatchEvent(new Event("user-orders-updated"));
+      const nextOrders = await getTailorOrders();
+      setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch {
+      // Ignore failures
     }
   };
 
@@ -75,7 +127,12 @@ export default function OrdersTable() {
           <span className="text-right">TOTAL</span>
         </div>
 
-        {activeOrders.length ? (
+        {loading ? (
+          <div className="px-6 py-16 text-center flex flex-col items-center justify-center gap-2 text-theme-text-muted">
+            <div className="w-8 h-8 border-4 border-theme-accent border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-xs uppercase tracking-widest font-semibold animate-pulse">Loading orders list...</p>
+          </div>
+        ) : activeOrders.length ? (
           activeOrders.map((order) => (
             <div
               key={order.id}
@@ -105,19 +162,13 @@ export default function OrdersTable() {
                 <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider mb-0.5">Product Details</p>
                 <p className="font-semibold text-theme-text">{order.product}</p>
                 <p className="text-xs text-theme-text-muted mt-0.5">{order.desc || "Tailor order"}</p>
-                {order.customMeasurements && Object.keys(order.customMeasurements).length > 0 && (
-                  <div className="mt-2 rounded-lg bg-theme-bg/60 p-2.5 border border-theme-border text-[11px] text-theme-text-muted">
-                    <span className="font-bold text-theme-accent uppercase tracking-wider block mb-1">📐 Custom Measurements:</span>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                      {Object.entries(order.customMeasurements).map(([key, val]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="capitalize">{key}:</span>
-                          <span className="font-semibold text-theme-text">{val} in</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrderDetail(order)}
+                  className="mt-2 text-xs font-bold text-theme-accent hover:underline flex items-center gap-1 cursor-pointer uppercase tracking-wider"
+                >
+                  🔍 More Details
+                </button>
               </div>
 
               <div>
@@ -145,7 +196,7 @@ export default function OrdersTable() {
                   >
                     ACCEPT
                   </button>
-                ) : (
+                ) : order.estCompletion !== "COMPLETED" ? (
                   <button
                     type="button"
                     onClick={() => handleCompleteOrder(order.backendId)}
@@ -153,6 +204,30 @@ export default function OrdersTable() {
                   >
                     COMPLETE
                   </button>
+                ) : order.deliveryMethod === "pickup" && order.paymentStatus === "unpaid" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleMarkAsPaid(order.backendId)}
+                    className="w-full md:w-auto rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    MARK PAID
+                  </button>
+                ) : order.deliveryMethod === "pickup" && order.paymentStatus === "paid" ? (
+                  <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">
+                    AWAITING PICKUP
+                  </span>
+                ) : order.deliveryMethod === "delivery" && order.stage === "READY_TO_SHIP" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleShipOrder(order.backendId)}
+                    className="w-full md:w-auto rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    SHIP
+                  </button>
+                ) : (
+                  <span className="text-xs font-bold text-theme-text-muted uppercase tracking-wider">
+                    SHIPPED
+                  </span>
                 )}
               </div>
 
@@ -173,6 +248,196 @@ export default function OrdersTable() {
           <button className="hover:text-theme-accent transition-colors">Next Page</button>
         </div>
       </div>
+
+      {/* More Details Modal */}
+      {selectedOrderDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-none">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-theme-panel p-6 shadow-2xl border border-theme-border text-theme-text max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-theme-border pb-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-serif font-bold text-theme-accent">Order Details</h2>
+                <p className="text-xs text-theme-text-muted mt-1 uppercase tracking-widest">
+                  Order ID: <span className="text-theme-text font-mono font-bold">{selectedOrderDetail.id}</span> • {selectedOrderDetail.date}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOrderDetail(null)}
+                className="text-theme-text-muted hover:text-theme-text cursor-pointer p-1"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="space-y-8">
+              
+              {/* Product and Client Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-theme-border">
+                {/* Left: Product Info */}
+                <div className="flex gap-4">
+                  {selectedOrderDetail.productImage && (
+                    <img
+                      src={selectedOrderDetail.productImage}
+                      alt={selectedOrderDetail.product}
+                      className="w-20 h-20 rounded-lg object-cover border border-theme-border shadow-sm flex-shrink-0"
+                    />
+                  )}
+                  <div>
+                    <span className="text-[10px] font-bold text-theme-accent uppercase tracking-widest block mb-0.5">Garment Details</span>
+                    <h3 className="text-lg font-serif font-bold text-theme-text leading-snug">{selectedOrderDetail.product}</h3>
+                    <p className="text-xs text-theme-text-muted mt-1 leading-relaxed font-light">
+                      {selectedOrderDetail.desc}
+                    </p>
+                    {selectedOrderDetail.clothingType && (
+                      <p className="text-xs text-theme-text-muted mt-1 font-light">
+                        Style: <span className="text-theme-text font-semibold">{selectedOrderDetail.clothingType}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Client Summary */}
+                <div className="flex gap-3 items-start md:border-l md:border-theme-border md:pl-6">
+                  <img
+                    src="https://i.pravatar.cc/40"
+                    alt={selectedOrderDetail.name}
+                    className="h-10 w-10 rounded-full border border-theme-border shadow-sm"
+                  />
+                  <div>
+                    <span className="text-[10px] font-bold text-theme-accent uppercase tracking-widest block mb-0.5">Client Profile</span>
+                    <h4 className="font-semibold text-theme-text">{selectedOrderDetail.name}</h4>
+                    <p className="text-xs text-theme-text-muted mt-1.5 uppercase tracking-wider font-light">
+                      Status: <span className={`font-bold ${selectedOrderDetail.status === "SHIPPED" ? "text-emerald-500" : "text-amber-500"}`}>{selectedOrderDetail.status}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Measurements (if any) */}
+              {selectedOrderDetail.customMeasurements && Object.keys(selectedOrderDetail.customMeasurements).length > 0 && (
+                <div className="pb-6 border-b border-theme-border">
+                  <h4 className="text-xs font-bold text-theme-accent uppercase tracking-widest mb-3 flex items-center gap-1.5 font-serif">
+                    📐 Custom Measurements
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-theme-bg p-4 rounded-xl border border-theme-border">
+                    {Object.entries(selectedOrderDetail.customMeasurements).map(([key, val]) => (
+                      <div key={key} className="flex flex-col bg-theme-panel p-2.5 rounded-lg border border-theme-border/60">
+                        <span className="text-[10px] text-theme-text-muted uppercase tracking-wider font-semibold capitalize">{key}</span>
+                        <span className="text-base font-bold text-theme-text mt-1">{val} in</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Delivery and Billing details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6 border-b border-theme-border">
+                {/* Delivery */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-theme-accent uppercase tracking-widest font-serif">📦 Delivery & Collection</h4>
+                  <div className="text-xs text-theme-text-muted leading-relaxed font-light bg-theme-bg p-3.5 rounded-xl border border-theme-border space-y-2">
+                    <div className="flex justify-between">
+                      <span>Method:</span>
+                      <span className="font-semibold text-theme-text capitalize">{selectedOrderDetail.deliveryMethod === "pickup" ? "Store Pickup" : "Home Delivery"}</span>
+                    </div>
+                    {selectedOrderDetail.deliveryMethod === "delivery" ? (
+                      <div className="border-t border-theme-border/60 pt-2">
+                        <p className="font-bold text-theme-text mb-1">{selectedOrderDetail.deliveryName || selectedOrderDetail.name}</p>
+                        <p className="whitespace-pre-wrap">{selectedOrderDetail.deliveryAddress || "No address provided."}</p>
+                      </div>
+                    ) : (
+                      <div className="border-t border-theme-border/60 pt-2">
+                        <p className="italic">Customer will collect the garment directly from the shop.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Billing / Invoice */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-theme-accent uppercase tracking-widest font-serif">💳 Payment & Invoicing</h4>
+                  <div className="text-xs text-theme-text-muted leading-relaxed font-light bg-theme-bg p-3.5 rounded-xl border border-theme-border space-y-2">
+                    <div className="flex justify-between">
+                      <span>Payment Status:</span>
+                      <span className={`font-bold capitalize ${selectedOrderDetail.paymentStatus === "paid" ? "text-emerald-500" : "text-amber-500 animate-pulse"}`}>
+                        {selectedOrderDetail.paymentStatus || "unpaid"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Method:</span>
+                      <span className="font-semibold text-theme-text uppercase">{selectedOrderDetail.paymentMethod || "card"}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-theme-border pt-2 text-sm font-bold text-theme-accent">
+                      <span>Total Invoice:</span>
+                      <span>{selectedOrderDetail.total}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrderDetail(null)}
+                  className="rounded-xl border border-theme-border bg-transparent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-theme-text-muted hover:bg-theme-accent-muted cursor-pointer"
+                >
+                  Close
+                </button>
+                {selectedOrderDetail.status === "PENDING" ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleAcceptOrder(selectedOrderDetail.backendId);
+                      setSelectedOrderDetail(null);
+                    }}
+                    className="rounded-xl bg-theme-accent hover:opacity-90 text-theme-bg px-6 py-2.5 text-xs font-bold transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    ACCEPT ORDER
+                  </button>
+                ) : selectedOrderDetail.estCompletion !== "COMPLETED" ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleCompleteOrder(selectedOrderDetail.backendId);
+                      setSelectedOrderDetail(null);
+                    }}
+                    className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 py-2.5 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    COMPLETE TAILORING
+                  </button>
+                ) : selectedOrderDetail.deliveryMethod === "pickup" && selectedOrderDetail.paymentStatus === "unpaid" ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleMarkAsPaid(selectedOrderDetail.backendId);
+                      setSelectedOrderDetail(null);
+                    }}
+                    className="rounded-xl bg-amber-500 hover:bg-amber-600 px-6 py-2.5 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    MARK AS PAID
+                  </button>
+                ) : selectedOrderDetail.deliveryMethod === "delivery" && selectedOrderDetail.stage === "READY_TO_SHIP" ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleShipOrder(selectedOrderDetail.backendId);
+                      setSelectedOrderDetail(null);
+                    }}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    SHIP ORDER
+                  </button>
+                ) : null}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProducts } from "../../../utils/productUtils";
-import { getUserOrders } from "../../../utils/orderUtils";
+import { getUserOrders, collectOrder } from "../../../utils/orderUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
 
@@ -86,7 +86,7 @@ function StageProgress({ stage, stageIndex }) {
   );
 }
 
-function CommissionCard({ item }) {
+function CommissionCard({ item, onCollect }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -175,7 +175,7 @@ function CommissionCard({ item }) {
           {item.price}
         </p>
 
-        {(item.selectedFabric || item.selectedSize) ? (
+        {item.selectedFabric || item.selectedSize ? (
           <p style={{ color: "var(--theme-text-muted)", fontSize: 12, marginBottom: 8 }}>
             {[
               item.selectedFabric ? `Material: ${item.selectedFabric}` : "",
@@ -184,8 +184,18 @@ function CommissionCard({ item }) {
           </p>
         ) : null}
 
+        {/* Delivery Method & Payment Status Badges */}
+        <div style={{ display: "flex", gap: 12, marginTop: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 4, backgroundColor: "var(--theme-border)", color: "var(--theme-text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            {item.deliveryMethod === "pickup" ? "🏪 Store Pickup" : "📦 Home Delivery"}
+          </span>
+          <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 4, backgroundColor: item.paymentStatus === "paid" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", color: item.paymentStatus === "paid" ? "#34d399" : "#fbbf24", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", border: item.paymentStatus === "paid" ? "1px solid rgba(16, 185, 129, 0.2)" : "1px solid rgba(245, 158, 11, 0.2)" }}>
+            {item.paymentStatus === "paid" ? "Paid" : "Unpaid"}
+          </span>
+        </div>
+
         {item.status === "PENDING" ? (
-          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 10, backgroundColor: "rgba(250, 204, 21, 0.06)", border: "1px dashed rgba(250, 204, 21, 0.25)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 10, backgroundColor: "rgba(250, 204, 21, 0.06)", border: "1px dashed rgba(250, 204, 21, 0.25)", display: "inline-flex", items: "center", gap: 6 }}>
             <span style={{ color: "var(--theme-accent)", fontSize: 11, fontWeight: 600 }}>⏳ WAITING FOR TAILOR ACCEPTANCE</span>
           </div>
         ) : (
@@ -202,9 +212,59 @@ function CommissionCard({ item }) {
           padding: "20px 16px",
           display: "flex",
           flexDirection: "column",
+          justifyContent: "center",
           gap: 8,
         }}
       >
+        {/* Render collection / confirmation buttons based on deliveryMethod */}
+        {item.deliveryMethod === "pickup" && item.stage === "READY_FOR_PICKUP" ? (
+          item.paymentStatus === "paid" ? (
+            <button
+              onClick={() => onCollect(item.id)}
+              style={{
+                width: "100%",
+                padding: "10px 0",
+                borderRadius: 8,
+                border: "none",
+                backgroundColor: "var(--theme-accent)",
+                color: "var(--theme-bg)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+              }}
+            >
+              🏪 Collect Order
+            </button>
+          ) : (
+            <div style={{ padding: "8px 10px", borderRadius: 8, backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px dashed rgba(239, 68, 68, 0.3)", textAlign: "center" }}>
+              <p style={{ fontSize: 9, color: "#f87171", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Unpaid • Pay in-store to collect
+              </p>
+            </div>
+          )
+        ) : item.deliveryMethod === "delivery" && item.stage === "SHIPPED" ? (
+          <button
+            onClick={() => onCollect(item.id)}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              borderRadius: 8,
+              border: "none",
+              backgroundColor: "#10b981",
+              color: "#ffffff",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
+            ✅ Confirm Delivery
+          </button>
+        ) : null}
+
         {item.actions.map((action) => (
           <button
             key={action.label}
@@ -304,6 +364,103 @@ export default function OrderList() {
       window.removeEventListener("tailor-orders-updated", syncOrders);
     };
   }, []);
+
+  // Self-healing notification sync for the User
+  useEffect(() => {
+    if (!storedOrders || storedOrders.length === 0) return;
+
+    try {
+      const rawUser = localStorage.getItem("user");
+      const user = rawUser ? JSON.parse(rawUser) : null;
+      const userId = user?._id;
+      if (!userId) return;
+
+      const notifKey = `notifications_${userId}`;
+      const existingNotifs = JSON.parse(localStorage.getItem(notifKey) || "[]");
+      let updated = false;
+
+      storedOrders.forEach((order) => {
+        const notificationsToPush = [];
+
+        // 1. Order accepted
+        if (order.status === "ACCEPTED" && order.stage !== "READY_FOR_PICKUP" && order.stage !== "READY_TO_SHIP") {
+          notificationsToPush.push({
+            id: `user-order-accepted-${order.id}`,
+            title: "Order Accepted",
+            message: `Your order #${order.orderNo} for "${order.title}" was accepted by tailor ${order.tailor}.`,
+          });
+        }
+
+        // 2. Ready for Pickup
+        if (order.stage === "READY_FOR_PICKUP") {
+          notificationsToPush.push({
+            id: `user-order-pickup-ready-${order.id}`,
+            title: "Ready for Pickup",
+            message: `Your order #${order.orderNo} is completed! Please collect it from the tailor's shop.`,
+          });
+        }
+
+        // 3. Ready to Ship
+        if (order.stage === "READY_TO_SHIP") {
+          notificationsToPush.push({
+            id: `user-order-ship-ready-${order.id}`,
+            title: "Ready to Ship",
+            message: `Your order #${order.orderNo} is completed and is being prepared for shipping by ${order.tailor}.`,
+          });
+        }
+
+        // 4. Order Shipped
+        if (order.stage === "SHIPPED") {
+          notificationsToPush.push({
+            id: `user-order-shipped-${order.id}`,
+            title: "Order Shipped",
+            message: `Your order #${order.orderNo} has been shipped! It is on its way.`,
+          });
+        }
+
+        // 5. Payment Confirmed
+        if (order.paymentStatus === "paid") {
+          notificationsToPush.push({
+            id: `user-order-paid-${order.id}`,
+            title: "Payment Confirmed",
+            message: `Payment confirmed by tailor for order #${order.orderNo}.`,
+          });
+        }
+
+        // Push new notifications if they don't exist
+        notificationsToPush.forEach((n) => {
+          const exists = existingNotifs.some((ex) => ex.id === n.id);
+          if (!exists) {
+            existingNotifs.unshift({
+              ...n,
+              read: false,
+              createdAt: new Date().toISOString(),
+            });
+            updated = true;
+          }
+        });
+      });
+
+      if (updated) {
+        localStorage.setItem(notifKey, JSON.stringify(existingNotifs));
+        window.dispatchEvent(new Event("user-notifications-updated"));
+      }
+    } catch (e) {
+      console.error("Failed to sync notifications", e);
+    }
+  }, [storedOrders]);
+
+  const handleCollect = async (orderId) => {
+    try {
+      await collectOrder(orderId);
+      window.dispatchEvent(new Event("user-orders-updated"));
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      const nextOrders = await getUserOrders();
+      setStoredOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch (err) {
+      console.error("Failed to collect order", err);
+    }
+  };
 
   const hydratedOrders = useMemo(() => {
     return [...storedOrders]
@@ -414,7 +571,7 @@ export default function OrderList() {
           No commissions in this section yet.
         </div>
       ) : (
-        items.map((item) => <CommissionCard key={item.id} item={item} />)
+        items.map((item) => <CommissionCard key={item.id} item={item} onCollect={handleCollect} />)
       )}
     </div>
   );

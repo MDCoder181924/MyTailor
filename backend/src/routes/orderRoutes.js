@@ -10,6 +10,9 @@ import {
   getTailorOrders,
   getUserOrders,
   markTailorNotificationsRead,
+  shipOrder,
+  markOrderAsPaid,
+  collectOrder,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -21,5 +24,8 @@ router.get("/tailor/notifications", authMiddleware, isTailor, getTailorNotificat
 router.patch("/tailor/notifications/read", authMiddleware, isTailor, markTailorNotificationsRead);
 router.patch("/:id/accept", authMiddleware, isTailor, acceptOrder);
 router.patch("/:id/status", authMiddleware, isTailor, completeOrder);
+router.patch("/:id/ship", authMiddleware, isTailor, shipOrder);
+router.patch("/:id/pay", authMiddleware, isTailor, markOrderAsPaid);
+router.patch("/:id/collect", authMiddleware, collectOrder);
 
 export default router;

@@ -62,3 +62,30 @@ export const markTailorNotificationsRead = async () => {
     throw new Error(err.response?.data?.message || "Failed to update notifications");
   }
 };
+
+export const shipTailorOrder = async (orderId) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/ship`);
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to ship order");
+  }
+};
+
+export const payTailorOrder = async (orderId) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/pay`);
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to mark order as paid");
+  }
+};
+
+export const collectOrder = async (orderId) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/collect`);
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to collect order");
+  }
+};

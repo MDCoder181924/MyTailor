@@ -93,6 +93,16 @@ const orderSchema = new mongoose.Schema(
       default: "card",
       trim: true,
     },
+    deliveryMethod: {
+      type: String,
+      enum: ["pickup", "delivery"],
+      default: "delivery",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "paid"],
+      default: "unpaid",
+    },
     status: {
       type: String,
       enum: ["PENDING", "ACCEPTED", "SHIPPED"],

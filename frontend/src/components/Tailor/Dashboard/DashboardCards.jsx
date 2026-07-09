@@ -10,18 +10,26 @@ const parseAmount = (value) => {
 export default function DashboardCards() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadInitialData = async () => {
       try {
-        const nextProducts = await getMyProducts();
-        setProducts(nextProducts);
+        setLoading(true);
+        const [nextProducts, nextOrders] = await Promise.all([
+          getMyProducts(),
+          getTailorOrders()
+        ]);
+        setProducts(nextProducts || []);
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
       } catch {
-        setProducts([]);
+        // Fallbacks
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadProducts();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -34,7 +42,6 @@ export default function DashboardCards() {
       }
     };
 
-    syncOrders();
     window.addEventListener("storage", syncOrders);
     window.addEventListener("tailor-orders-updated", syncOrders);
 
@@ -79,45 +86,67 @@ export default function DashboardCards() {
     })[0];
   }, [orders, products]);
 
+  const completedOrdersCount = useMemo(
+    () => completedOrders.length,
+    [completedOrders]
+  );
+
+  const MiniSpinner = () => (
+    <div className="w-4 h-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin inline-block align-middle"></div>
+  );
+
   return (
     <div className="grid grid-cols-1 gap-6 bg-theme-bg p-6 text-theme-text md:grid-cols-3">
+      {/* Total Revenue */}
       <div className="relative rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
         <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">TOTAL REVENUE</p>
         <span className="absolute right-4 top-4 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider">
-          {completedOrders.length} done
+          {loading ? <MiniSpinner /> : `${completedOrdersCount} done`}
         </span>
         <h2 className="mt-2 text-3xl font-bold text-theme-accent">
-          ${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {loading ? (
+            <MiniSpinner />
+          ) : (
+            `$${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          )}
         </h2>
         <div className="mt-4 h-1 w-24 bg-theme-accent"></div>
       </div>
 
+      {/* Active Orders */}
       <div className="rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
         <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">ACTIVE ORDERS</p>
         <h2 className="text-3xl font-bold text-theme-text">
-          {activeOrders.length} <span className="text-sm text-theme-text-muted font-normal">Pending tailoring</span>
+          {loading ? (
+            <MiniSpinner />
+          ) : (
+            <>
+              {activeOrders.length} <span className="text-sm text-theme-text-muted font-normal">Pending tailoring</span>
+            </>
+          )}
         </h2>
 
         <div className="mt-4 flex items-center">
           <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-theme-panel bg-theme-accent text-xs font-bold text-theme-bg shadow-sm">
-            {activeOrders.length}
+            {loading ? <div className="w-3.5 h-3.5 border-2 border-theme-bg border-t-transparent rounded-full animate-spin"></div> : activeOrders.length}
           </div>
           <div className="ml-2 text-xs text-theme-text-muted">
-            {orders.length} total orders
+            {loading ? <MiniSpinner /> : `${orders.length} total orders`}
           </div>
         </div>
       </div>
 
+      {/* Top Product */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-theme-accent-muted to-theme-panel p-6 shadow-lg border border-theme-accent/20">
         <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-theme-accent uppercase">TOP PRODUCT</p>
         <h2 className="text-2xl font-serif font-bold text-theme-text">
-          {topProduct?.productName || "No Product Yet"}
+          {loading ? <MiniSpinner /> : (topProduct?.productName || "No Product Yet")}
         </h2>
         <p className="mt-1 text-sm text-theme-text-muted font-light">
-          {topProduct?.category || "Add products to see performance"}
+          {loading ? <MiniSpinner /> : (topProduct?.category || "Add products to see performance")}
         </p>
         <p className="mt-4 text-xs font-bold tracking-wider text-theme-accent uppercase">
-          {topProduct ? `${orders.filter((order) => order.product === topProduct.productName).length} ORDERS` : "START SELLING"}
+          {loading ? <MiniSpinner /> : (topProduct ? `${orders.filter((order) => order.product === topProduct.productName).length} ORDERS` : "START SELLING")}
         </p>
         <div className="absolute bottom-2 right-4 text-7xl font-serif text-theme-accent/10 select-none">*</div>
       </div>

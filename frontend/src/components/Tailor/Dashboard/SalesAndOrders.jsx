@@ -13,6 +13,23 @@ const parseAmount = (value) => {
 function SalesAndOrders() {
   const [orders, setOrders] = useState([]);
   const { theme } = useContext(ThemeContext);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        const nextOrders = await getTailorOrders();
+        setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+      } catch {
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   useEffect(() => {
     const syncOrders = async () => {
@@ -24,7 +41,6 @@ function SalesAndOrders() {
       }
     };
 
-    syncOrders();
     window.addEventListener("storage", syncOrders);
     window.addEventListener("tailor-orders-updated", syncOrders);
 
@@ -67,6 +83,10 @@ function SalesAndOrders() {
 
   const chartStroke = theme === "light" ? "#2563eb" : "#facc15";
 
+  const MiniSpinner = () => (
+    <div className="w-4 h-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin inline-block align-middle"></div>
+  );
+
   return (
     <div className="grid grid-cols-1 gap-6 bg-theme-bg p-6 text-theme-text lg:grid-cols-3">
       <div className="bg-theme-panel p-6 rounded-xl shadow-lg border border-theme-border lg:col-span-2">
@@ -81,30 +101,37 @@ function SalesAndOrders() {
           </span>
         </div>
 
-        <div className="h-60">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <XAxis dataKey="day" stroke="currentColor" className="text-theme-text-muted opacity-50" />
-              <Tooltip contentStyle={{ backgroundColor: "var(--theme-panel)", borderColor: "var(--theme-border)", color: "var(--theme-text)" }} />
-              <Line type="monotone" dataKey="value" stroke={chartStroke} strokeWidth={3} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="h-60 flex items-center justify-center">
+          {loading ? (
+            <div className="flex flex-col items-center gap-2 text-theme-text-muted">
+              <div className="w-8 h-8 border-4 border-theme-accent border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs uppercase tracking-wider">Loading trends...</span>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <XAxis dataKey="day" stroke="currentColor" className="text-theme-text-muted opacity-50" />
+                <Tooltip contentStyle={{ backgroundColor: "var(--theme-panel)", borderColor: "var(--theme-border)", color: "var(--theme-text)" }} />
+                <Line type="monotone" dataKey="value" stroke={chartStroke} strokeWidth={3} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         <div className="mt-6 flex justify-between text-sm border-t border-theme-border pt-4">
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] text-theme-text-muted uppercase">Completed Orders</p>
-            <p className="font-semibold text-theme-text mt-0.5">{completedOrders.length}</p>
+            <p className="font-semibold text-theme-text mt-0.5">{loading ? <MiniSpinner /> : completedOrders.length}</p>
           </div>
 
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] text-theme-text-muted uppercase">Avg Order</p>
-            <p className="font-semibold text-theme-text mt-0.5">${avgOrder.toFixed(0)}</p>
+            <p className="font-semibold text-theme-text mt-0.5">{loading ? <MiniSpinner /> : `$${avgOrder.toFixed(0)}`}</p>
           </div>
 
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] text-theme-text-muted uppercase">Total Orders</p>
-            <p className="font-semibold text-theme-text mt-0.5">{orders.length}</p>
+            <p className="font-semibold text-theme-text mt-0.5">{loading ? <MiniSpinner /> : orders.length}</p>
           </div>
         </div>
       </div>
@@ -115,7 +142,12 @@ function SalesAndOrders() {
           <span className="cursor-pointer text-xs font-bold tracking-wider text-theme-accent hover:underline">VIEW ALL</span>
         </div>
 
-        {recentOrders.length ? (
+        {loading ? (
+          <div className="rounded-xl bg-theme-panel border border-theme-border p-8 text-center flex flex-col items-center justify-center gap-2 text-theme-text-muted">
+            <div className="w-6 h-6 border-2 border-theme-accent border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-xs uppercase tracking-wider">Loading orders...</span>
+          </div>
+        ) : recentOrders.length ? (
           recentOrders.map((order) => {
             const shipped = order.status === "SHIPPED";
 

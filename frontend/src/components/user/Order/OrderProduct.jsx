@@ -290,7 +290,7 @@ export default function OrderProduct() {
       return;
     }
 
-    if (!shippingDetails.fullName.trim() || !shippingDetails.address.trim()) {
+    if (deliveryMethod === "delivery" && (!shippingDetails.fullName.trim() || !shippingDetails.address.trim())) {
       setSubmitError("Please enter delivery name and address.");
       setIsEditingAddress(true);
       return;
@@ -322,7 +322,8 @@ export default function OrderProduct() {
         clothingType,
         customMeasurements: cleanMeasurements,
         deliveryName: shippingDetails.fullName.trim(),
-        deliveryAddress: shippingDetails.address.trim(),
+        deliveryAddress: deliveryMethod === "pickup" ? "SHOP PICKUP" : shippingDetails.address.trim(),
+        deliveryMethod,
         paymentMethod: payment,
       });
 
@@ -558,40 +559,78 @@ export default function OrderProduct() {
             )}
           </div>
 
-          {/* Shipping Sanctuary */}
+          {/* Delivery Method Selection */}
           <div className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-xl">
-            <h2 className="mb-4 text-lg font-semibold border-b border-white/10 pb-2 uppercase tracking-wider text-yellow-400 font-serif">Shipping Sanctuary</h2>
-            <div className="flex items-center justify-between rounded-lg bg-white/5 p-4">
-              <div className="w-full">
-                <p className="text-xs text-gray-400 uppercase tracking-wider">PRIMARY RESIDENCE</p>
-                {isEditingAddress ? (
-                  <div className="mt-3 space-y-3">
-                    <input type="text" value={shippingDetails.fullName}
-                      onChange={(e) => handleShippingChange("fullName", e.target.value)}
-                      placeholder="Full name"
-                      className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none text-sm focus:border-yellow-400 transition" />
-                    <textarea value={shippingDetails.address}
-                      onChange={(e) => handleShippingChange("address", e.target.value)}
-                      placeholder="Delivery address" rows={3}
-                      className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none text-sm focus:border-yellow-400 transition" />
-                    <button type="button" onClick={() => setIsEditingAddress(false)}
-                      className="rounded-full border border-yellow-400 px-4 py-2 text-sm text-yellow-300 transition hover:bg-yellow-400 hover:text-black cursor-pointer">
-                      Save Address
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-2">
-                    <p className="font-semibold">{shippingDetails.fullName}</p>
-                    <p className="text-xs text-gray-400">{shippingDetails.address}</p>
-                  </div>
-                )}
-              </div>
-              <button type="button" onClick={() => setIsEditingAddress((prev) => !prev)}
-                className="ml-4 self-start text-xs font-semibold text-yellow-400 hover:underline cursor-pointer uppercase tracking-wider">
-                {isEditingAddress ? "CLOSE" : "CHANGE"}
+            <h2 className="mb-4 text-lg font-semibold border-b border-white/10 pb-2 uppercase tracking-wider text-yellow-400 font-serif">Delivery Method</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setDeliveryMethod("delivery")}
+                className={`rounded-lg border p-4 transition text-center cursor-pointer ${
+                  deliveryMethod === "delivery"
+                    ? "border-yellow-400 bg-white/10 text-yellow-300 font-semibold"
+                    : "border-white/10 bg-transparent text-gray-400 hover:border-white/20"
+                }`}
+              >
+                📦 Home Delivery
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeliveryMethod("pickup")}
+                className={`rounded-lg border p-4 transition text-center cursor-pointer ${
+                  deliveryMethod === "pickup"
+                    ? "border-yellow-400 bg-white/10 text-yellow-300 font-semibold"
+                    : "border-white/10 bg-transparent text-gray-400 hover:border-white/20"
+                }`}
+              >
+                🏪 Store Pickup
               </button>
             </div>
           </div>
+
+          {/* Shipping Sanctuary / Shop Pickup Notes */}
+          {deliveryMethod === "delivery" ? (
+            <div className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-xl">
+              <h2 className="mb-4 text-lg font-semibold border-b border-white/10 pb-2 uppercase tracking-wider text-yellow-400 font-serif">Shipping Sanctuary</h2>
+              <div className="flex items-center justify-between rounded-lg bg-white/5 p-4">
+                <div className="w-full">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider">PRIMARY RESIDENCE</p>
+                  {isEditingAddress ? (
+                    <div className="mt-3 space-y-3">
+                      <input type="text" value={shippingDetails.fullName}
+                        onChange={(e) => handleShippingChange("fullName", e.target.value)}
+                        placeholder="Full name"
+                        className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none text-sm focus:border-yellow-400 transition" />
+                      <textarea value={shippingDetails.address}
+                        onChange={(e) => handleShippingChange("address", e.target.value)}
+                        placeholder="Delivery address" rows={3}
+                        className="w-full rounded border border-white/10 bg-white/5 p-3 text-white outline-none text-sm focus:border-yellow-400 transition" />
+                      <button type="button" onClick={() => setIsEditingAddress(false)}
+                        className="rounded-full border border-yellow-400 px-4 py-2 text-sm text-yellow-300 transition hover:bg-yellow-400 hover:text-black cursor-pointer">
+                        Save Address
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <p className="font-semibold">{shippingDetails.fullName}</p>
+                      <p className="text-xs text-gray-400">{shippingDetails.address}</p>
+                    </div>
+                  )}
+                </div>
+                <button type="button" onClick={() => setIsEditingAddress((prev) => !prev)}
+                  className="ml-4 self-start text-xs font-semibold text-yellow-400 hover:underline cursor-pointer uppercase tracking-wider">
+                  {isEditingAddress ? "CLOSE" : "CHANGE"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/5 p-5 shadow-xl">
+              <h2 className="mb-2 text-lg font-semibold border-b border-yellow-400/10 pb-2 uppercase tracking-wider text-yellow-400 font-serif">Shop Pickup Selected</h2>
+              <p className="text-sm text-gray-300 leading-relaxed font-light mt-2">
+                You will collect your garment directly from the tailor's shop. No shipping details are required. We will notify you as soon as the tailor marks the order as completed.
+              </p>
+            </div>
+          )}
 
           {/* Wealth Exchange (Payment) */}
           <div className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-xl">
