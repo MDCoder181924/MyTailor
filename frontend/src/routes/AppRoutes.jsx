@@ -19,6 +19,7 @@ const TailorProfileSettings = lazy(() => import("../pages/Tailor/TailorProfileSe
 const OrderProduct = lazy(() => import("../pages/user/OrdarProduct"));
 const UserProfiie = lazy(() => import("../pages/user/userProfiie"));
 const Cart = lazy(() => import("../pages/user/Cart"));
+const TailorTerms = lazy(() => import("../pages/TailorTerms"));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-black text-sm text-gray-400">
@@ -39,6 +40,7 @@ const AppRoutes = () => {
         <Route path="/explore/:category" element={<ExploreCategory />} />
         <Route path="/Artisans" element={<Artisans />} />
         <Route path="/tailors/:tailorId" element={<TailorPublicProfile />} />
+        <Route path="/tailor-terms" element={<TailorTerms />} />
 
         {/* Customer only routes */}
         <Route path="/deshboard" element={<ProtectedRoute allowedRole="user"><Dashboard /></ProtectedRoute>} />

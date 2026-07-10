@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
 
@@ -8,6 +9,7 @@ const SignupTailor = ({  onSwitch, identity }) => {
     const [tailorMobileNumber, setPhoneNumber] = useState("");
     const [tailorPassword, setPassword] = useState("");
     const [tailorPassword1, setPassword1] = useState("");
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const onSubmitTailorSignup = async (e) => {
@@ -28,6 +30,11 @@ const SignupTailor = ({  onSwitch, identity }) => {
 
       if (tailorPassword !== tailorPassword1) {
         toast.error("Password not match");
+        return;
+      }
+
+      if (!agreedToTerms) {
+        toast.error("You must agree to the Terms & Conditions.");
         return;
       }
 
@@ -127,6 +134,24 @@ const SignupTailor = ({  onSwitch, identity }) => {
           placeholder="Confirm your password"
           required
         />
+      </div>
+
+      <div className="flex items-start gap-2 py-2">
+        <input
+          type="checkbox"
+          id="t-signup-terms"
+          checked={agreedToTerms}
+          onChange={(e) => setAgreedToTerms(e.target.checked)}
+          className="mt-1 h-4 w-4 rounded border-white/10 bg-white/5 text-teal-400 focus:ring-teal-400 accent-teal-400 cursor-pointer"
+          required
+        />
+        <label htmlFor="t-signup-terms" className="text-xs text-gray-300 select-none cursor-pointer">
+          I agree to the{" "}
+          <Link to="/tailor-terms" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:underline font-semibold">
+            Terms & Conditions
+          </Link>{" "}
+          for Tailors.
+        </label>
       </div>
 
       <button
