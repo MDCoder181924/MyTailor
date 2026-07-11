@@ -173,6 +173,7 @@ export default function OrderProduct() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [payment, setPayment] = useState("card");
+  const [deliveryMethod, setDeliveryMethod] = useState("delivery");
   const [product, setProduct] = useState(location.state?.product || null);
   const [selectedFabric, setSelectedFabric] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
