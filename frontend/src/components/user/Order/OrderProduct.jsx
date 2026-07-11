@@ -42,19 +42,19 @@ function SizeChartModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-[#0e121a] p-6 shadow-2xl text-white max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-2xl rounded-2xl border border-theme-border bg-theme-panel p-6 shadow-2xl text-theme-text max-h-[90vh] overflow-y-auto">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+          className="absolute top-4 right-4 text-theme-text-muted hover:text-theme-text transition"
         >
           <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <h3 className="text-xl font-bold text-yellow-400 mb-1">{chart.title}</h3>
-        <p className="text-xs text-gray-400 mb-4">
+        <h3 className="text-xl font-bold text-theme-accent mb-1">{chart.title}</h3>
+        <p className="text-xs text-theme-text-muted mb-4">
           Click any row to select that size. Switch brands below.
         </p>
 
@@ -67,10 +67,10 @@ function SizeChartModal({
                 key={brand.id}
                 type="button"
                 onClick={() => onSelectBrand(brand.id)}
-                className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                className={`rounded-full border px-3 py-1 text-xs font-semibold transition cursor-pointer ${
                   isActive
-                    ? "border-yellow-400 bg-yellow-400 text-black"
-                    : "border-white/10 bg-white/5 text-gray-400 hover:border-yellow-400/60"
+                    ? "border-theme-accent bg-theme-accent text-theme-bg"
+                    : "border-theme-border bg-theme-bg/50 text-theme-text-muted hover:border-theme-accent/60"
                 }`}
               >
                 {brand.name}
@@ -80,10 +80,10 @@ function SizeChartModal({
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/5">
-          <table className="w-full text-left text-sm text-gray-300">
+        <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
+          <table className="w-full text-left text-sm text-theme-text">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-xs font-bold uppercase tracking-wider text-gray-400">
+              <tr className="border-b border-theme-border bg-theme-panel/50 text-xs font-bold uppercase tracking-wider text-theme-text-muted">
                 {chart.headers.map((h) => (
                   <th key={h} className="px-4 py-3">{h}</th>
                 ))}
@@ -96,10 +96,10 @@ function SizeChartModal({
                 return (
                   <tr
                     key={idx}
-                    className={`border-b border-white/5 transition-colors ${
+                    className={`border-b border-theme-border/50 transition-colors ${
                       isSelectedRow
-                        ? "bg-yellow-400/10 text-yellow-300 font-semibold cursor-pointer hover:bg-yellow-400/20"
-                        : "cursor-pointer hover:bg-white/5"
+                        ? "bg-theme-accent/10 text-theme-accent font-semibold cursor-pointer hover:bg-theme-accent/20"
+                        : "cursor-pointer hover:bg-theme-border/20 text-theme-text"
                     }`}
                     onClick={() => {
                       onSelectSize(rowSize);
@@ -117,13 +117,13 @@ function SizeChartModal({
         </div>
 
         <div className="mt-5 flex justify-between items-center">
-          <span className="text-xs text-gray-500 italic">
+          <span className="text-xs text-theme-text-muted italic">
             * Highlighted row = current selection
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-yellow-400 px-5 py-2 text-xs font-bold text-black hover:opacity-90 transition"
+            className="rounded-full bg-theme-accent px-5 py-2 text-xs font-bold text-theme-bg hover:opacity-90 transition cursor-pointer"
           >
             Close
           </button>
