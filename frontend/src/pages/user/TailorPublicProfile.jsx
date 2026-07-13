@@ -4,7 +4,7 @@ import Header from "../../components/user/Dashboard/HeaderDashboard";
 import PhoneFooter from "../../components/user/Dashboard/PhoneFotter";
 import defaultTailorImage from "../../assets/images/by-defalt-tailor-img.avif";
 import { getProductsByTailorId } from "../../utils/productUtils";
-import { getTailorById } from "../../utils/tailorUtils";
+import { getTailorById, getTailorReviews } from "../../utils/tailorUtils";
 
 const fallbackProductImage = "https://picsum.photos/seed/tailor-product/800/1000";
 
@@ -19,6 +19,7 @@ export default function TailorPublicProfile() {
   const navigate = useNavigate();
   const [tailor, setTailor] = useState(location.state?.tailor || null);
   const [products, setProducts] = useState([]);
+  const [reviewsData, setReviewsData] = useState({ reviews: [], averageRating: 0, totalReviews: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -30,9 +31,10 @@ export default function TailorPublicProfile() {
         setLoading(true);
         setError("");
 
-        const [tailorData, productData] = await Promise.all([
+        const [tailorData, productData, reviewsResponse] = await Promise.all([
           location.state?.tailor ? Promise.resolve(location.state.tailor) : getTailorById(tailorId),
           getProductsByTailorId(tailorId),
+          getTailorReviews(tailorId),
         ]);
 
         if (!isMounted) {
@@ -41,6 +43,7 @@ export default function TailorPublicProfile() {
 
         setTailor(tailorData);
         setProducts(productData);
+        setReviewsData(reviewsResponse || { reviews: [], averageRating: 0, totalReviews: 0 });
       } catch (err) {
         if (isMounted) {
           setError(err.message || "Failed to load tailor profile");
@@ -68,15 +71,19 @@ export default function TailorPublicProfile() {
           : "0+",
       },
       {
-        label: "SPECIALIZATIONS",
-        value: `${tailor?.specializations?.length || 0}`,
+        label: "RATING",
+        value: reviewsData.totalReviews > 0 ? `${reviewsData.averageRating} ★` : "New",
+      },
+      {
+        label: "REVIEWS",
+        value: `${reviewsData.totalReviews}`,
       },
       {
         label: "PRODUCTS",
         value: `${products.length}`,
       },
     ],
-    [products.length, tailor]
+    [products.length, tailor, reviewsData]
   );
 
   const handleOrderProduct = (product) => {
@@ -130,7 +137,7 @@ export default function TailorPublicProfile() {
                   </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
                   {stats.map((item) => (
                     <div
                       key={item.label}
@@ -237,6 +244,72 @@ export default function TailorPublicProfile() {
                         </div>
                       </div>
                     </button>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Reviews Section */}
+            <section className="rounded-[32px] border border-[#242424] bg-[#0d0d0d] p-5 md:p-8 space-y-6">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-gray-400">
+                  Reviews & Ratings
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold font-serif">Client Testimonials</h2>
+              </div>
+
+              {reviewsData.reviews.length === 0 ? (
+                <div className="py-12 text-center text-gray-500 border border-dashed border-white/10 rounded-2xl">
+                  No reviews left for this artisan yet.
+                </div>
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2">
+                  {reviewsData.reviews.map((review) => (
+                    <div
+                      key={review._id}
+                      className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4 hover:border-yellow-400/40 transition duration-300"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center font-bold text-yellow-400">
+                            {review.user?.userFullName?.slice(0, 1).toUpperCase() || "C"}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-white">{review.user?.userFullName || "Verified Client"}</h4>
+                            <span className="text-[10px] text-gray-500">{new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                          </div>
+                        </div>
+
+                        {/* Star display */}
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <span
+                              key={s}
+                              className={`text-lg ${
+                                s <= review.rating ? "text-yellow-400" : "text-white/10"
+                              }`}
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {review.product?.productName && (
+                        <div className="inline-block bg-white/5 border border-white/10 rounded px-2.5 py-1 text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                          Ordered: {review.product.productName}
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5">
+                        {review.title && (
+                          <h5 className="font-medium text-yellow-300 text-sm">{review.title}</h5>
+                        )}
+                        <p className="text-xs text-gray-300 leading-relaxed font-light italic">
+                          "{review.comment}"
+                        </p>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

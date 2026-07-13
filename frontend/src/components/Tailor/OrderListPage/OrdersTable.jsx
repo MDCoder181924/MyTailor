@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { completeTailorOrder, getTailorOrders, acceptTailorOrder, payTailorOrder, shipTailorOrder } from "../../../utils/orderUtils";
+import { completeTailorOrder, getTailorOrders, acceptTailorOrder, payTailorOrder, shipTailorOrder, startTailorWork } from "../../../utils/orderUtils";
 import { X } from "lucide-react";
 
 export default function OrdersTable() {
@@ -52,7 +52,39 @@ export default function OrdersTable() {
     }
   }, [orders, selectedOrderDetail]);
 
-  const activeOrders = useMemo(() => orders.filter((order) => order.status !== "SHIPPED"), [orders]);
+  const [statusFilter, setStatusFilter] = useState("ALL_ACTIVE");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const activeOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const query = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !query ||
+        order.id.toLowerCase().includes(query) ||
+        order.name.toLowerCase().includes(query) ||
+        order.product.toLowerCase().includes(query);
+
+      if (!matchesSearch) return false;
+
+      switch (statusFilter) {
+        case "PENDING":
+          return order.status === "PENDING";
+        case "AWAITING_START":
+          return order.status === "ACCEPTED" && !order.workStarted;
+        case "WORK_STARTED":
+          return order.status === "ACCEPTED" && order.workStarted;
+        case "COMPLETED":
+          return order.status === "SHIPPED";
+        case "CANCELLED":
+          return order.status === "CANCELLED";
+        case "ALL":
+          return true;
+        case "ALL_ACTIVE":
+        default:
+          return order.status !== "SHIPPED" && order.status !== "CANCELLED";
+      }
+    });
+  }, [orders, statusFilter, searchQuery]);
 
   const handleAcceptOrder = async (orderId) => {
     try {
@@ -63,6 +95,18 @@ export default function OrdersTable() {
       setOrders(Array.isArray(nextOrders) ? nextOrders : []);
     } catch {
       // Ignore update failures.
+    }
+  };
+
+  const handleStartWork = async (orderId) => {
+    try {
+      await startTailorWork(orderId);
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      window.dispatchEvent(new Event("user-orders-updated"));
+      const nextOrders = await getTailorOrders();
+      setOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch {
+      // Ignore
     }
   };
 
@@ -108,11 +152,25 @@ export default function OrdersTable() {
         <input
           type="text"
           placeholder="Search orders, clients or products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-xl bg-theme-panel px-4 py-2.5 outline-none border border-theme-border focus:border-theme-accent text-theme-text transition-colors placeholder:text-theme-text-muted/50 md:w-1/3"
         />
 
         <div className="flex gap-3">
-          <button className="rounded-xl bg-theme-panel border border-theme-border px-4 py-2.5 text-xs font-bold tracking-wider text-theme-text-muted hover:text-theme-accent hover:bg-theme-accent-muted transition-colors uppercase">STATUS: ALL</button>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-xl bg-theme-panel border border-theme-border px-4 py-2.5 text-xs font-bold tracking-wider text-theme-text outline-none focus:border-theme-accent transition-colors uppercase cursor-pointer"
+          >
+            <option value="ALL_ACTIVE">Active Orders</option>
+            <option value="PENDING">Pending Acceptance</option>
+            <option value="AWAITING_START">Awaiting Start</option>
+            <option value="WORK_STARTED">Work Started</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+            <option value="ALL">All Orders</option>
+          </select>
           <button className="rounded-xl bg-theme-panel border border-theme-border px-4 py-2.5 text-xs font-bold tracking-wider text-theme-text-muted hover:text-theme-accent hover:bg-theme-accent-muted transition-colors uppercase">LATEST FIRST</button>
         </div>
       </div>
@@ -179,22 +237,40 @@ export default function OrdersTable() {
                       ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
                       : order.status === "PENDING"
                       ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                      : order.status === "CANCELLED"
+                      ? "bg-red-500/10 text-red-500 border border-red-500/20"
+                      : order.workStarted
+                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                       : "bg-theme-accent-muted text-theme-accent border border-theme-accent/20"
                   }`}
                 >
-                  {order.status}
+                  {order.status === "ACCEPTED"
+                    ? (order.workStarted ? "STITCHING" : "ACCEPTED")
+                    : order.status}
                 </span>
               </div>
 
               <div className="w-full md:text-center">
                 <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider mb-1.5">Action</p>
-                {order.status === "PENDING" ? (
+                {order.status === "CANCELLED" ? (
+                  <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
+                    CANCELLED
+                  </span>
+                ) : order.status === "PENDING" ? (
                   <button
                     type="button"
                     onClick={() => handleAcceptOrder(order.backendId)}
                     className="w-full md:w-auto rounded-lg bg-theme-accent hover:opacity-90 text-theme-bg px-4 py-2 text-xs font-bold transition-all uppercase tracking-wider shadow-sm cursor-pointer"
                   >
                     ACCEPT
+                  </button>
+                ) : order.status === "ACCEPTED" && !order.workStarted ? (
+                  <button
+                    type="button"
+                    onClick={() => handleStartWork(order.backendId)}
+                    className="w-full md:w-auto rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    START WORK
                   </button>
                 ) : order.estCompletion !== "COMPLETED" ? (
                   <button
@@ -222,11 +298,15 @@ export default function OrdersTable() {
                     onClick={() => handleShipOrder(order.backendId)}
                     className="w-full md:w-auto rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
                   >
-                    SHIP
+                    SEND FOR DELIVERY
                   </button>
+                ) : order.deliveryMethod === "delivery" && order.stage === "SHIPPED" ? (
+                  <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">
+                    OUT FOR DELIVERY
+                  </span>
                 ) : (
                   <span className="text-xs font-bold text-theme-text-muted uppercase tracking-wider">
-                    SHIPPED
+                    COMPLETED
                   </span>
                 )}
               </div>
@@ -273,6 +353,20 @@ export default function OrdersTable() {
 
             {/* Modal Content */}
             <div className="space-y-8">
+              
+              {selectedOrderDetail.status === "CANCELLED" && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 text-xs text-red-200 space-y-3">
+                  <h4 className="font-bold text-red-400 uppercase tracking-widest font-serif text-sm">⚠️ ORDER CANCELLED BY CLIENT</h4>
+                  <div>
+                    <span className="font-semibold text-gray-400">Reason:</span>{" "}
+                    <span className="text-white font-medium">{selectedOrderDetail.cancellationReason || "No reason specified"}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-400">Details:</span>
+                    <p className="mt-1.5 text-gray-300 whitespace-pre-wrap leading-relaxed bg-black/40 p-3 rounded-lg border border-white/5">{selectedOrderDetail.cancellationDetails || "No further details provided."}</p>
+                  </div>
+                </div>
+              )}
               
               {/* Product and Client Summary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-theme-border">
@@ -387,7 +481,11 @@ export default function OrdersTable() {
                 >
                   Close
                 </button>
-                {selectedOrderDetail.status === "PENDING" ? (
+                {selectedOrderDetail.status === "CANCELLED" ? (
+                  <span className="text-xs font-bold text-red-400 uppercase tracking-wider self-center">
+                    THIS ORDER IS CANCELLED
+                  </span>
+                ) : selectedOrderDetail.status === "PENDING" ? (
                   <button
                     type="button"
                     onClick={async () => {
@@ -397,6 +495,17 @@ export default function OrdersTable() {
                     className="rounded-xl bg-theme-accent hover:opacity-90 text-theme-bg px-6 py-2.5 text-xs font-bold transition-all uppercase tracking-wider shadow-sm cursor-pointer"
                   >
                     ACCEPT ORDER
+                  </button>
+                ) : selectedOrderDetail.status === "ACCEPTED" && !selectedOrderDetail.workStarted ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleStartWork(selectedOrderDetail.backendId);
+                      setSelectedOrderDetail(null);
+                    }}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
+                  >
+                    START WORK
                   </button>
                 ) : selectedOrderDetail.estCompletion !== "COMPLETED" ? (
                   <button
@@ -429,7 +538,7 @@ export default function OrdersTable() {
                     }}
                     className="rounded-xl bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-xs font-bold text-white transition-all uppercase tracking-wider shadow-sm cursor-pointer"
                   >
-                    SHIP ORDER
+                    SEND FOR DELIVERY
                   </button>
                 ) : null}
               </div>

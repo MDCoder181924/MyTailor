@@ -105,7 +105,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "ACCEPTED", "SHIPPED"],
+      enum: ["PENDING", "ACCEPTED", "SHIPPED", "CANCELLED"],
       default: "PENDING",
     },
     stage: {
@@ -127,6 +127,26 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "archive", "drafts"],
       default: "active",
+    },
+    workStarted: {
+      type: Boolean,
+      default: false,
+    },
+    cancellationReason: {
+      type: String,
+      default: "",
+    },
+    cancellationDetails: {
+      type: String,
+      default: "",
+    },
+    cancelledBy: {
+      type: String,
+      default: "",
+    },
+    isReviewed: {
+      type: Boolean,
+      default: false,
     },
     tailorNotificationRead: {
       type: Boolean,

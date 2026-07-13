@@ -1,6 +1,7 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import User from "../models/Auth/User.js";
+import Review from "../models/Review.js";
 
 const formatPrice = (price) => {
   const numericPrice = Number(price);
@@ -44,6 +45,11 @@ const toUserOrder = (order) => ({
   paymentStatus: order.paymentStatus,
   paymentMethod: order.paymentMethod,
   status: order.status,
+  workStarted: order.workStarted,
+  cancellationReason: order.cancellationReason,
+  cancellationDetails: order.cancellationDetails,
+  cancelledBy: order.cancelledBy,
+  isReviewed: order.isReviewed,
 });
 
 const toTailorOrder = (order) => ({
@@ -72,6 +78,11 @@ const toTailorOrder = (order) => ({
   clothingType: order.clothingType,
   customMeasurements: order.customMeasurements,
   createdAt: order.createdAt,
+  workStarted: order.workStarted,
+  cancellationReason: order.cancellationReason,
+  cancellationDetails: order.cancellationDetails,
+  cancelledBy: order.cancelledBy,
+  isReviewed: order.isReviewed,
 });
 
 const toTailorNotification = (order) => {
@@ -86,6 +97,9 @@ const toTailorNotification = (order) => {
       title = "Delivery Confirmed";
       message = `${order.customerName} has confirmed delivery for order ${order.orderNo}.`;
     }
+  } else if (order.status === "CANCELLED") {
+    title = "Order Cancelled";
+    message = `${order.customerName} cancelled order ${order.orderNo} (${order.cancellationReason || "No reason specified"}).`;
   }
 
   return {
@@ -215,7 +229,7 @@ export const getTailorOrders = async (req, res) => {
 
 export const getTailorNotifications = async (req, res) => {
   try {
-    const orders = await Order.find({ tailor: req.user.id }).sort({ createdAt: -1 }).limit(20);
+    const orders = await Order.find({ tailor: req.user.id }).sort({ updatedAt: -1 }).limit(20);
 
     return res.json({
       notifications: orders.map(toTailorNotification),
@@ -334,8 +348,8 @@ export const collectOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.deliveryMethod === "pickup" && order.paymentStatus !== "paid") {
-      return res.status(400).json({ message: "Cannot collect unpaid order. Tailor must mark as paid first." });
+    if (order.paymentStatus !== "paid") {
+      order.paymentStatus = "paid";
     }
 
     order.status = "SHIPPED";
@@ -376,6 +390,130 @@ export const acceptOrder = async (req, res) => {
     return res.json({
       message: "Order accepted successfully",
       order: toTailorOrder(order),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const startWork = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, tailor: req.user.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status !== "ACCEPTED") {
+      return res.status(400).json({ message: "Only accepted orders can start work" });
+    }
+
+    if (order.workStarted) {
+      return res.status(400).json({ message: "Work has already started on this order" });
+    }
+
+    order.workStarted = true;
+    order.stage = "DRAFTING";
+    order.stageIndex = 1;
+    order.userNotificationRead = false;
+    await order.save();
+
+    return res.json({
+      message: "Work started on order successfully",
+      order: toTailorOrder(order),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status === "CANCELLED") {
+      return res.status(400).json({ message: "Order is already cancelled" });
+    }
+
+    if (order.status === "SHIPPED") {
+      return res.status(400).json({ message: "Cannot cancel a shipped order" });
+    }
+
+    if (order.workStarted) {
+      return res.status(400).json({ message: "Cannot cancel order because the tailor has already started work" });
+    }
+
+    const { cancellationReason = "", cancellationDetails = "" } = req.body;
+
+    order.status = "CANCELLED";
+    order.category = "archive";
+    order.cancellationReason = cancellationReason;
+    order.cancellationDetails = cancellationDetails;
+    order.cancelledBy = "user";
+    order.tailorNotificationRead = false;
+    order.userNotificationRead = true;
+
+    await order.save();
+
+    return res.json({
+      message: "Order cancelled successfully",
+      order: toUserOrder(order),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const createOrderReview = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status === "CANCELLED") {
+      return res.status(400).json({ message: "Cannot review a cancelled order" });
+    }
+
+    // Completed: category is archive and status is SHIPPED (representing DELIVERED or COLLECTED)
+    const isCompleted = order.category === "archive" && order.status === "SHIPPED";
+
+    if (!isCompleted) {
+      return res.status(400).json({ message: "Only completed orders can be reviewed" });
+    }
+
+    if (order.isReviewed) {
+      return res.status(400).json({ message: "This order has already been reviewed" });
+    }
+
+    const { rating, title = "", comment = "" } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be a number between 1 and 5" });
+    }
+
+    const review = await Review.create({
+      order: order._id,
+      user: req.user.id,
+      tailor: order.tailor,
+      product: order.product,
+      rating: Number(rating),
+      title: String(title).trim(),
+      comment: String(comment).trim(),
+    });
+
+    order.isReviewed = true;
+    await order.save();
+
+    return res.status(201).json({
+      message: "Review submitted successfully",
+      review,
+      order: toUserOrder(order)
     });
   } catch (err) {
     return res.status(500).json({ message: err.message });

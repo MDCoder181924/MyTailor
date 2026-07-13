@@ -89,3 +89,30 @@ export const collectOrder = async (orderId) => {
     throw new Error(err.response?.data?.message || "Failed to collect order");
   }
 };
+
+export const startTailorWork = async (orderId) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/start-work`);
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to start work");
+  }
+};
+
+export const cancelUserOrder = async (orderId, { cancellationReason, cancellationDetails }) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/cancel`, { cancellationReason, cancellationDetails });
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to cancel order");
+  }
+};
+
+export const submitOrderReview = async (orderId, { rating, title, comment }) => {
+  try {
+    const res = await api.post(`/api/orders/${orderId}/review`, { rating, title, comment });
+    return res.data.review;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to submit review");
+  }
+};

@@ -41,8 +41,9 @@ export default function OrdersCards() {
   }, []);
 
   const pendingOrders = orders.filter((order) => order.status === "PENDING").length;
-  const activeOrders = orders.filter((order) => order.status !== "SHIPPED").length;
+  const activeOrders = orders.filter((order) => order.status !== "SHIPPED" && order.status !== "CANCELLED").length;
   const completedOrders = orders.filter((order) => order.status === "SHIPPED").length;
+  const cancelledOrders = orders.filter((order) => order.status === "CANCELLED").length;
 
   const MiniSpinner = () => (
     <div className="w-4 h-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin inline-block align-middle"></div>
@@ -57,7 +58,7 @@ export default function OrdersCards() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative overflow-hidden rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
           <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">TOTAL ACTIVE ORDERS</p>
           <h2 className="mt-4 text-4xl font-bold text-theme-accent">
@@ -76,6 +77,13 @@ export default function OrdersCards() {
           <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">COMPLETED ORDERS</p>
           <h2 className="mt-4 text-4xl font-bold text-emerald-500 dark:text-emerald-400">
             {loading ? <MiniSpinner /> : completedOrders}
+          </h2>
+        </div>
+
+        <div className="relative overflow-hidden rounded-xl bg-theme-panel p-6 shadow-lg border border-theme-border">
+          <p className="text-[10px] font-bold tracking-[0.14em] text-theme-text-muted uppercase">CANCELLED ORDERS</p>
+          <h2 className="mt-4 text-4xl font-bold text-red-500 dark:text-red-400">
+            {loading ? <MiniSpinner /> : cancelledOrders}
           </h2>
         </div>
       </div>

@@ -1,15 +1,39 @@
 import api from "../api/axios";
 
 const PRODUCT_CACHE_TTL = 30 * 1000;
-let productsCache = null;
-let productsCacheTime = 0;
+
+const getStoredCache = (key) => {
+  try {
+    const val = sessionStorage.getItem(key);
+    return val ? JSON.parse(val) : null;
+  } catch {
+    return null;
+  }
+};
+
+const setStoredCache = (key, data) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data));
+  } catch {}
+};
+
+let productsCache = getStoredCache("products_cache");
+let productsCacheTime = Number(sessionStorage.getItem("products_cache_time")) || 0;
 let productsRequest = null;
+
+const clearProductCache = () => {
+  productsCache = null;
+  productsCacheTime = 0;
+  try {
+    sessionStorage.removeItem("products_cache");
+    sessionStorage.removeItem("products_cache_time");
+  } catch {}
+};
 
 export const createProduct = async (productData) => {
   try {
     const res = await api.post("/api/products", productData);
-    productsCache = null;
-    productsCacheTime = 0;
+    clearProductCache();
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || "Product save failed");
@@ -38,6 +62,8 @@ export const getProducts = async (options = {}) => {
       const products = res.data.products || [];
       productsCache = products;
       productsCacheTime = Date.now();
+      setStoredCache("products_cache", products);
+      sessionStorage.setItem("products_cache_time", productsCacheTime.toString());
       return products;
     } catch (err) {
       throw new Error(err.response?.data?.message || "Failed to fetch products");
@@ -72,8 +98,7 @@ export const getProductsByTailorId = async (tailorId) => {
 export const updateProduct = async (productId, productData) => {
   try {
     const res = await api.put(`/api/products/${productId}`, productData);
-    productsCache = null;
-    productsCacheTime = 0;
+    clearProductCache();
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || "Product update failed");
@@ -83,8 +108,7 @@ export const updateProduct = async (productId, productData) => {
 export const deleteProduct = async (productId) => {
   try {
     const res = await api.delete(`/api/products/${productId}`);
-    productsCache = null;
-    productsCacheTime = 0;
+    clearProductCache();
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || "Product deletion failed");

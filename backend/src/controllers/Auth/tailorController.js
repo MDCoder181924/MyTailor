@@ -1,6 +1,7 @@
 import Tailor from "../../models/Auth/Tailor.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
+import Review from "../../models/Review.js";
 
 const normalizeStringArray = (value) => {
     if (!Array.isArray(value)) {
@@ -316,6 +317,30 @@ export const tailorLogout = async (req, res) => {
         res.clearCookie("refreshToken");
 
         return res.json({ message: "Tailor logged out" });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+export const getTailorReviews = async (req, res) => {
+    try {
+        const tailorId = req.params.id;
+
+        const reviews = await Review.find({ tailor: tailorId })
+            .populate("user", "userFullName profilePhoto")
+            .populate("product", "productName image")
+            .sort({ createdAt: -1 });
+
+        const totalReviews = reviews.length;
+        const averageRating = totalReviews > 0
+            ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1))
+            : 0;
+
+        return res.json({
+            reviews,
+            averageRating,
+            totalReviews
+        });
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }

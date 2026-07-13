@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { X, Check, Clock, Truck, Ruler, ShoppingBag } from "lucide-react";
 import { getProducts } from "../../../utils/productUtils";
-import { getUserOrders, collectOrder } from "../../../utils/orderUtils";
+import { getUserOrders, collectOrder, cancelUserOrder, submitOrderReview } from "../../../utils/orderUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
 
@@ -87,7 +87,7 @@ function StageProgress({ stage, stageIndex }) {
   );
 }
 
-function CommissionCard({ item, onCollect, onTrack, onViewDetails }) {
+function CommissionCard({ item, onCollect, onTrack, onViewDetails, onCancelOrder, onLeaveFeedback }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -218,34 +218,28 @@ function CommissionCard({ item, onCollect, onTrack, onViewDetails }) {
         }}
       >
         {/* Render collection / confirmation buttons based on deliveryMethod */}
-        {item.deliveryMethod === "pickup" && item.stage === "READY_FOR_PICKUP" ? (
-          item.paymentStatus === "paid" ? (
-            <button
-              onClick={() => onCollect(item.id)}
-              style={{
-                width: "100%",
-                padding: "10px 0",
-                borderRadius: 8,
-                border: "none",
-                backgroundColor: "var(--theme-accent)",
-                color: "var(--theme-bg)",
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-              }}
-            >
-              🏪 Collect Order
-            </button>
-          ) : (
-            <div style={{ padding: "8px 10px", borderRadius: 8, backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px dashed rgba(239, 68, 68, 0.3)", textAlign: "center" }}>
-              <p style={{ fontSize: 9, color: "#f87171", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                Unpaid • Pay in-store to collect
-              </p>
-            </div>
-          )
-        ) : item.deliveryMethod === "delivery" && item.stage === "SHIPPED" ? (
+        {item.deliveryMethod === "pickup" && item.stage === "READY_FOR_PICKUP" && (
+          <button
+            onClick={() => onCollect(item.id)}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              borderRadius: 8,
+              border: "none",
+              backgroundColor: "var(--theme-accent)",
+              color: "var(--theme-bg)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
+            {item.paymentStatus === "paid" ? "🏪 Confirm Collection" : "🏪 Collect & Pay In-Store"}
+          </button>
+        )}
+
+        {item.deliveryMethod === "delivery" && item.stage === "SHIPPED" && (
           <button
             onClick={() => onCollect(item.id)}
             style={{
@@ -262,11 +256,11 @@ function CommissionCard({ item, onCollect, onTrack, onViewDetails }) {
               cursor: "pointer",
             }}
           >
-            ✅ Confirm Delivery
+            ✅ I RECEIVED THE ORDER
           </button>
-        ) : null}
+        )}
 
-        {item.actions.map((action) => (
+        {item.status !== "CANCELLED" && item.actions.map((action) => (
           <button
             key={action.label}
             onClick={() => {
@@ -295,6 +289,87 @@ function CommissionCard({ item, onCollect, onTrack, onViewDetails }) {
             {action.label}
           </button>
         ))}
+
+        {item.status === "CANCELLED" && (
+          <button
+            onClick={() => onViewDetails(item)}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              borderRadius: 8,
+              border: "1px solid var(--theme-border)",
+              backgroundColor: "var(--theme-border)",
+              color: "var(--theme-text)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
+            View Details
+          </button>
+        )}
+
+        {(item.status === "PENDING" || (item.status === "ACCEPTED" && !item.workStarted)) && (
+          <button
+            onClick={() => onCancelOrder(item)}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              borderRadius: 8,
+              border: "1px solid #ef4444",
+              backgroundColor: "rgba(239, 68, 68, 0.08)",
+              color: "#f87171",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            Cancel Order
+          </button>
+        )}
+
+        {item.category === "archive" && item.status !== "CANCELLED" && !item.isReviewed && (
+          <button
+            onClick={() => onLeaveFeedback(item)}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              borderRadius: 8,
+              border: "1px solid var(--theme-accent)",
+              backgroundColor: "rgba(250, 204, 21, 0.08)",
+              color: "var(--theme-accent)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            Leave Feedback
+          </button>
+        )}
+
+        {item.isReviewed && (
+          <div style={{ textAlign: "center", padding: "8px 0", borderRadius: 8, border: "1px dashed rgba(16, 185, 129, 0.3)", backgroundColor: "rgba(16, 185, 129, 0.05)" }}>
+            <span style={{ fontSize: 10, color: "#34d399", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              ✓ Reviewed
+            </span>
+          </div>
+        )}
+
+        {item.status === "CANCELLED" && (
+          <div style={{ padding: "8px 10px", borderRadius: 8, backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px dashed rgba(239, 68, 68, 0.3)", textAlign: "center" }}>
+            <p style={{ fontSize: 9, color: "#f87171", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", margin: 0 }}>
+              Cancelled
+            </p>
+          </div>
+        )}
 
         <div
           style={{
@@ -816,12 +891,378 @@ function OrderTrackingModal({ order, onClose }) {
   );
 }
 
+// ─── Cancel Order Modal ─────────────────────────────────────────
+function CancelOrderModal({ order, onClose, onSubmit }) {
+  const [reason, setReason] = useState("Changed my mind");
+  const [details, setDetails] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const reasons = [
+    "Changed my mind",
+    "Measurements need adjustment",
+    "Found a better price elsewhere",
+    "Delivery timeline is too long",
+    "Fabric selection error",
+    "Other"
+  ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!reason) {
+      setError("Please select a reason");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      await onSubmit(order.id, { cancellationReason: reason, cancellationDetails: details });
+      onClose();
+    } catch (err) {
+      setError(err.message || "Failed to cancel order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 100,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(0,0,0,0.75)",
+      backdropFilter: "blur(4px)",
+      padding: 16,
+    }}>
+      <div style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: 500,
+        borderRadius: 16,
+        backgroundColor: "var(--theme-panel)",
+        border: "1px solid var(--theme-border)",
+        color: "var(--theme-text)",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+        padding: 24,
+      }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px 0", color: "#f87171", fontFamily: "serif" }}>Cancel Bespoke Order</h2>
+        <p style={{ fontSize: 12, color: "var(--theme-text-muted)", margin: "0 0 20px 0" }}>
+          Are you sure you want to cancel order <strong>{order.orderNo}</strong>? This action cannot be undone.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--theme-text-muted)", marginBottom: 6, letterSpacing: "0.05em" }}>
+              Reason for Cancellation
+            </label>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid var(--theme-border)",
+                backgroundColor: "var(--theme-bg)",
+                color: "var(--theme-text)",
+                padding: 10,
+                fontSize: 13,
+                outline: "none"
+              }}
+            >
+              {reasons.map((r) => (
+                <option key={r} value={r} style={{ backgroundColor: "var(--theme-panel)", color: "var(--theme-text)" }}>{r}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--theme-text-muted)", marginBottom: 6, letterSpacing: "0.05em" }}>
+              Full Details / Explanation
+            </label>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="Please provide full details about why you want to cancel this order..."
+              rows={4}
+              required
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid var(--theme-border)",
+                backgroundColor: "var(--theme-bg)",
+                color: "var(--theme-text)",
+                padding: 10,
+                fontSize: 13,
+                outline: "none",
+                resize: "none"
+              }}
+            />
+          </div>
+
+          {error && (
+            <p style={{ color: "#ef4444", fontSize: 12, margin: 0 }}>{error}</p>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 8,
+                border: "1px solid var(--theme-border)",
+                backgroundColor: "transparent",
+                color: "var(--theme-text-muted)",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "uppercase",
+              }}
+            >
+              Back
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                padding: "8px 20px",
+                borderRadius: 8,
+                border: "none",
+                backgroundColor: "#ef4444",
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "uppercase",
+              }}
+            >
+              {submitting ? "Cancelling..." : "Confirm Cancellation"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Feedback / Review Modal ─────────────────────────────────────
+function FeedbackModal({ order, onClose, onSubmit }) {
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [title, setTitle] = useState("");
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!rating || rating < 1 || rating > 5) {
+      setError("Please select a rating between 1 and 5 stars");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      await onSubmit(order.id, { rating, title, comment });
+      onClose();
+    } catch (err) {
+      setError(err.message || "Failed to submit review");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 100,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(0,0,0,0.75)",
+      backdropFilter: "blur(4px)",
+      padding: 16,
+    }}>
+      <div style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: 500,
+        borderRadius: 16,
+        backgroundColor: "var(--theme-panel)",
+        border: "1px solid var(--theme-border)",
+        color: "var(--theme-text)",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+        padding: 24,
+      }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px 0", color: "var(--theme-accent)", fontFamily: "serif" }}>Leave Tailor Feedback</h2>
+        <p style={{ fontSize: 11, color: "var(--theme-text-muted)", margin: "0 0 20px 0" }}>
+          Share your experience with tailor <strong>{order.tailor}</strong> for your <strong>{order.title}</strong>.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Star Rating Selector */}
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--theme-text-muted)", marginBottom: 8, letterSpacing: "0.05em" }}>
+              Rating
+            </label>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[1, 2, 3, 4, 5].map((star) => {
+                const filled = hoverRating ? star <= hoverRating : star <= rating;
+                return (
+                  <span
+                    key={star}
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    style={{
+                      fontSize: 28,
+                      cursor: "pointer",
+                      color: filled ? "var(--theme-accent)" : "rgba(255, 255, 255, 0.15)",
+                      transition: "color 0.15s, transform 0.1s",
+                      transform: hoverRating === star ? "scale(1.15)" : "scale(1)",
+                    }}
+                  >
+                    ★
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--theme-text-muted)", marginBottom: 6, letterSpacing: "0.05em" }}>
+              Review Title (Optional)
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Excellent fit! / Perfect craftsmanship"
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid var(--theme-border)",
+                backgroundColor: "var(--theme-bg)",
+                color: "var(--theme-text)",
+                padding: 10,
+                fontSize: 13,
+                outline: "none"
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--theme-text-muted)", marginBottom: 6, letterSpacing: "0.05em" }}>
+              Your Review / Comments
+            </label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Describe the fit, quality of stitch, fabric feel, communication, etc..."
+              rows={4}
+              required
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid var(--theme-border)",
+                backgroundColor: "var(--theme-bg)",
+                color: "var(--theme-text)",
+                padding: 10,
+                fontSize: 13,
+                outline: "none",
+                resize: "none"
+              }}
+            />
+          </div>
+
+          {error && (
+            <p style={{ color: "#ef4444", fontSize: 12, margin: 0 }}>{error}</p>
+          )}
+
+          <div style={{ display: "flex", justifyEnd: "flex-end", gap: 10, marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 8,
+                border: "1px solid var(--theme-border)",
+                backgroundColor: "transparent",
+                color: "var(--theme-text-muted)",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "uppercase",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                padding: "8px 20px",
+                borderRadius: 8,
+                border: "none",
+                backgroundColor: "var(--theme-accent)",
+                color: "var(--theme-bg)",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "uppercase",
+              }}
+            >
+              {submitting ? "Submitting..." : "Submit Review"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function OrderList() {
   const [activeTab, setActiveTab] = useState("active");
   const [storedOrders, setStoredOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedTrackOrder, setSelectedTrackOrder] = useState(null);
   const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+  const [selectedCancelOrder, setSelectedCancelOrder] = useState(null);
+  const [selectedFeedbackOrder, setSelectedFeedbackOrder] = useState(null);
+
+  const handleCancelOrderSubmit = async (orderId, { cancellationReason, cancellationDetails }) => {
+    try {
+      await cancelUserOrder(orderId, { cancellationReason, cancellationDetails });
+      window.dispatchEvent(new Event("user-orders-updated"));
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      const nextOrders = await getUserOrders();
+      setStoredOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleFeedbackSubmit = async (orderId, { rating, title, comment }) => {
+    try {
+      await submitOrderReview(orderId, { rating, title, comment });
+      window.dispatchEvent(new Event("user-orders-updated"));
+      window.dispatchEvent(new Event("tailor-orders-updated"));
+      const nextOrders = await getUserOrders();
+      setStoredOrders(Array.isArray(nextOrders) ? nextOrders : []);
+    } catch (err) {
+      throw err;
+    }
+  };
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -1071,6 +1512,8 @@ export default function OrderList() {
             onCollect={handleCollect}
             onTrack={(order) => setSelectedTrackOrder(order)}
             onViewDetails={(order) => setSelectedOrderDetail(order)}
+            onCancelOrder={(order) => setSelectedCancelOrder(order)}
+            onLeaveFeedback={(order) => setSelectedFeedbackOrder(order)}
           />
         ))
       )}
@@ -1088,6 +1531,24 @@ export default function OrderList() {
         <OrderTrackingModal
           order={selectedTrackOrder}
           onClose={() => setSelectedTrackOrder(null)}
+        />
+      )}
+
+      {/* Cancel Order Modal */}
+      {selectedCancelOrder && (
+        <CancelOrderModal
+          order={selectedCancelOrder}
+          onClose={() => setSelectedCancelOrder(null)}
+          onSubmit={handleCancelOrderSubmit}
+        />
+      )}
+
+      {/* Feedback Modal */}
+      {selectedFeedbackOrder && (
+        <FeedbackModal
+          order={selectedFeedbackOrder}
+          onClose={() => setSelectedFeedbackOrder(null)}
+          onSubmit={handleFeedbackSubmit}
         />
       )}
     </div>
