@@ -21,6 +21,14 @@ const UserProfiie = lazy(() => import("../pages/user/userProfiie"));
 const Cart = lazy(() => import("../pages/user/Cart"));
 const TailorTerms = lazy(() => import("../pages/TailorTerms"));
 
+// Admin pages
+const AdminDashboard = lazy(() => import("../pages/Admin/Dashboard"));
+const AdminUsers = lazy(() => import("../pages/Admin/Users"));
+const AdminTailors = lazy(() => import("../pages/Admin/Tailors"));
+const AdminProducts = lazy(() => import("../pages/Admin/Products"));
+const AdminOrders = lazy(() => import("../pages/Admin/Orders"));
+const AdminReviews = lazy(() => import("../pages/Admin/Reviews"));
+
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-black text-sm text-gray-400">
     Loading...
@@ -56,6 +64,14 @@ const AppRoutes = () => {
         <Route path="/inventory" element={<ProtectedRoute allowedRole="tailor"><Inventory /></ProtectedRoute>} />
         <Route path="/addproduct" element={<ProtectedRoute allowedRole="tailor"><AddProduct /></ProtectedRoute>} />
         <Route path="/TailorSettings" element={<ProtectedRoute allowedRole="tailor"><TailorProfileSettings /></ProtectedRoute>} />
+
+        {/* Admin routes */}
+        <Route path="/admin/dashboard" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/users" element={<ProtectedRoute allowedRole="admin"><AdminUsers /></ProtectedRoute>} />
+        <Route path="/admin/tailors" element={<ProtectedRoute allowedRole="admin"><AdminTailors /></ProtectedRoute>} />
+        <Route path="/admin/products" element={<ProtectedRoute allowedRole="admin"><AdminProducts /></ProtectedRoute>} />
+        <Route path="/admin/orders" element={<ProtectedRoute allowedRole="admin"><AdminOrders /></ProtectedRoute>} />
+        <Route path="/admin/reviews" element={<ProtectedRoute allowedRole="admin"><AdminReviews /></ProtectedRoute>} />
       </Routes>
     </Suspense>
   );

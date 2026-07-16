@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
 
     const [user, setUser] = useState(() => readStoredAccount("user"));
     const [tailor, setTailor] = useState(() => readStoredAccount("tailor"));
+    const [admin, setAdmin] = useState(() => readStoredAccount("admin"));
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,11 +30,22 @@ export const AuthProvider = ({ children }) => {
                     localStorage.setItem("user", JSON.stringify(data.user));
                     setTailor(null);
                     localStorage.removeItem("tailor");
+                    setAdmin(null);
+                    localStorage.removeItem("admin");
                 } else if (data.role === "tailor") {
                     setTailor(data.tailor);
                     localStorage.setItem("tailor", JSON.stringify(data.tailor));
                     setUser(null);
                     localStorage.removeItem("user");
+                    setAdmin(null);
+                    localStorage.removeItem("admin");
+                } else if (data.role === "admin") {
+                    setAdmin(data.admin);
+                    localStorage.setItem("admin", JSON.stringify(data.admin));
+                    setUser(null);
+                    localStorage.removeItem("user");
+                    setTailor(null);
+                    localStorage.removeItem("tailor");
                 }
             } catch (err) {
                 console.log("Auth check failed");
@@ -41,8 +53,10 @@ export const AuthProvider = ({ children }) => {
                 if (status === 401 || status === 403 || status === 404) {
                     setUser(null);
                     setTailor(null);
+                    setAdmin(null);
                     localStorage.removeItem("user");
                     localStorage.removeItem("tailor");
+                    localStorage.removeItem("admin");
                 }
             } finally {
                 setLoading(false);
@@ -56,8 +70,10 @@ export const AuthProvider = ({ children }) => {
         const handleLogoutEvent = () => {
             setUser(null);
             setTailor(null);
+            setAdmin(null);
             localStorage.removeItem("user");
             localStorage.removeItem("tailor");
+            localStorage.removeItem("admin");
         };
 
         window.addEventListener("auth-logout", handleLogoutEvent);
@@ -67,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, setUser, tailor, setTailor, loading }}>
+        <AuthContext.Provider value={{ user, setUser, tailor, setTailor, admin, setAdmin, loading }}>
             {children}
         </AuthContext.Provider>
     );

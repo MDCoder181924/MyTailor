@@ -27,7 +27,7 @@ export default function FeaturedProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [visibleCount, setVisibleCount] = useState(10);
+
 
   useEffect(() => {
     let isMounted = true;
@@ -57,24 +57,7 @@ export default function FeaturedProducts() {
     return () => { isMounted = false; };
   }, []);
 
-  // Infinite Scroll Listener
-  useEffect(() => {
-    const handleScroll = () => {
-      if (products.length <= visibleCount) return;
 
-      const threshold = 300; // pixels from bottom
-      const scrollHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const clientHeight = window.innerHeight;
-
-      if (clientHeight + scrollTop >= scrollHeight - threshold) {
-        setVisibleCount((prev) => Math.min(prev + 10, products.length));
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [products.length, visibleCount]);
 
   const handleProductSelect = (product) => {
     navigate(`/OrdarProduct?productId=${product._id}`, {
@@ -82,8 +65,7 @@ export default function FeaturedProducts() {
     });
   };
 
-  const displayedProducts = products.slice(0, visibleCount);
-  const hasMore = products.length > visibleCount;
+  const displayedProducts = products.slice(0, 10);
 
   if (loading && products.length === 0) {
     return (
@@ -106,7 +88,7 @@ export default function FeaturedProducts() {
       
       {/* Title */}
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Most Selling Collections</h2>
+        <h2 className="text-2xl font-semibold">Top Products</h2>
         <span className="text-xs uppercase tracking-widest text-zinc-500 font-semibold">
           Bespoke Originals
         </span>
@@ -169,13 +151,7 @@ export default function FeaturedProducts() {
         })}
       </div>
 
-      {/* Loading Spinner for scroll */}
-      {hasMore && (
-        <div className="mt-8 flex justify-center items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
-          <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
-          Scroll to view more...
-        </div>
-      )}
+
 
     </div>
   );

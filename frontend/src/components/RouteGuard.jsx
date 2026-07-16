@@ -9,20 +9,23 @@ const PageLoader = () => (
 );
 
 export const ProtectedRoute = ({ children, allowedRole }) => {
-  const { user, tailor, loading } = useContext(AuthContext);
+  const { user, tailor, admin, loading } = useContext(AuthContext);
 
   if (loading) {
     return <PageLoader />;
   }
 
-  const isAuthenticated = !!user || !!tailor;
-  const currentRole = user ? "user" : tailor ? "tailor" : null;
+  const isAuthenticated = !!user || !!tailor || !!admin;
+  const currentRole = user ? "user" : tailor ? "tailor" : admin ? "admin" : null;
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
   if (allowedRole && currentRole !== allowedRole) {
+    if (currentRole === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
     return currentRole === "tailor" ? (
       <Navigate to="/tailordahboard" replace />
     ) : (
@@ -34,10 +37,14 @@ export const ProtectedRoute = ({ children, allowedRole }) => {
 };
 
 export const PublicRoute = ({ children }) => {
-  const { user, tailor, loading } = useContext(AuthContext);
+  const { user, tailor, admin, loading } = useContext(AuthContext);
 
   if (loading) {
     return <PageLoader />;
+  }
+
+  if (admin) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   if (user) {

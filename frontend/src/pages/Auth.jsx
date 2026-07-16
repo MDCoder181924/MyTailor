@@ -4,9 +4,9 @@ import LoginUser from '../components/Auth/LoginUser';
 import SignupUser from '../components/Auth/SignupUser';
 import LoginTailor from '../components/Auth/LoginTailor';
 import SignupTailor from '../components/Auth/SignupTailor';
+import LoginAdmin from '../components/Auth/LoginAdmin';
 
 const Auth = () => {
-
 
      const navigate = useNavigate();
     const [identity, setIdentity] = useState('customer');
@@ -46,6 +46,13 @@ const Auth = () => {
                         >
                             Tailor
                         </button>
+                        <button
+                            type="button"
+                            className={`flex-1 text-sm font-semibold py-2 rounded-full ${identity === 'admin' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow' : 'text-gray-300'}`}
+                            onClick={() => handleIdentitySwitch('admin')}
+                        >
+                            Admin
+                        </button>
                     </div>
                 </div>
 
@@ -68,6 +75,10 @@ const Auth = () => {
                                 <SignupTailor onSubmit={handleFormSubmit} onSwitch={setActiveForm} identity={identity} />
                             )}
                         </>
+                    )}
+
+                    {identity === 'admin' && (
+                        <LoginAdmin identity={identity} />
                     )}
                 </div>
             </div>

@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../../models/Auth/User.js";
 import Tailor from "../../models/Auth/Tailor.js";
+import Admin from "../../models/Auth/Admin.js";
 
 export const getCurrentAccount = async (req, res) => {
     try {
@@ -32,6 +33,20 @@ export const getCurrentAccount = async (req, res) => {
             });
         }
 
+        if (req.user.role === "admin") {
+            const admin = await Admin.findById(req.user.id).select("-adminPassword -refreshToken");
+
+            if (!admin) {
+                return res.status(404).json({ message: "Admin not found" });
+            }
+
+            return res.json({
+                message: "Current admin fetched",
+                role: "admin",
+                admin
+            });
+        }
+
         return res.status(403).json({ message: "Invalid role" });
     } catch (err) {
         return res.status(500).json({ message: err.message });
@@ -53,14 +68,15 @@ export const refreshToken = async (req, res) => {
 
         const user = await User.findById(decoded.id);
         const tailor = await Tailor.findById(decoded.id);
+        const admin = await Admin.findById(decoded.id);
 
-        const account = user || tailor;
+        const account = user || tailor || admin;
 
         if (!account || account.refreshToken !== refreshToken) {
             return res.status(403).json({ message: "Invalid refresh token" });
         }
 
-        const role = user ? "user" : "tailor";
+        const role = user ? "user" : tailor ? "tailor" : "admin";
 
         const newAccessToken = jwt.sign(
             { id: decoded.id, role },
