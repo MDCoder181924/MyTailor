@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import api from "../../api/axios";
 import { toast } from "react-hot-toast";
 
 const Users = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -76,13 +78,13 @@ const Users = () => {
           placeholder="Search users..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-72 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-purple-500/40"
+          className="w-full sm:w-72 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-white/20"
         />
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
         </div>
       ) : (
         <div className="bg-[#12121a] border border-white/[0.06] rounded-2xl overflow-hidden">
@@ -106,10 +108,10 @@ const Users = () => {
                     <tr key={u._id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 flex items-center justify-center text-blue-400 text-xs font-bold">
+                          <div className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.1] flex items-center justify-center text-xs font-bold" style={{color: '#ffffff'}}>
                             {u.userFullName?.charAt(0)?.toUpperCase() || "U"}
                           </div>
-                          <span className="text-sm text-white font-medium">{u.userFullName}</span>
+                          <span onClick={() => navigate(`/admin/users/${u._id}`)} className="text-sm font-medium hover:underline cursor-pointer" style={{color: '#ffffff'}}>{u.userFullName}</span>
                         </div>
                       </td>
                       <td className="px-6 py-3.5 text-sm text-gray-400">{u.userEmail}</td>
@@ -118,10 +120,13 @@ const Users = () => {
                       <td className="px-6 py-3.5 text-sm text-gray-500">{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => openEdit(u)} className="px-3 py-1.5 text-xs font-medium text-purple-400 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 transition-colors">
+                          <button onClick={() => navigate(`/admin/users/${u._id}`)} className="px-3 py-1.5 text-xs font-medium rounded-lg hover:bg-white/[0.12] border border-white/[0.15]" style={{color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.08)'}}>
+                            View
+                          </button>
+                          <button onClick={() => openEdit(u)} className="px-3 py-1.5 text-xs font-medium rounded-lg hover:bg-white/[0.08] border border-white/[0.1]" style={{color: '#d1d5db', backgroundColor: 'rgba(255,255,255,0.04)'}}>
                             Edit
                           </button>
-                          <button onClick={() => setDeleteConfirm(u._id)} className="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-colors">
+                          <button onClick={() => setDeleteConfirm(u._id)} className="px-3 py-1.5 text-xs font-medium rounded-lg hover:bg-white/[0.06] border border-white/[0.1]" style={{color: '#9ca3af', backgroundColor: 'rgba(255,255,255,0.03)'}}>
                             Delete
                           </button>
                         </div>

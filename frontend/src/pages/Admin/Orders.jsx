@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import api from "../../api/axios";
 import { toast } from "react-hot-toast";
 
 const statusColors = {
-  PENDING: "bg-yellow-500/10 text-yellow-400",
-  ACCEPTED: "bg-blue-500/10 text-blue-400",
-  SHIPPED: "bg-green-500/10 text-green-400",
-  CANCELLED: "bg-red-500/10 text-red-400",
+  PENDING: "bg-white/[0.06] text-gray-300",
+  ACCEPTED: "bg-white/[0.08] text-white",
+  SHIPPED: "bg-white/[0.08] text-white",
+  CANCELLED: "bg-white/[0.04] text-gray-400",
 };
 
 const Orders = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -92,7 +94,7 @@ const Orders = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-purple-500/40 appearance-none"
+            className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-white/20 appearance-none"
           >
             <option value="ALL">All Status</option>
             <option value="PENDING">Pending</option>
@@ -105,14 +107,14 @@ const Orders = () => {
             placeholder="Search orders..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-purple-500/40"
+            className="w-full sm:w-64 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-white/20"
           />
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
         </div>
       ) : (
         <div className="bg-[#12121a] border border-white/[0.06] rounded-2xl overflow-hidden">
@@ -137,7 +139,7 @@ const Orders = () => {
                 ) : (
                   filtered.map((o) => (
                     <tr key={o._id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-3.5 text-sm text-purple-400 font-mono">{o.orderNo}</td>
+                      <td className="px-6 py-3.5 text-sm text-white font-mono cursor-pointer hover:underline transition-colors" onClick={() => navigate(`/admin/orders/${o._id}`)}>{o.orderNo}</td>
                       <td className="px-6 py-3.5 text-sm text-white">{o.user?.userFullName || o.customerName || "—"}</td>
                       <td className="px-6 py-3.5 text-sm text-gray-400">{o.tailor?.tailorName || o.tailorName || "—"}</td>
                       <td className="px-6 py-3.5 text-sm text-gray-400">{o.product?.productName || o.productName || "—"}</td>
@@ -148,7 +150,7 @@ const Orders = () => {
                       </td>
                       <td className="px-6 py-3.5">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          o.paymentStatus === "paid" ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
+                          o.paymentStatus === "paid" ? "bg-white/[0.08] text-white" : "bg-white/[0.04] text-gray-400"
                         }`}>
                           {o.paymentStatus}
                         </span>
@@ -157,10 +159,13 @@ const Orders = () => {
                       <td className="px-6 py-3.5 text-sm text-white text-right font-medium">${o.price || 0}</td>
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => openEdit(o)} className="px-3 py-1.5 text-xs font-medium text-purple-400 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 transition-colors">
+                          <button onClick={() => navigate(`/admin/orders/${o._id}`)} className="px-3 py-1.5 text-xs font-medium text-white bg-white/[0.06] rounded-lg hover:bg-white/[0.12] transition-colors border border-white/[0.08]">
+                            View
+                          </button>
+                          <button onClick={() => openEdit(o)} className="px-3 py-1.5 text-xs font-medium text-gray-300 bg-white/[0.04] rounded-lg hover:bg-white/[0.08] transition-colors border border-white/[0.06]">
                             Edit
                           </button>
-                          <button onClick={() => setDeleteConfirm(o._id)} className="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-colors">
+                          <button onClick={() => setDeleteConfirm(o._id)} className="px-3 py-1.5 text-xs font-medium text-gray-400 bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors border border-white/[0.06]">
                             Delete
                           </button>
                         </div>

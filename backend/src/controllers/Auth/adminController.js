@@ -527,3 +527,105 @@ export const deleteReview = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// ─── Tailor Detail ────────────────────────────────────────────────────────────
+export const getTailorDetail = async (req, res) => {
+    try {
+        const tailor = await Tailor.findById(req.params.id).select("-tailorPassword -refreshToken");
+
+        if (!tailor) {
+            return res.status(404).json({ message: "Tailor not found" });
+        }
+
+        const orders = await Order.find({ tailor: tailor._id })
+            .sort({ createdAt: -1 })
+            .populate("user", "userFullName userEmail")
+            .populate("product", "productName image");
+
+        const totalOrders = orders.length;
+        const pendingOrders = orders.filter(o => o.status === "PENDING").length;
+        const acceptedOrders = orders.filter(o => o.status === "ACCEPTED").length;
+        const shippedOrders = orders.filter(o => o.status === "SHIPPED").length;
+        const cancelledOrders = orders.filter(o => o.status === "CANCELLED").length;
+        const totalRevenue = orders
+            .filter(o => o.paymentStatus === "paid")
+            .reduce((sum, o) => sum + (Number(o.price) || 0), 0);
+
+        const products = await Product.find({ tailor: tailor._id }).select("productName category price image");
+
+        res.json({
+            tailor,
+            stats: {
+                totalOrders,
+                pendingOrders,
+                acceptedOrders,
+                shippedOrders,
+                cancelledOrders,
+                totalRevenue,
+                totalProducts: products.length,
+            },
+            orders,
+            products,
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// ─── User Detail ──────────────────────────────────────────────────────────────
+export const getUserDetail = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select("-userPassword -refreshToken");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const orders = await Order.find({ user: user._id })
+            .sort({ createdAt: -1 })
+            .populate("tailor", "tailorName tailorEmail")
+            .populate("product", "productName image");
+
+        const totalOrders = orders.length;
+        const pendingOrders = orders.filter(o => o.status === "PENDING").length;
+        const acceptedOrders = orders.filter(o => o.status === "ACCEPTED").length;
+        const shippedOrders = orders.filter(o => o.status === "SHIPPED").length;
+        const cancelledOrders = orders.filter(o => o.status === "CANCELLED").length;
+        const totalSpent = orders
+            .filter(o => o.paymentStatus === "paid")
+            .reduce((sum, o) => sum + (Number(o.price) || 0), 0);
+
+        res.json({
+            user,
+            stats: {
+                totalOrders,
+                pendingOrders,
+                acceptedOrders,
+                shippedOrders,
+                cancelledOrders,
+                totalSpent,
+            },
+            orders,
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// ─── Order Detail ─────────────────────────────────────────────────────────────
+export const getOrderDetail = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id)
+            .populate("user", "userFullName userEmail userMobileNumber profilePhoto deliveryAddress")
+            .populate("tailor", "tailorName tailorEmail tailorMobileNumber shopName shopAddress profilePhoto")
+            .populate("product", "productName category price image description fabrics");
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json({ order });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

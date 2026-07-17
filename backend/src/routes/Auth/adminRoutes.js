@@ -7,12 +7,15 @@ import {
     logoutAdmin,
     getDashboardStats,
     getAllUsers,
+    getUserDetail,
     updateUser,
     deleteUser,
     getAllTailorsAdmin,
+    getTailorDetail,
     updateTailor,
     deleteTailor,
     getAllOrders,
+    getOrderDetail,
     updateOrder,
     deleteOrder,
     getAllProductsAdmin,
@@ -34,16 +37,19 @@ router.get("/dashboard", authMiddleware, isAdmin, getDashboardStats);
 
 // Users
 router.get("/users", authMiddleware, isAdmin, getAllUsers);
+router.get("/users/:id", authMiddleware, isAdmin, getUserDetail);
 router.patch("/users/:id", authMiddleware, isAdmin, updateUser);
 router.delete("/users/:id", authMiddleware, isAdmin, deleteUser);
 
 // Tailors
 router.get("/tailors", authMiddleware, isAdmin, getAllTailorsAdmin);
+router.get("/tailors/:id", authMiddleware, isAdmin, getTailorDetail);
 router.patch("/tailors/:id", authMiddleware, isAdmin, updateTailor);
 router.delete("/tailors/:id", authMiddleware, isAdmin, deleteTailor);
 
 // Orders
 router.get("/orders", authMiddleware, isAdmin, getAllOrders);
+router.get("/orders/:id", authMiddleware, isAdmin, getOrderDetail);
 router.patch("/orders/:id", authMiddleware, isAdmin, updateOrder);
 router.delete("/orders/:id", authMiddleware, isAdmin, deleteOrder);
 

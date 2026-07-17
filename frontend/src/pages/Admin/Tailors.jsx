@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import api from "../../api/axios";
 import { toast } from "react-hot-toast";
 
 const Tailors = () => {
+  const navigate = useNavigate();
   const [tailors, setTailors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -80,13 +82,13 @@ const Tailors = () => {
           placeholder="Search tailors..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-72 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-purple-500/40"
+          className="w-full sm:w-72 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:ring-2 focus:ring-white/20"
         />
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-white/20 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <div className="bg-[#12121a] border border-white/[0.06] rounded-2xl overflow-hidden">
@@ -111,11 +113,11 @@ const Tailors = () => {
                     <tr key={t._id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500/30 to-violet-500/30 flex items-center justify-center text-purple-400 text-xs font-bold">
+                          <div className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.1] flex items-center justify-center text-white text-xs font-bold">
                             {t.tailorName?.charAt(0)?.toUpperCase() || "T"}
                           </div>
                           <div>
-                            <span className="text-sm text-white font-medium">{t.tailorName}</span>
+                            <span onClick={() => navigate(`/admin/tailors/${t._id}`)} className="text-sm text-white font-medium hover:underline cursor-pointer transition-colors">{t.tailorName}</span>
                             <p className="text-[11px] text-gray-500">{t.professionalTitle || ""}</p>
                           </div>
                         </div>
@@ -126,17 +128,20 @@ const Tailors = () => {
                       <td className="px-6 py-3.5 text-sm text-gray-400">{t.yearsOfExperience || 0} yrs</td>
                       <td className="px-6 py-3.5">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          t.identityStatus === "Verified" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"
+                          t.identityStatus === "Verified" ? "bg-white/[0.08] text-white" : "bg-white/[0.04] text-gray-400"
                         }`}>
                           {t.identityStatus || "Verified"}
                         </span>
                       </td>
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => openEdit(t)} className="px-3 py-1.5 text-xs font-medium text-purple-400 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 transition-colors">
+                          <button onClick={() => navigate(`/admin/tailors/${t._id}`)} className="px-3 py-1.5 text-xs font-medium text-white bg-white/[0.06] rounded-lg hover:bg-white/[0.12] transition-colors border border-white/[0.08]">
+                            View
+                          </button>
+                          <button onClick={() => openEdit(t)} className="px-3 py-1.5 text-xs font-medium text-gray-300 bg-white/[0.04] rounded-lg hover:bg-white/[0.08] transition-colors border border-white/[0.06]">
                             Edit
                           </button>
-                          <button onClick={() => setDeleteConfirm(t._id)} className="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-colors">
+                          <button onClick={() => setDeleteConfirm(t._id)} className="px-3 py-1.5 text-xs font-medium text-gray-400 bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors border border-white/[0.06]">
                             Delete
                           </button>
                         </div>
