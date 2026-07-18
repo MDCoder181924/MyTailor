@@ -86,6 +86,7 @@ const HeaderDashbord = () => {
     { to: "/Artisans", label: "Artisans", match: (pathname) => pathname === "/Artisans" },
     { to: "/OrderList", label: "Order", match: (pathname) => pathname === "/OrderList" || pathname === "/OrdarProduct" },
     { to: "/explore", label: "Explore", match: (pathname) => pathname === "/explore" || pathname.startsWith("/explore/") },
+    { to: "/help", label: "Help & Contact", match: (pathname) => pathname === "/help" || pathname === "/contact" },
   ];
 
   const getNavLinkClassName = (isActive) =>

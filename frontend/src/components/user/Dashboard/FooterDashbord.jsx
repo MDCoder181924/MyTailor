@@ -1,5 +1,6 @@
 import React from "react";
 import { Mail, Globe, Share2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -44,6 +45,11 @@ const Footer = () => {
             <li className="hover:text-white cursor-pointer">Returns</li>
             <li className="hover:text-white cursor-pointer">Terms of Service</li>
             <li className="hover:text-white cursor-pointer">Privacy Policy</li>
+            <li>
+              <Link to="/help" className="hover:text-white cursor-pointer">
+                Help & Support
+              </Link>
+            </li>
           </ul>
         </div>
 

@@ -6,6 +6,7 @@ import authRoutes from "./routes/Auth/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import adminRoutes from "./routes/Auth/adminRoutes.js";
+import supportTicketRoutes from "./routes/supportTicketRoutes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -66,6 +67,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/support-tickets", supportTicketRoutes);
 
 app.use((err, _req, res, next) => {
   if (err?.type === "entity.too.large") {

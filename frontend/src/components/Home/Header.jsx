@@ -31,6 +31,9 @@ const Header = () => {
             <a href="#journey" className="text-gray-300 hover:text-amber-400 text-lg transition duration-200">
               How it Works
             </a>
+            <Link to="/help" className="text-gray-300 hover:text-amber-400 text-lg transition duration-200">
+              Help
+            </Link>
             <Link to="/auth" className="bg-amber-400 text-black px-6 py-2 rounded-3xl font-medium border-2 border-amber-400 hover:bg-transparent hover:text-amber-400 transition duration-300">
               Login / Sign Up
             </Link>
@@ -75,6 +78,13 @@ const Header = () => {
             >
               How it Works
             </a>
+            <Link
+              to="/help"
+              onClick={() => setIsOpen(false)}
+              className="text-gray-300 hover:text-amber-400 text-xl font-medium transition duration-200"
+            >
+              Help
+            </Link>
             <Link
               to="/auth"
               onClick={() => setIsOpen(false)}
