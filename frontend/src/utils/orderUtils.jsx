@@ -116,3 +116,12 @@ export const submitOrderReview = async (orderId, { rating, title, comment }) => 
     throw new Error(err.response?.data?.message || "Failed to submit review");
   }
 };
+
+export const claimOrderRefund = async (orderId, { accountHolderName, accountNumber, bankName, ifscCode }) => {
+  try {
+    const res = await api.patch(`/api/orders/${orderId}/refund`, { accountHolderName, accountNumber, bankName, ifscCode });
+    return res.data.order;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to claim refund");
+  }
+};

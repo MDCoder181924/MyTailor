@@ -144,6 +144,18 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    refundStatus: {
+      type: String,
+      enum: ["none", "pending", "refunded"],
+      default: "none",
+    },
+    bankDetails: {
+      accountHolderName: { type: String, default: "" },
+      accountNumber: { type: String, default: "" },
+      bankName: { type: String, default: "" },
+      ifscCode: { type: String, default: "" },
+      submittedAt: { type: Date, default: null },
+    },
     isReviewed: {
       type: Boolean,
       default: false,

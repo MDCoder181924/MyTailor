@@ -1,6 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Sun, Moon } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
+import { ThemeContext } from "../../context/ThemeContext";
 import api from "../../api/axios";
 import { toast } from "react-hot-toast";
 
@@ -76,6 +78,7 @@ const AdminLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { admin, setAdmin } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const handleLogout = async () => {
     try {
@@ -187,8 +190,15 @@ const AdminLayout = ({ children }) => {
             </svg>
           </button>
           <div className="hidden lg:block" />
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500">{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="relative cursor-pointer text-theme-text hover:text-theme-accent transition flex items-center p-1"
+            >
+              {theme === "dark" ? <Sun className="w-5 h-5 cursor-pointer" /> : <Moon className="w-5 h-5 cursor-pointer" />}
+            </button>
+            <span className="text-xs text-theme-text-muted">{new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
           </div>
         </header>
 

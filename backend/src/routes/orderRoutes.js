@@ -15,6 +15,7 @@ import {
   collectOrder,
   startWork,
   cancelOrder,
+  submitRefundDetails,
   createOrderReview,
 } from "../controllers/orderController.js";
 
@@ -31,7 +32,8 @@ router.patch("/:id/ship", authMiddleware, isTailor, shipOrder);
 router.patch("/:id/pay", authMiddleware, isTailor, markOrderAsPaid);
 router.patch("/:id/collect", authMiddleware, collectOrder);
 router.patch("/:id/start-work", authMiddleware, isTailor, startWork);
-router.patch("/:id/cancel", authMiddleware, isUser, cancelOrder);
+router.patch("/:id/cancel", authMiddleware, cancelOrder);
+router.patch("/:id/refund", authMiddleware, isUser, submitRefundDetails);
 router.post("/:id/review", authMiddleware, isUser, createOrderReview);
 
 export default router;

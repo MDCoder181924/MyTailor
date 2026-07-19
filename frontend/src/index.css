@@ -296,3 +296,56 @@ html.light .bg-teal-400 {
   background-color: #0d9488 !important; /* Professional teal in light mode */
   color: #ffffff !important;
 }
+
+/* Admin Page Layout overrides in light mode */
+html.light .bg-\[\#0a0a0f\] {
+  background-color: var(--theme-bg) !important;
+}
+html.light .bg-\[\#0e0e16\] {
+  background-color: var(--theme-panel) !important;
+}
+html.light .bg-\[\#0e0e16\]\/50 {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+html.light .bg-\[\#12121a\] {
+  background-color: var(--theme-panel) !important;
+}
+html.light .bg-\[\#12121a\]\/85 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+html.light .bg-\[\#16161e\] {
+  background-color: var(--theme-panel) !important;
+}
+html.light .bg-\[\#111116\] {
+  background-color: var(--theme-panel) !important;
+}
+html.light .bg-\[\#0e0e15\] {
+  background-color: var(--theme-bg) !important;
+}
+
+/* Admin specific element and hover overrides in light mode */
+html.light .hover\:text-white:hover {
+  color: var(--theme-text) !important;
+}
+html.light .hover\:bg-white\/\[0\.04\]:hover {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+html.light .bg-white\/\[0\.04\] {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+html.light .bg-white\/\[0\.06\] {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+html.light .bg-white\/\[0\.08\] {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+html.light .bg-white\/\[0\.03\] {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+}
+html.light .border-white\/\[0\.03\],
+html.light .border-white\/\[0\.04\],
+html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.15\] {
+  border-color: var(--theme-border) !important;
+}

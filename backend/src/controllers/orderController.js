@@ -49,6 +49,8 @@ const toUserOrder = (order) => ({
   cancellationReason: order.cancellationReason,
   cancellationDetails: order.cancellationDetails,
   cancelledBy: order.cancelledBy,
+  refundStatus: order.refundStatus || "none",
+  bankDetails: order.bankDetails || null,
   isReviewed: order.isReviewed,
 });
 
@@ -82,6 +84,8 @@ const toTailorOrder = (order) => ({
   cancellationReason: order.cancellationReason,
   cancellationDetails: order.cancellationDetails,
   cancelledBy: order.cancelledBy,
+  refundStatus: order.refundStatus || "none",
+  bankDetails: order.bankDetails || null,
   isReviewed: order.isReviewed,
 });
 
@@ -99,7 +103,9 @@ const toTailorNotification = (order) => {
     }
   } else if (order.status === "CANCELLED") {
     title = "Order Cancelled";
-    message = `${order.customerName} cancelled order ${order.orderNo} (${order.cancellationReason || "No reason specified"}).`;
+    message = order.cancelledBy === "tailor"
+      ? `You cancelled order ${order.orderNo}.`
+      : `${order.customerName} cancelled order ${order.orderNo} (${order.cancellationReason || "No reason specified"}).`;
   }
 
   return {
@@ -429,7 +435,12 @@ export const startWork = async (req, res) => {
 
 export const cancelOrder = async (req, res) => {
   try {
-    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+    const isTailorUser = req.user.role === "tailor";
+    const query = isTailorUser
+      ? { _id: req.params.id, tailor: req.user.id }
+      : { _id: req.params.id, user: req.user.id };
+
+    const order = await Order.findOne(query);
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -444,7 +455,7 @@ export const cancelOrder = async (req, res) => {
     }
 
     if (order.workStarted) {
-      return res.status(400).json({ message: "Cannot cancel order because the tailor has already started work" });
+      return res.status(400).json({ message: "Cannot cancel order because work has already started" });
     }
 
     const { cancellationReason = "", cancellationDetails = "" } = req.body;
@@ -453,14 +464,56 @@ export const cancelOrder = async (req, res) => {
     order.category = "archive";
     order.cancellationReason = cancellationReason;
     order.cancellationDetails = cancellationDetails;
-    order.cancelledBy = "user";
+    order.cancelledBy = isTailorUser ? "tailor" : "user";
     order.tailorNotificationRead = false;
-    order.userNotificationRead = true;
+    order.userNotificationRead = false;
 
     await order.save();
 
     return res.json({
       message: "Order cancelled successfully",
+      order: isTailorUser ? toTailorOrder(order) : toUserOrder(order),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const submitRefundDetails = async (req, res) => {
+  try {
+    const { accountHolderName, accountNumber, bankName, ifscCode } = req.body;
+
+    if (!accountHolderName || !accountNumber || !bankName || !ifscCode) {
+      return res.status(400).json({ message: "All bank details are required" });
+    }
+
+    const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status !== "CANCELLED") {
+      return res.status(400).json({ message: "Refunds can only be claimed for cancelled orders" });
+    }
+
+    if (order.paymentStatus !== "paid") {
+      return res.status(400).json({ message: "Refunds can only be claimed for paid orders" });
+    }
+
+    order.refundStatus = "pending";
+    order.bankDetails = {
+      accountHolderName,
+      accountNumber,
+      bankName,
+      ifscCode,
+      submittedAt: new Date()
+    };
+
+    await order.save();
+
+    return res.json({
+      message: "Refund details submitted successfully. Your payment will be refunded within 7 days.",
       order: toUserOrder(order),
     });
   } catch (err) {
