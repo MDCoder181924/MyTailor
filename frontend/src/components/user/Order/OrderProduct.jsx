@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Apple, ArrowLeft, Banknote, CreditCard, Wallet, Ruler } from "lucide-react";
+import { Apple, ArrowLeft, Banknote, CreditCard, Wallet, Ruler, Edit3 } from "lucide-react";
 import { getProducts } from "../../../utils/productUtils";
 import { createOrder } from "../../../utils/orderUtils";
 import {
@@ -181,6 +181,7 @@ export default function OrderProduct() {
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [showCustomMeasurements, setShowCustomMeasurements] = useState(false);
   const [customMeasurements, setCustomMeasurements] = useState({});
+  const [customizationNotes, setCustomizationNotes] = useState("");
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [shippingDetails, setShippingDetails] = useState({
     fullName: "Customer",
@@ -322,6 +323,7 @@ export default function OrderProduct() {
         selectedBrand: BRANDS.find((b) => b.id === selectedBrand)?.name || "Standard",
         clothingType,
         customMeasurements: cleanMeasurements,
+        customizationNotes: customizationNotes.trim(),
         deliveryName: shippingDetails.fullName.trim(),
         deliveryAddress: deliveryMethod === "pickup" ? "SHOP PICKUP" : shippingDetails.address.trim(),
         deliveryMethod,
@@ -530,6 +532,24 @@ export default function OrderProduct() {
                   onChange={handleCustomMeasurementChange}
                 />
               )}
+
+              {/* Product Customization / Alteration Request Box */}
+              <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+                <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-yellow-400">
+                  <Edit3 size={14} />
+                  Customization & Alteration Requests
+                </label>
+                <p className="text-[11px] text-gray-400 font-light">
+                  Want any specific changes (e.g., neck design, sleeve length, extra fitting, border style)? Write your notes for the tailor below:
+                </p>
+                <textarea
+                  rows={3}
+                  value={customizationNotes}
+                  onChange={(e) => setCustomizationNotes(e.target.value)}
+                  placeholder="e.g. Please increase sleeve length by 2 inches, use V-neck design, and add extra margin..."
+                  className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white placeholder-gray-500 outline-none focus:border-yellow-400 transition"
+                />
+              </div>
             </div>
 
             {/* Selection summary */}
@@ -554,6 +574,11 @@ export default function OrderProduct() {
                         .map(([k, v]) => `${k}: ${v}"`)
                         .join(", ")}
                     </span>
+                  </p>
+                )}
+                {customizationNotes.trim() && (
+                  <p>
+                    Requests: <span className="font-semibold text-yellow-300">{customizationNotes.trim()}</span>
                   </p>
                 )}
               </div>

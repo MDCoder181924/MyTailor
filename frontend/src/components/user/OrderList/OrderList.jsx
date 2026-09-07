@@ -661,6 +661,11 @@ function OrderTrackingModal({ order, onClose }) {
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, fontFamily: "serif" }}>{order.title}</div>
               <div style={{ fontSize: 11, color: "var(--theme-text-muted)" }}>Master Tailor: <strong>{order.tailor}</strong></div>
+              {order.customizationNotes && (
+                <div style={{ fontSize: 11, color: "#fbbf24", marginTop: 4 }}>
+                  ✏️ <strong>Customization Request:</strong> {order.customizationNotes}
+                </div>
+              )}
             </div>
           </div>
 

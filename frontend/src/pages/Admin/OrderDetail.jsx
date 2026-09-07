@@ -203,6 +203,18 @@ const OrderDetail = () => {
         </div>
       )}
 
+      {/* Customization Notes */}
+      {order.customizationNotes && (
+        <div className="bg-[#111116] border border-white/[0.08] rounded-2xl p-6 mb-6">
+          <h3 className="text-sm font-semibold text-yellow-400 mb-2 uppercase tracking-wider flex items-center gap-2">
+            <span>✏️</span> Customization & Alteration Requests
+          </h3>
+          <p className="text-sm text-gray-200 bg-white/[0.03] p-4 rounded-xl border border-white/[0.06] whitespace-pre-wrap leading-relaxed">
+            {order.customizationNotes}
+          </p>
+        </div>
+      )}
+
       {/* Cancellation Info */}
       {order.status === "CANCELLED" && (
         <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-6 mb-6">

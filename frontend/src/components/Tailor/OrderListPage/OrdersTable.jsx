@@ -220,6 +220,11 @@ export default function OrdersTable() {
                 <p className="text-[9px] md:hidden text-theme-text-muted font-bold uppercase tracking-wider mb-0.5">Product Details</p>
                 <p className="font-semibold text-theme-text">{order.product}</p>
                 <p className="text-xs text-theme-text-muted mt-0.5">{order.desc || "Tailor order"}</p>
+                {order.customizationNotes && (
+                  <span className="inline-block mt-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    ✏️ Has Custom Request
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => setSelectedOrderDetail(order)}
@@ -423,6 +428,18 @@ export default function OrdersTable() {
                         <span className="text-base font-bold text-theme-text mt-1">{val} in</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Customization Requests / Product Changes (if any) */}
+              {selectedOrderDetail.customizationNotes && (
+                <div className="pb-6 border-b border-theme-border">
+                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 font-serif">
+                    ✂️ Client Customization Requests & Product Changes
+                  </h4>
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-100 font-medium whitespace-pre-wrap leading-relaxed">
+                    {selectedOrderDetail.customizationNotes}
                   </div>
                 </div>
               )}

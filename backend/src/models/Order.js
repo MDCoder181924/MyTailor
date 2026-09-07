@@ -78,6 +78,11 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: null,
     },
+    customizationNotes: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     deliveryName: {
       type: String,
       default: "",
