@@ -137,8 +137,8 @@ const TailorDetail = () => {
               <div>
                 <span className="text-xs text-gray-500 uppercase tracking-wider">Specializations</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {tailor.specializations.map((s, i) => (
-                    <span key={i} className="px-2.5 py-1 text-xs bg-white/[0.06] text-gray-300 rounded-lg border border-white/[0.08]">{s}</span>
+                  {tailor.specializations.map((s) => (
+                    <span key={s} className="px-2.5 py-1 text-xs bg-white/[0.06] text-gray-300 rounded-lg border border-white/[0.08]">{s}</span>
                   ))}
                 </div>
               </div>
@@ -147,8 +147,8 @@ const TailorDetail = () => {
               <div>
                 <span className="text-xs text-gray-500 uppercase tracking-wider">Key Skills</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {tailor.keySkills.map((s, i) => (
-                    <span key={i} className="px-2.5 py-1 text-xs bg-white/[0.06] text-gray-300 rounded-lg border border-white/[0.08]">{s}</span>
+                  {tailor.keySkills.map((s) => (
+                    <span key={s} className="px-2.5 py-1 text-xs bg-white/[0.06] text-gray-300 rounded-lg border border-white/[0.08]">{s}</span>
                   ))}
                 </div>
               </div>
@@ -157,8 +157,8 @@ const TailorDetail = () => {
               <div>
                 <span className="text-xs text-gray-500 uppercase tracking-wider">Disabled Sizes</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {tailor.disabledSizes.map((s, i) => (
-                    <span key={i} className="px-2.5 py-1 text-xs bg-white/[0.04] text-gray-400 rounded-lg border border-white/[0.06]">{s}</span>
+                  {tailor.disabledSizes.map((s) => (
+                    <span key={s} className="px-2.5 py-1 text-xs bg-white/[0.04] text-gray-400 rounded-lg border border-white/[0.06]">{s}</span>
                   ))}
                 </div>
               </div>
@@ -181,13 +181,9 @@ const TailorDetail = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/[0.06]">
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Order No</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Customer</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Product</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Status</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Payment</th>
-                <th className="text-right text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Price</th>
-                <th className="text-right text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Date</th>
+                {["Order No", "Customer", "Product", "Status", "Payment", "Price", "Date"].map((title, idx) => (
+                  <th key={title} className={`text-${idx >= 5 ? "right" : "left"} text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3`}>{title}</th>
+                ))}
               </tr>
             </thead>
             <tbody>

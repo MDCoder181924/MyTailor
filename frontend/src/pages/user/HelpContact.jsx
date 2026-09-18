@@ -294,7 +294,7 @@ const HelpContact = () => {
                 <div className="divide-y divide-theme-border">
                   {faqs.map((faq, index) => (
                     <FAQItem
-                      key={index}
+                      key={faq.q}
                       faq={faq}
                       isOpen={openFaq === index}
                       toggle={() => setOpenFaq(openFaq === index ? null : index)}

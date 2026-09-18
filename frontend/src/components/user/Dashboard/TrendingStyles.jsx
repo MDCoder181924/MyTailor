@@ -55,8 +55,13 @@ const TrendingStyles = () => {
     };
   }, []);
 
-  const visibleProducts = useMemo(() => products.slice(0, 10), [products]);
-  const loopData = useMemo(() => [...visibleProducts, ...visibleProducts], [visibleProducts]);
+  const loopData = useMemo(
+    () => [
+      ...visibleProducts.map((p) => ({ ...p, _uniqueKey: `orig-${p._id}` })),
+      ...visibleProducts.map((p) => ({ ...p, _uniqueKey: `dup-${p._id}` })),
+    ],
+    [visibleProducts]
+  );
 
   useEffect(() => {
     if (!loopData.length) {
@@ -119,9 +124,9 @@ const TrendingStyles = () => {
 
       {!loading && !error && visibleProducts.length > 0 ? (
         <div ref={scrollRef} className="no-scrollbar flex gap-6 overflow-x-auto will-change-transform">
-          {loopData.map((item, index) => (
+          {loopData.map((item) => (
             <button
-              key={`${item._id}-${index}`}
+              key={item._uniqueKey}
               type="button"
               onClick={() => handleProductSelect(item)}
               className="flex-shrink-0 w-[220px] md:w-[260px] text-left cursor-pointer"

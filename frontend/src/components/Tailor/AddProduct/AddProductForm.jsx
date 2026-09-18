@@ -23,6 +23,15 @@ export default function UploadProduct() {
   const [mediaPreview, setMediaPreview] = useState(null);
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    if (!imgStore) return;
+    const objectUrl = URL.createObjectURL(imgStore);
+    setMediaPreview(objectUrl);
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [imgStore]);
+
   const hasPhone = tailor?.tailorMobileNumber && tailor.tailorMobileNumber.trim();
   const hasAddress = tailor?.shopAddress && tailor.shopAddress.trim();
   const needsProfileSetup = !hasPhone || !hasAddress;
@@ -69,7 +78,6 @@ export default function UploadProduct() {
   const handleFile = (file) => {
     if (file.type.startsWith("image/")) {
       setimgStore(file);
-      setMediaPreview(URL.createObjectURL(file));
     }
     else {
       toast.error("Please upload a valid image file (JPG, PNG, etc.)");

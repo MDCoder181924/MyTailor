@@ -14,6 +14,28 @@ const StatCard = ({ label, value, icon, gradient }) => (
   </div>
 );
 
+const AdminTableHeader = ({ columns }) => (
+  <thead>
+    <tr className="border-b border-white/[0.04]">
+      {columns.map(({ label, align = "left" }) => (
+        <th key={label} className={`text-${align} text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3`}>
+          {label}
+        </th>
+      ))}
+    </tr>
+  </thead>
+);
+
+const DASHBOARD_ORDER_COLUMNS = [
+  { label: "Order" },
+  { label: "Customer" },
+  { label: "Tailor" },
+  { label: "Product" },
+  { label: "Status" },
+  { label: "Payment" },
+  { label: "Price", align: "right" },
+];
+
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
@@ -112,17 +134,7 @@ const Dashboard = () => {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/[0.04]">
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Order</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Customer</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Tailor</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Product</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Status</th>
-                <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Payment</th>
-                <th className="text-right text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Price</th>
-              </tr>
-            </thead>
+            <AdminTableHeader columns={DASHBOARD_ORDER_COLUMNS} />
             <tbody>
               {recentOrders.length === 0 ? (
                 <tr>

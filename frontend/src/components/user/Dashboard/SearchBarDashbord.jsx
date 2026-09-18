@@ -98,14 +98,24 @@ const SearchBarDashbord = () => {
 
   const normalizedQuery = query.trim().toLowerCase();
 
+  const productSearchList = useMemo(
+    () => products.map((p) => ({ product: p, text: getProductSearchText(p) })),
+    [products]
+  );
+
+  const tailorSearchList = useMemo(
+    () => tailors.map((t) => ({ tailor: t, text: getTailorSearchText(t) })),
+    [tailors]
+  );
+
   const results = useMemo(() => {
     if (!normalizedQuery) {
       return [];
     }
 
-    const productResults = products
-      .filter((product) => getProductSearchText(product).includes(normalizedQuery))
-      .map((product) => ({
+    const productResults = productSearchList
+      .filter(({ text }) => text.includes(normalizedQuery))
+      .map(({ product }) => ({
         id: `product-${product._id}`,
         type: "Fabric",
         title: product.productName || "Tailor Product",
@@ -122,9 +132,9 @@ const SearchBarDashbord = () => {
           }),
       }));
 
-    const tailorResults = tailors
-      .filter((tailor) => getTailorSearchText(tailor).includes(normalizedQuery))
-      .map((tailor) => ({
+    const tailorResults = tailorSearchList
+      .filter(({ text }) => text.includes(normalizedQuery))
+      .map(({ tailor }) => ({
         id: `tailor-${tailor._id}`,
         type: "Tailor",
         title: tailor.tailorName || "Registered Tailor",
@@ -139,7 +149,7 @@ const SearchBarDashbord = () => {
       }));
 
     return [...productResults, ...tailorResults].slice(0, MAX_RESULTS);
-  }, [navigate, normalizedQuery, products, tailors]);
+  }, [navigate, normalizedQuery, productSearchList, tailorSearchList]);
 
   const handleSelect = (result) => {
     result.action();

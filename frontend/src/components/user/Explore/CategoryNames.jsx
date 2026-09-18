@@ -45,8 +45,16 @@ const CategoryNames = () => {
     };
   }, []);
 
+  const safeDecode = (str) => {
+    try {
+      return decodeURIComponent(str);
+    } catch {
+      return str;
+    }
+  };
+
   const currentCategory = location.pathname.startsWith("/explore/")
-    ? decodeURIComponent(location.pathname.replace("/explore/", ""))
+    ? safeDecode(location.pathname.replace("/explore/", ""))
     : "all";
 
   return (

@@ -123,8 +123,8 @@ const UserDetail = () => {
               <div>
                 <span className="text-xs text-gray-500 uppercase tracking-wider">Style Preferences</span>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {user.stylePreferences.map((s, i) => (
-                    <span key={i} className="px-2.5 py-1 text-xs bg-white/[0.06] text-gray-300 rounded-lg border border-white/[0.08]">{s}</span>
+                  {user.stylePreferences.map((s) => (
+                    <span key={s} className="px-2.5 py-1 text-xs bg-white/[0.06] text-gray-300 rounded-lg border border-white/[0.08]">{s}</span>
                   ))}
                 </div>
               </div>

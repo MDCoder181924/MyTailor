@@ -65,6 +65,15 @@ export default function FabricsGrid() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!imgFile) return;
+    const objectUrl = URL.createObjectURL(imgFile);
+    setImgPreview(objectUrl);
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [imgFile]);
+
   const handleDelete = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) {
       return;
@@ -124,7 +133,6 @@ export default function FabricsGrid() {
     if (file) {
       if (file.type.startsWith("image/")) {
         setImgFile(file);
-        setImgPreview(URL.createObjectURL(file));
       } else {
         toast.error("Please upload a valid image file (JPG, PNG, etc.)");
       }

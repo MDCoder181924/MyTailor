@@ -90,12 +90,12 @@ function SizeChartModal({
               </tr>
             </thead>
             <tbody>
-              {chart.rows.map((row, idx) => {
+              {chart.rows.map((row) => {
                 const rowSize = row[0];
                 const isSelectedRow = selectedSize && rowSize.toUpperCase() === selectedSize.toUpperCase();
                 return (
                   <tr
-                    key={idx}
+                    key={rowSize}
                     className={`border-b border-theme-border/50 transition-colors ${
                       isSelectedRow
                         ? "bg-theme-accent/10 text-theme-accent font-semibold cursor-pointer hover:bg-theme-accent/20"
@@ -107,7 +107,7 @@ function SizeChartModal({
                     }}
                   >
                     {row.map((cell, cIdx) => (
-                      <td key={cIdx} className="px-4 py-3">{cell}</td>
+                      <td key={`${chart.headers[cIdx] || cIdx}-${cell}`} className="px-4 py-3">{cell}</td>
                     ))}
                   </tr>
                 );
@@ -485,24 +485,27 @@ export default function OrderProduct() {
                   <span className="text-right text-[10px] font-normal lowercase italic text-gray-500">Choose your fit</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {availableSizes.map((size) => {
-                    const isActive = selectedSize === size;
-                    const isDisabled = product.tailor?.disabledSizes?.includes(size);
-                    return (
-                      <button key={size} type="button" disabled={isDisabled}
-                        onClick={() => setSelectedSize(size)}
-                        title={isDisabled ? "Tailor cannot make this size" : ""}
-                        className={`min-w-12 rounded-full border px-4 py-2 text-sm transition cursor-pointer ${
-                          isDisabled
-                            ? "border-red-500/20 bg-red-950/10 text-gray-500 cursor-not-allowed line-through"
-                            : isActive
-                              ? "border-yellow-400 bg-yellow-400 text-black font-semibold"
-                              : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
-                        }`}>
-                        {size}
-                      </button>
-                    );
-                  })}
+                  {(() => {
+                    const disabledSet = new Set(product.tailor?.disabledSizes || []);
+                    return availableSizes.map((size) => {
+                      const isActive = selectedSize === size;
+                      const isDisabled = disabledSet.has(size);
+                      return (
+                        <button key={size} type="button" disabled={isDisabled}
+                          onClick={() => setSelectedSize(size)}
+                          title={isDisabled ? "Tailor cannot make this size" : ""}
+                          className={`min-w-12 rounded-full border px-4 py-2 text-sm transition cursor-pointer ${
+                            isDisabled
+                              ? "border-red-500/20 bg-red-950/10 text-gray-500 cursor-not-allowed line-through"
+                              : isActive
+                                ? "border-yellow-400 bg-yellow-400 text-black font-semibold"
+                                : "border-white/10 bg-white/5 text-gray-300 hover:border-yellow-400/60"
+                          }`}>
+                          {size}
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 
@@ -553,12 +556,12 @@ export default function OrderProduct() {
             </div>
 
             {/* Selection summary */}
-            {(selectedFabric || selectedSize) && (
+            {Boolean(selectedFabric || selectedSize) && (
               <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/5 p-4 text-xs space-y-1 text-gray-300">
-                {selectedFabric && (
+                {Boolean(selectedFabric) && (
                   <p>Material: <span className="font-semibold text-yellow-300">{selectedFabric}</span></p>
                 )}
-                {selectedSize && (
+                {Boolean(selectedSize) && (
                   <p>
                     Size: <span className="font-semibold text-yellow-300">
                       {selectedSize}

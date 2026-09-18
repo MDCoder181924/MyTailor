@@ -41,9 +41,9 @@ const Section2 = () => {
 
       <div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {tailors.map((t, i) => (
+          {tailors.map((t) => (
             <div
-              key={i}
+              key={t.name}
               className="bg-[#111] rounded-xl overflow-hidden shadow-lg hover:scale-105 transition duration-300"
             >
               <div className="h-64 sm:h-80 md:h-72 lg:h-90 w-full overflow-hidden">

@@ -1,7 +1,12 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+import React, { useContext, useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { getTailorOrders } from "../../../utils/orderUtils";
 import { ThemeContext } from "../../../context/ThemeContext";
+
+const LineChart = lazy(() => import("recharts").then((m) => ({ default: m.LineChart })));
+const Line = lazy(() => import("recharts").then((m) => ({ default: m.Line })));
+const XAxis = lazy(() => import("recharts").then((m) => ({ default: m.XAxis })));
+const Tooltip = lazy(() => import("recharts").then((m) => ({ default: m.Tooltip })));
+const ResponsiveContainer = lazy(() => import("recharts").then((m) => ({ default: m.ResponsiveContainer })));
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -108,13 +113,15 @@ function SalesAndOrders() {
               <span className="text-xs uppercase tracking-wider">Loading trends...</span>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <XAxis dataKey="day" stroke="currentColor" className="text-theme-text-muted opacity-50" />
-                <Tooltip contentStyle={{ backgroundColor: "var(--theme-panel)", borderColor: "var(--theme-border)", color: "var(--theme-text)" }} />
-                <Line type="monotone" dataKey="value" stroke={chartStroke} strokeWidth={3} dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="text-xs text-theme-text-muted">Loading chart...</div>}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <XAxis dataKey="day" stroke="currentColor" className="text-theme-text-muted opacity-50" />
+                  <Tooltip contentStyle={{ backgroundColor: "var(--theme-panel)", borderColor: "var(--theme-border)", color: "var(--theme-text)" }} />
+                  <Line type="monotone" dataKey="value" stroke={chartStroke} strokeWidth={3} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Suspense>
           )}
         </div>
 

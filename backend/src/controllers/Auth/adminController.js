@@ -134,29 +134,38 @@ export const logoutAdmin = async (req, res) => {
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 export const getDashboardStats = async (_req, res) => {
     try {
-        const [totalUsers, totalTailors, totalProducts, totalOrders, orders] = await Promise.all([
+        const [
+            totalUsers,
+            totalTailors,
+            totalProducts,
+            totalOrders,
+            orders,
+            pendingOrders,
+            activeOrders,
+            shippedOrders,
+            cancelledOrders,
+            recentOrders,
+            totalReviews,
+        ] = await Promise.all([
             User.countDocuments(),
             Tailor.countDocuments(),
             Product.countDocuments(),
             Order.countDocuments(),
             Order.find({ paymentStatus: "paid" }).select("price"),
+            Order.countDocuments({ status: "PENDING" }),
+            Order.countDocuments({ status: "ACCEPTED" }),
+            Order.countDocuments({ status: "SHIPPED" }),
+            Order.countDocuments({ status: "CANCELLED" }),
+            Order.find()
+                .sort({ createdAt: -1 })
+                .limit(10)
+                .populate("user", "userFullName userEmail")
+                .populate("tailor", "tailorName tailorEmail")
+                .populate("product", "productName"),
+            Review.countDocuments(),
         ]);
 
         const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.price) || 0), 0);
-
-        const pendingOrders = await Order.countDocuments({ status: "PENDING" });
-        const activeOrders = await Order.countDocuments({ status: "ACCEPTED" });
-        const shippedOrders = await Order.countDocuments({ status: "SHIPPED" });
-        const cancelledOrders = await Order.countDocuments({ status: "CANCELLED" });
-
-        const recentOrders = await Order.find()
-            .sort({ createdAt: -1 })
-            .limit(10)
-            .populate("user", "userFullName userEmail")
-            .populate("tailor", "tailorName tailorEmail")
-            .populate("product", "productName");
-
-        const totalReviews = await Review.countDocuments();
 
         res.json({
             stats: {

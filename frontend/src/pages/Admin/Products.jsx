@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import api from "../../api/axios";
 import { toast } from "react-hot-toast";
+import ConfirmDeleteModal from "../../components/Admin/ConfirmDeleteModal";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -90,13 +91,9 @@ const Products = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/[0.04]">
-                  <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Product</th>
-                  <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Category</th>
-                  <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Tailor</th>
-                  <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Price</th>
-                  <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Stock</th>
-                  <th className="text-left text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Fabrics</th>
-                  <th className="text-right text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3">Actions</th>
+                  {["Product", "Category", "Tailor", "Price", "Stock", "Fabrics", "Actions"].map((col, idx) => (
+                    <th key={col} className={`text-${idx === 6 ? "right" : "left"} text-xs text-gray-500 font-semibold uppercase tracking-wider px-6 py-3`}>{col}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -164,7 +161,11 @@ const Products = () => {
                   <input
                     type={type}
                     value={editForm[key] ?? ""}
-                    onChange={(e) => setEditForm({ ...editForm, [key]: type === "number" ? Number(e.target.value) : e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const parsed = Number(val);
+                      setEditForm({ ...editForm, [key]: type === "number" ? (val === "" || Number.isNaN(parsed) ? val : parsed) : val });
+                    }}
                     className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-purple-500/40"
                   />
                 </div>
@@ -184,20 +185,12 @@ const Products = () => {
 
       {/* Delete Confirmation */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setDeleteConfirm(null)}>
-          <div className="bg-[#16161e] border border-white/[0.08] rounded-2xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-white mb-2">Delete Product?</h3>
-            <p className="text-sm text-gray-400 mb-6">This will permanently delete this product.</p>
-            <div className="flex gap-3">
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-500 transition-all">
-                Delete
-              </button>
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 bg-white/[0.06] text-gray-400 rounded-xl text-sm font-semibold hover:bg-white/[0.1] transition-all">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDeleteModal
+          title="Delete Product?"
+          message="This will permanently delete this product."
+          onConfirm={() => handleDelete(deleteConfirm)}
+          onClose={() => setDeleteConfirm(null)}
+        />
       )}
     </AdminLayout>
   );

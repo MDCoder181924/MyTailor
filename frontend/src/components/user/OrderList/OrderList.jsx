@@ -52,14 +52,14 @@ function StageProgress({ stage, stageIndex }) {
         <span style={{ color: "var(--theme-accent)", fontWeight: 700 }}>{stage}</span>
       </p>
       <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 6 }}>
-        {STAGES.map((_, i) => (
+        {STAGES.map((s) => (
           <div
-            key={i}
+            key={s}
             style={{
               flex: 1,
               height: 3,
               borderRadius: 2,
-              backgroundColor: i <= stageIndex ? "var(--theme-accent)" : "var(--theme-border)",
+              backgroundColor: STAGES.indexOf(s) <= stageIndex ? "var(--theme-accent)" : "var(--theme-border)",
               transition: "background-color 0.3s",
             }}
           />
@@ -68,7 +68,7 @@ function StageProgress({ stage, stageIndex }) {
       {!isMobile && (
         <div style={{ display: "flex", gap: 4 }}>
           {STAGES.map((s, i) => (
-            <div key={i} style={{ flex: 1, textAlign: "center" }}>
+            <div key={s} style={{ flex: 1, textAlign: "center" }}>
               <span
                 style={{
                   fontSize: 8,
@@ -409,6 +409,35 @@ function CommissionCard({ item, onCollect, onTrack, onViewDetails, onCancelOrder
 }
 
 // ─── Bespoke Details Modal ───────────────────────────────────────
+const OrderListModalHeader = ({ title, orderNo, onClose }) => (
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottom: "1px solid var(--theme-border)",
+    padding: "16px 24px",
+  }}>
+    <div>
+      <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: "var(--theme-accent)", fontFamily: "serif" }}>{title}</h2>
+      <p style={{ fontSize: 10, color: "var(--theme-text-muted)", margin: "4px 0 0 0", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        Order No: {orderNo}
+      </p>
+    </div>
+    <button
+      onClick={onClose}
+      style={{
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        color: "var(--theme-text-muted)",
+        padding: 4,
+      }}
+    >
+      <X size={20} />
+    </button>
+  </div>
+);
+
 function OrderDetailModal({ order, onClose }) {
   if (!order) return null;
 
@@ -437,32 +466,7 @@ function OrderDetailModal({ order, onClose }) {
         boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
       }}>
         {/* Modal Header */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "1px solid var(--theme-border)",
-          padding: "16px 24px",
-        }}>
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: "var(--theme-accent)", fontFamily: "serif" }}>Bespoke Order Details</h2>
-            <p style={{ fontSize: 10, color: "var(--theme-text-muted)", margin: "4px 0 0 0", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-              Order No: {order.orderNo}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--theme-text-muted)",
-              padding: 4,
-            }}
-          >
-            <X size={20} />
-          </button>
-        </div>
+        <OrderListModalHeader title="Bespoke Order Details" orderNo={order.orderNo} onClose={onClose} />
 
         {/* Modal Content */}
         <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 20 }}>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import api from "../../api/axios";
 import { toast } from "react-hot-toast";
+import ConfirmDeleteModal from "../../components/Admin/ConfirmDeleteModal";
 
 const StarRating = ({ rating }) => (
   <div className="flex gap-0.5">
@@ -129,20 +130,12 @@ const Reviews = () => {
 
       {/* Delete Confirmation */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setDeleteConfirm(null)}>
-          <div className="bg-[#16161e] border border-white/[0.08] rounded-2xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-white mb-2">Delete Review?</h3>
-            <p className="text-sm text-gray-400 mb-6">This will permanently delete this review and reset the order's review status.</p>
-            <div className="flex gap-3">
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-500 transition-all">
-                Delete
-              </button>
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 bg-white/[0.06] text-gray-400 rounded-xl text-sm font-semibold hover:bg-white/[0.1] transition-all">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDeleteModal
+          title="Delete Review?"
+          message="This will permanently delete this review and reset the order's review status."
+          onConfirm={() => handleDelete(deleteConfirm)}
+          onClose={() => setDeleteConfirm(null)}
+        />
       )}
     </AdminLayout>
   );

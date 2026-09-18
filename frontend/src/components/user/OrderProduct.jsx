@@ -516,12 +516,12 @@ export default function OrderProduct() {
                   </tr>
                 </thead>
                 <tbody>
-                  {BRAND_SIZE_CHARTS[selectedBrand]?.rows.map((row, idx) => {
+                  {BRAND_SIZE_CHARTS[selectedBrand]?.rows.map((row) => {
                     const rowSize = row[0];
                     const isSelectedRow = selectedSize && rowSize.toUpperCase() === selectedSize.toUpperCase();
                     return (
                       <tr
-                        key={idx}
+                        key={rowSize}
                         style={{
                           borderBottom: "1px solid #2A2A2A",
                           backgroundColor: isSelectedRow ? "rgba(234,184,0,0.1)" : "transparent",
@@ -535,7 +535,7 @@ export default function OrderProduct() {
                         }}
                       >
                         {row.map((cell, cIdx) => (
-                          <td key={cIdx} style={{ padding: "10px 12px" }}>{cell}</td>
+                          <td key={`${BRAND_SIZE_CHARTS[selectedBrand]?.headers[cIdx] || cIdx}-${cell}`} style={{ padding: "10px 12px" }}>{cell}</td>
                         ))}
                       </tr>
                     );
