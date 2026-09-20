@@ -55,6 +55,8 @@ const TrendingStyles = () => {
     };
   }, []);
 
+  const visibleProducts = useMemo(() => products.slice(0, 10), [products]);
+
   const loopData = useMemo(
     () => [
       ...visibleProducts.map((p) => ({ ...p, _uniqueKey: `orig-${p._id}` })),
@@ -124,7 +126,7 @@ const TrendingStyles = () => {
 
       {!loading && !error && visibleProducts.length > 0 ? (
         <div ref={scrollRef} className="no-scrollbar flex gap-6 overflow-x-auto will-change-transform">
-          {loopData.map((item) => (
+          {loopData.map((item, index) => (
             <button
               key={item._uniqueKey}
               type="button"
