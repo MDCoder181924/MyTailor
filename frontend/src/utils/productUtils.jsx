@@ -77,6 +77,22 @@ export const getProducts = async (options = {}) => {
   }
 };
 
+// Explore uses server-side pagination so it never downloads the entire catalogue.
+export const getExploreProducts = async ({ page = 1, limit = 10, category = "" } = {}) => {
+  try {
+    const res = await api.get("/api/products", {
+      params: { page, limit, ...(category ? { category } : {}) },
+    });
+
+    return {
+      products: res.data.products || [],
+      pagination: res.data.pagination || { page, limit, total: 0, hasMore: false },
+    };
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to fetch products");
+  }
+};
+
 export const getMyProducts = async () => {
   try {
     const res = await api.get("/api/products/mine");
@@ -114,4 +130,3 @@ export const deleteProduct = async (productId) => {
     throw new Error(err.response?.data?.message || "Product deletion failed");
   }
 };
-

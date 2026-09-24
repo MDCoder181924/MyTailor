@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProducts } from "../../../utils/productUtils";
+import { getExploreProducts } from "../../../utils/productUtils";
 import { addToCart } from "../../../utils/cartUtils";
 
 const fallbackImage = "https://picsum.photos/600/800?fashion";
@@ -36,8 +36,11 @@ const CategoryItems = ({ category }) => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState("");
   const [toastMsg, setToastMsg] = useState("");
+  const requestInProgress = useRef(false);
 
   const handleProductSelect = (product) => {
     navigate(`/OrdarProduct?productId=${product._id}`, {
@@ -56,53 +59,42 @@ const CategoryItems = ({ category }) => {
     setTimeout(() => setToastMsg(""), 3000);
   };
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const allProducts = await getProducts();
-
-        if (isMounted) {
-          setProducts(allProducts);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err.message || "Failed to load products");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const [visibleCount, setVisibleCount] = useState(10);
-
-  useEffect(() => {
-    setVisibleCount(10);
-  }, [category]);
-
   const selectedCategory = normalizeCategory(category);
-  const filteredProducts =
-    selectedCategory === "all"
-      ? products
-      : products.filter(
-          (item) => normalizeCategory(item.category) === selectedCategory
-        );
+  const categoryParam = selectedCategory === "all" ? "" : category;
+
+  const loadProducts = useCallback(async (page, replace = false) => {
+    if (requestInProgress.current) return;
+
+    requestInProgress.current = true;
+    try {
+      if (replace) setLoading(true);
+      else setLoadingMore(true);
+      setError("");
+      const result = await getExploreProducts({ page, limit: 10, category: categoryParam });
+      setProducts((current) => {
+        if (replace) return result.products;
+        const existingIds = new Set(current.map((product) => product._id));
+        return [...current, ...result.products.filter((product) => !existingIds.has(product._id))];
+      });
+      setHasMore(result.pagination.hasMore);
+    } catch (err) {
+      setError(err.message || "Failed to load products");
+    } finally {
+      requestInProgress.current = false;
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [categoryParam]);
+
+  useEffect(() => {
+    setProducts([]);
+    setHasMore(false);
+    loadProducts(1, true);
+  }, [loadProducts]);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (filteredProducts.length <= visibleCount) return;
+      if (!hasMore || requestInProgress.current) return;
 
       const threshold = 300;
       const scrollHeight = document.documentElement.scrollHeight;
@@ -110,13 +102,13 @@ const CategoryItems = ({ category }) => {
       const clientHeight = window.innerHeight;
 
       if (clientHeight + scrollTop >= scrollHeight - threshold) {
-        setVisibleCount((prev) => Math.min(prev + 10, filteredProducts.length));
+        loadProducts(Math.floor(products.length / 10) + 1);
       }
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [filteredProducts.length, visibleCount]);
+  }, [hasMore, loadProducts, products.length]);
 
   if (loading) {
     return (
@@ -134,7 +126,7 @@ const CategoryItems = ({ category }) => {
     );
   }
 
-  if (!filteredProducts.length) {
+  if (!products.length) {
     return (
       <div className="px-6 py-12 text-center text-gray-400">
         No tailor products found in this category.
@@ -142,13 +134,10 @@ const CategoryItems = ({ category }) => {
     );
   }
 
-  const displayedProducts = filteredProducts.slice(0, visibleCount);
-  const hasMore = filteredProducts.length > visibleCount;
-
   return (
     <div className="bg-black py-6">
       <div className="grid grid-cols-2 gap-4 bg-black px-6 md:mx-10 md:grid-cols-4 lg:grid-cols-5 md:gap-6">
-      {displayedProducts.map((item) => (
+      {products.map((item) => (
         <div key={item._id} className="bg-black text-white">
           <button
             type="button"
@@ -215,7 +204,7 @@ const CategoryItems = ({ category }) => {
         </div>
       ))}
       </div>
-      {hasMore && (
+      {(hasMore || loadingMore) && (
         <div className="mt-8 flex justify-center items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
           <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
           Scroll to load more...

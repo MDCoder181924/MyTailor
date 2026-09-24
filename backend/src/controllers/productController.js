@@ -42,13 +42,42 @@ export const createProduct = async (req, res) => {
   }
 };
 
-export const getProducts = async (_req, res) => {
+export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find()
-      .populate("tailor", tailorSelect)
-      .sort({ createdAt: -1 });
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 10, 1), 50);
+    const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
+    const filter = {};
 
-    res.json({ products });
+    // Keep category matching compatible with the frontend's "shirt", "t-shirt"
+    // and "t shirt" normalization.
+    if (category && category.toLowerCase() !== "all") {
+      const normalizedCategory = category
+        .trim()
+        .replace(/[-_\s]+/g, " ")
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        .replace(/\s+/g, "[-_\\s]+");
+      filter.category = { $regex: new RegExp(`^${normalizedCategory}$`, "i") };
+    }
+
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+      .populate("tailor", tailorSelect)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+      Product.countDocuments(filter),
+    ]);
+
+    res.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        hasMore: page * limit < total,
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -152,4 +181,3 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
